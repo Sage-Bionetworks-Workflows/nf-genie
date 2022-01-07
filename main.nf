@@ -1,5 +1,6 @@
 #!/usr/bin/env nextflow
 
+//nextflow.enable.dsl=2
 
 /*
 ========================================================================================
@@ -18,9 +19,12 @@ ch_synapse_config = params.synapse_config ? Channel.value(file(params.synapse_co
 
 
 // Main processing for GENIE
-process genie_main_process {
+process main_process {
 
   secret 'SYNAPSE_AUTH_TOKEN'
+
+  output:
+  stdout ch
 
   script:
   """
@@ -28,5 +32,23 @@ process genie_main_process {
   main \
   --project_id syn7208886 \
   --onlyValidate
+  """
+}
+
+// Public release
+process public_release {
+
+  secret 'SYNAPSE_AUTH_TOKEN'
+
+  input:
+  val fake from ch
+
+  script:
+  """
+  public_release.py \
+  Jan-2017 \
+  /root/cbioportal \
+  test \
+  --test
   """
 }

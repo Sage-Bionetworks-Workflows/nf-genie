@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
-"""Script to crawl Synapse folder for a center, validate, and update database tables.
+"""Script to crawl Synapse folder for a center, validate, and
+update database tables.
 """
 import argparse
 from datetime import date
