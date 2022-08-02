@@ -35,6 +35,7 @@ process main_process {
   """
 }
 
+
 // Public release
 process public_release {
 
@@ -52,3 +53,38 @@ process public_release {
   --test
   """
 }
+
+// Create release dashboard
+process public_release {
+
+  secret 'SYNAPSE_AUTH_TOKEN'
+
+  input:
+  val fake from ch
+
+  script:
+  """
+  public_release.py \
+  Jan-2017 \
+  /root/cbioportal \
+  test \
+  --test
+  """
+}
+
+// Create data guide
+
+
+// Create skeleton release notes
+
+
+// run artifact finder
+
+// copy to BPC
+
+// copy consortium to BPC
+
+// check for any retractions in BPC
+
+
+// TMB code
