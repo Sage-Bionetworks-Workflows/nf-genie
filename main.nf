@@ -35,12 +35,11 @@
 // }
 // validation_out.view()
 
+// Split off creation of maf database
+// (This will simplify the genie pipeline)
 process maf_process {
   container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
-
-  input:
-  val previous from validation_out
 
   output:
   stdout into maf_process_out
