@@ -8,9 +8,9 @@
 // to create new maf database
 // centers to process / exclude
 // consortium or public release
-params.production = False
+params.production = false
 params.release = "TESTrelease"
-params.create_new_maf_db = False
+params.create_new_maf_db = false
 
 if (params.production) {
   project_id = "syn3380222"
