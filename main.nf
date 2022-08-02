@@ -4,73 +4,101 @@
 
 /*
 ========================================================================================
-    SETUP PARAMS
-========================================================================================
-*/
-
-params.synapse_config = false  // Default
-ch_synapse_config = params.synapse_config ? Channel.value(file(params.synapse_config)) : "null"
-
-/*
-========================================================================================
     SETUP PROCESSES
 ========================================================================================
 */
 
-
 // Main processing for GENIE
-process main_process {
-
+process validation {
+  container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
 
   output:
-  stdout ch
+  stdout into validation_out
 
   script:
   """
-  process.py \
-  main \
+  python3 /root/Genie/bin/input_to_database.py \
+  mutation \
   --project_id syn7208886 \
-  --onlyValidate
+  --onlyValidate \
+  --genie_annotation_pkg \
+  /root/annotation-tools
   """
 }
+validation_out.view()
 
+// process maf_process {
+//   container 'sagebionetworks/genie:latest'
+//   secret 'SYNAPSE_AUTH_TOKEN'
 
-// Public release
-process public_release {
+//   input:
+//   val previous from validation_out
 
-  secret 'SYNAPSE_AUTH_TOKEN'
+//   output:
+//   stdout into maf_process_out
 
-  input:
-  val fake from ch
+//   script:
+//   """
+//   python3 /root/Genie/bin/input_to_database.py \
+//   mutation \
+//   --project_id syn7208886 \
+//   --genie_annotation_pkg \
+//   /root/annotation-tools \
+//   --createNewMafDatabase
+//   """
+// }
 
-  script:
-  """
-  public_release.py \
-  Jan-2017 \
-  /root/cbioportal \
-  test \
-  --test
-  """
-}
+// process main_process {
+//   container 'sagebionetworks/genie:latest'
+//   secret 'SYNAPSE_AUTH_TOKEN'
+
+//   output:
+//   stdout ch
+
+//   script:
+//   """
+//   python3 /root/Genie/bin/input_to_database.py \
+//   main \
+//   --project_id syn7208886
+//   """
+// }
+
+// // Public release
+// process public_release {
+
+//   secret 'SYNAPSE_AUTH_TOKEN'
+
+//   input:
+//   val fake from ch
+
+//   script:
+//   """
+//   public_release.py \
+//   Jan-2017 \
+//   /root/cbioportal \
+//   test \
+//   --test
+//   """
+// }
 
 // Create release dashboard
-process public_release {
+// process public_release {
 
-  secret 'SYNAPSE_AUTH_TOKEN'
+//   secret 'SYNAPSE_AUTH_TOKEN'
 
-  input:
-  val fake from ch
+//   input:
+//   val fake from ch
 
-  script:
-  """
-  public_release.py \
-  Jan-2017 \
-  /root/cbioportal \
-  test \
-  --test
-  """
-}
+//   script:
+//   """
+//   public_release.py \
+//   Jan-2017 \
+//   /root/cbioportal \
+//   test \
+//   --test
+//   """
+// }
 
 // Create data guide
 
