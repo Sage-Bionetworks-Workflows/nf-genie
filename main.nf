@@ -9,8 +9,16 @@
 // centers to process / exclude
 // consortium or public release
 params.production = false
-params.release = "TESTrelease"
+// pass in TESTpublic to test the public release scripts
+params.release = "TESTconsortium"
 params.create_new_maf_db = false
+
+if (params.release.contains("consortium")) {
+  release_script = "database_to_staging.py"
+}
+else {
+  release_script = "consortium_to_public.py"
+}
 
 if (params.production) {
   project_id = "syn3380222"
@@ -18,6 +26,7 @@ if (params.production) {
 else {
   project_id = "syn7208886"
 }
+
 /*
 ========================================================================================
     SETUP PROCESSES
@@ -107,6 +116,7 @@ process release {
 
   input:
   val previous from main_process_out
+  val rel_script from release_script
 
   output:
   stdout into release_out
@@ -114,7 +124,7 @@ process release {
   script:
   if (params.production) {
     """
-    python3 /root/Genie/bin/database_to_staging.py \
+    python3 /root/Genie/bin/$release_script \
     Jul-2022 \
     /root/cbioportal \
     13.1-consortium \
@@ -123,7 +133,7 @@ process release {
   }
   else {
     """
-    python3 /root/Genie/bin/database_to_staging.py \
+    python3 /root/Genie/bin/$release_script \
     Jul-2022 \
     /root/cbioportal \
     13.1-consortium \
