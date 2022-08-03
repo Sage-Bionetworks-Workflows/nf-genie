@@ -1,9 +1,17 @@
 # nf-genie
-Nextflow workflow for main GENIE processing
+Nextflow workflow for main GENIE processing.  This follows the SOP outlined in the GENIE confluence page.
 
 
 ## Command
 
-```
-nextflow run main.nf -with-docker
-```
+* Execution of test pipeline
+
+    ```
+    nextflow run main.nf
+    ```
+
+* Consortium release
+
+    ```
+    nextflow run main.nf --production
+    ```

@@ -56,6 +56,7 @@ else {
 // Split off creation of maf database
 // (This will simplify the genie pipeline)
 process maf_process {
+  echo true
   container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
 
@@ -90,6 +91,7 @@ process maf_process {
 maf_process_out.view()
 
 process main_process {
+  echo true
   container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
 
@@ -111,6 +113,7 @@ main_process_out.view()
 
 // Add consortium or public release flag
 process release {
+  echo true
   container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
 
