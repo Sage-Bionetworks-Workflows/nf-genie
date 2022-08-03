@@ -3,14 +3,14 @@
 //nextflow.enable.dsl=2
 
 //parameters
-// genie project id
-// release name
-// to create new maf database
 // centers to process / exclude
-// consortium or public release
+// testing or production pipeline
 params.production = false
+// consortium or public release
 // pass in TESTpublic to test the public release scripts
+// release name
 params.release = "TESTconsortium"
+// to create new maf database
 params.create_new_maf_db = false
 
 if (params.release.contains("consortium")) {
@@ -117,6 +117,7 @@ process release {
   input:
   val previous from main_process_out
   val rel_script from release_script
+  val release from params.release
 
   output:
   stdout into release_out
@@ -127,7 +128,7 @@ process release {
     python3 /root/Genie/bin/$release_script \
     Jul-2022 \
     /root/cbioportal \
-    13.1-consortium \
+    $release \
     --test
     """
   }
@@ -136,100 +137,72 @@ process release {
     python3 /root/Genie/bin/$release_script \
     Jul-2022 \
     /root/cbioportal \
-    13.1-consortium \
+    $release \
     --test
     """
   }
 }
 release_out.view()
 
-// process public_release {
-//   container 'sagebionetworks/genie:latest'
-//   secret 'SYNAPSE_AUTH_TOKEN'
-
-//   input:
-//   val previous from main_process_out
-
-//   output:
-//   stdout into public_release_out
-
-//   script:
-//   """
-//   python3 /root/Genie/bin/consortium_to_public.py \
-//   Jul-2022 \
-//   /root/cbioportal \
-//   13.1-consortium \
-//   --test
-//   """
-// }
-// public_release_out.view()
-
 // Create release dashboard
-// process dashboard {
-
-//   secret 'SYNAPSE_AUTH_TOKEN'
-
-//   input:
-//   val fake from ch
-
-//   script:
-//   """
-//   public_release.py \
-//   Jan-2017 \
-//   /root/cbioportal \
-//   test \
-//   --test
-//   """
-// }
 
 // Create data guide
 
 // Create skeleton release notes
 
-
 // run artifact finder
 // https://github.com/Sage-Bionetworks/GENIE-ArtifactFinder
 // TODO: Need to add staging ability for artifact finder
-// process artifact_finder {
-//   container 'sagebionetworks/genie-artifact-finder'
-//   secret 'SYNAPSE_AUTH_TOKEN'
+process artifact_finder {
+  container 'sagebionetworks/genie-artifact-finder'
+  secret 'SYNAPSE_AUTH_TOKEN'
 
-//   input:
-//   val previous from release_out
+  when:
+  params.production
 
-//   output:
-//   stdout into artifact_finder_out
+  input:
+  val previous from release_out
+  val release from params.release
 
-//   script:
-//   """
-//   python /artifact/artifact_finder.py \
-//   13.1-consortium
-//   """
-// }
-// artifact_finder_out.view()
+  output:
+  stdout into artifact_finder_out
+
+  script:
+  """
+  python /artifact/artifact_finder.py $release
+  """
+}
+artifact_finder_out.view()
 
 // copy consortium to BPC
-// process consortium_to_bpc {
-//   container 'sagebionetworks/synapsepythonclient:v2.6.0'
-//   secret 'SYNAPSE_AUTH_TOKEN'
+process consortium_to_bpc {
+  container 'sagebionetworks/synapsepythonclient:v2.6.0'
+  secret 'SYNAPSE_AUTH_TOKEN'
 
-//   input:
-//   val previous from release_out
+  when:
+  params.production
 
-//   output:
-//   stdout into consortium_to_bpc_out
+  input:
+  val previous from release_out
+  val release from params.release
 
-//   script:
-//   """
-//   python3 $PWD/bin/consortium_to_bpc.py 13.1-consortium
-//   """
-// }
-// consortium_to_bpc_out.view()
+  output:
+  stdout into consortium_to_bpc_out
+
+  script:
+  """
+  python3 $PWD/bin/consortium_to_bpc.py $release
+  """
+}
+consortium_to_bpc_out.view()
 
 // check for any retractions in BPC
 process check_retraction {
   container 'sagebionetworks/synapsepythonclient:v2.6.0'
   secret 'SYNAPSE_AUTH_TOKEN'
+
+  when:
+  params.production
 
   input:
   val previous from release_out
@@ -243,6 +216,5 @@ process check_retraction {
   """
 }
 check_retraction_out.view()
-
 
 // TMB code
