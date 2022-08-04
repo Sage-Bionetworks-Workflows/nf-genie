@@ -1,19 +1,17 @@
 #!/usr/bin/env nextflow
 
-//nextflow.enable.dsl=2
+// parameters
 
-//parameters
-// centers to process / exclude
+// TODO: centers to process / exclude
+
 // testing or production pipeline
 params.production = false
 // only run validation pipeline
 params.only_validate = false
-// consortium or public release
-// pass in TESTpublic to test the public release scripts
-// release name
-params.release = "TESTconsortium"
 // to create new maf database
 params.create_new_maf_db = false
+// release name (pass in TEST.public to test the public release scripts)
+params.release = "TEST.consortium"
 
 // Determine which synapse id to pass into processing
 if (params.production) {
@@ -32,6 +30,32 @@ release, seq
 12-public, Jul-2022
 13-public, Jan-2023
 */
+def public_map = [
+  "TEST": "Jan-2022",
+  "11": "Jan-2022",
+  "12": "Jul-2022",
+  "13": "Jan-2023"
+]
+def consortium_map = [
+  "TEST": "Jul-2022",
+  "11": "Jul-2021",
+  "12": "Jan-2022",
+  "13": "Jul-2022"
+]
+release_split = params.release.tokenize('.')
+major_release = release_split[0]
+
+if (params.release.contains("public")) {
+  seq_date = public_map[major_release]
+}
+else {
+  seq_date = consortium_map[major_release]
+}
+
+ch_release = Channel.value(params.release)
+ch_project_id = Channel.value(project_id)
+ch_seq_date = Channel.value(seq_date)
+
 
 /*
 ========================================================================================
@@ -40,13 +64,13 @@ release, seq
 */
 if (params.only_validate) {
 
-  // Main processing for GENIE
+  // Validation for GENIE
   process validation {
     container 'sagebionetworks/genie:latest'
     secret 'SYNAPSE_AUTH_TOKEN'
 
-    when:
-    params.only_validate
+    input:
+    val proj_id from ch_project_id
 
     output:
     stdout into validation_out
@@ -55,7 +79,7 @@ if (params.only_validate) {
     """
     python3 /root/Genie/bin/input_to_database.py \
     mutation \
-    --project_id $project_id \
+    --project_id $proj_id \
     --onlyValidate \
     --genie_annotation_pkg \
     /root/annotation-tools
@@ -71,7 +95,8 @@ else if (params.release.contains("public")) {
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
-    val release from params.release
+    val release from ch_release
+    val seq from ch_seq_date
 
     output:
     stdout into public_release_out
@@ -80,7 +105,7 @@ else if (params.release.contains("public")) {
     if (params.production) {
       """
       python3 /root/Genie/bin/consortium_to_public.py \
-      Jul-2022 \
+      $seq \
       /root/cbioportal \
       $release
       """
@@ -88,7 +113,7 @@ else if (params.release.contains("public")) {
     else {
       """
       python3 /root/Genie/bin/consortium_to_public.py \
-      Jul-2022 \
+      $seq \
       /root/cbioportal \
       $release \
       --test
@@ -107,7 +132,7 @@ else if (params.release.contains("public")) {
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
-    val proj_id from project_id
+    val proj_id from ch_project_id
 
     output:
     stdout into maf_process_out
@@ -142,7 +167,7 @@ else if (params.release.contains("public")) {
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
-    val proj_id from project_id
+    val proj_id from ch_project_id
     val previous from maf_process_out
 
     output:
@@ -165,7 +190,8 @@ else if (params.release.contains("public")) {
 
     input:
     val previous from main_process_out
-    val release from params.release
+    val release from ch_release
+    val seq from ch_seq_date
 
     output:
     stdout into consortium_release_out
@@ -174,7 +200,7 @@ else if (params.release.contains("public")) {
     if (params.production) {
       """
       python3 /root/Genie/bin/database_to_staging.py \
-      Jan-2023 \
+      $seq \
       /root/cbioportal \
       $release
       """
@@ -182,7 +208,7 @@ else if (params.release.contains("public")) {
     else {
       """
       python3 /root/Genie/bin/database_to_staging.py \
-      Jan-2023 \
+      $seq \
       /root/cbioportal \
       $release \
       --test
@@ -209,7 +235,7 @@ else if (params.release.contains("public")) {
 
     input:
     val previous from consortium_release_out
-    val release from params.release
+    val release from ch_release
 
     output:
     stdout into artifact_finder_out
@@ -230,8 +256,8 @@ else if (params.release.contains("public")) {
     params.production
 
     input:
-    val previous from release_out
-    val release from params.release
+    val previous from consortium_release_out
+    val release from ch_release
 
     output:
     stdout into consortium_to_bpc_out
@@ -252,7 +278,7 @@ else if (params.release.contains("public")) {
     params.production
 
     input:
-    val previous from release_out
+    val previous from consortium_release_out
 
     output:
     stdout into check_retraction_out
