@@ -264,7 +264,7 @@ else if (params.release.contains("public")) {
 
     script:
     """
-    python3 consortium_to_bpc.py $release
+    python3 /release_utils/consortium_to_bpc.py $release
     """
   }
   consortium_to_bpc_out.view()
@@ -285,7 +285,7 @@ else if (params.release.contains("public")) {
 
     script:
     """
-    python3 check_bpc_retraction.py
+    python3 /release_utils/check_bpc_retraction.py
     """
   }
   check_retraction_out.view()
