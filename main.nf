@@ -249,7 +249,7 @@ else if (params.release.contains("public")) {
 
   // copy consortium to BPC
   process consortium_to_bpc {
-    container 'sagebionetworks/synapsepythonclient:v2.6.0'
+    container 'sagebionetworks/main-genie-release-utils'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     when:
@@ -264,14 +264,14 @@ else if (params.release.contains("public")) {
 
     script:
     """
-    python3 \$PWD/bin/consortium_to_bpc.py $release
+    python3 consortium_to_bpc.py $release
     """
   }
   consortium_to_bpc_out.view()
 
   // check for any retractions in BPC
   process check_retraction {
-    container 'sagebionetworks/synapsepythonclient:v2.6.0'
+    container 'sagebionetworks/main-genie-release-utils'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     when:
@@ -285,7 +285,7 @@ else if (params.release.contains("public")) {
 
     script:
     """
-    python3 \$PWD/bin/check_bpc_retraction.py
+    python3 check_bpc_retraction.py
     """
   }
   check_retraction_out.view()
