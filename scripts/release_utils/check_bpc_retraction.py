@@ -46,6 +46,7 @@ def main():
         # Xindi 3334658
         # Mike 3423837
         # Jocelyn 3360218
+        # Email users
         syn.sendMessage(
             userIds=[3324230, 3452608, 3334658, 3423837, 3360218],
             messageSubject=EMAIL_SUBJECT,
