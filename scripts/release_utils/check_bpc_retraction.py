@@ -1,12 +1,27 @@
 """
 Check if samples from the BPC need to be retracted by
-comparing the retraction list from the first three consortium releases
-after each public release.
+comparing the main GENIE sample database against the
+BPC clinical database
 """
 import synapseclient
 
+EMAIL_SUBJECT = "Review GENIE Retractions for BPC"
+
+EMAIL_BODY = """
+Dear Genie Team,
+
+There are retractions in the most recent upload for main GENIE that may impact GENIE BPC data. Please review the retracted records.
+
+{}
+
+Best,
+
+Sage Team
+"""
+
 
 def main():
+    """Main function"""
     syn = synapseclient.login()
 
     # Pull table with full redcap clinical export
@@ -25,7 +40,17 @@ def main():
     )
     retract_from_bpc = bpc_samples_df['cpt_genie_sample_id'][retract_idx]
     if retract_from_bpc.any():
-        print(retract_from_bpc)
+        print(retract_from_bpc.unique())
+        # Tom 3324230
+        # Chelsea 3452608
+        # Xindi 3334658
+        # Mike 3423837
+        # Jocelyn 3360218
+        syn.sendMessage(
+            userIds=[3324230, 3452608, 3334658, 3423837, 3360218],
+            messageSubject=EMAIL_SUBJECT,
+            messageBody=EMAIL_BODY.format(", ".join(retract_from_bpc.unique()))
+        )
 
 
 if __name__ == "__main__":
