@@ -42,6 +42,9 @@ process reset_processing {
   container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
 
+  input:
+    val center_map_synid
+
   output:
     stdout
 
@@ -412,9 +415,11 @@ process main_process {
 // Determine which synapse id to pass into processing
 if (params.production) {
   project_id = "syn3380222"
+  center_map_synid = "syn10061452"
 }
 else {
   project_id = "syn7208886"
+  center_map_synid = "syn11601248"
 }
 /*
 release, seq
@@ -455,7 +460,7 @@ workflow {
   ch_center = Channel.value(params.center)
 
   if (params.force) {
-    reset_processing()
+    reset_processing(center_map_synid)
     reset_processing.out.view()
   }
   if (params.only_validate) {
