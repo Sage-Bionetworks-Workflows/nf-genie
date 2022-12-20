@@ -42,6 +42,9 @@ process reset_processing {
   container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
 
+  output:
+    stdout
+
   script:
   """
   synapse set-annotations --id syn10061452 --annotations '{"isProcessing": "False"}'
