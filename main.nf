@@ -6,6 +6,9 @@ nextflow.enable.dsl = 2
 
 // TODO: centers to process / exclude
 
+// force start the pipeline, by resetting the center
+// mapping annotation
+params.force = false
 // testing or production pipeline
 params.production = false
 // only run validation pipeline
@@ -31,6 +34,19 @@ params.release = "TEST.consortium"
     SETUP PROCESSES
 ========================================================================================
 */
+
+// TODO Add ability to for center mapping table
+// to be passed in
+process reset_processing {
+  debug true
+  container 'sagebionetworks/genie:latest'
+  secret 'SYNAPSE_AUTH_TOKEN'
+
+  script:
+  """
+  synapse set-annotations --id syn10061452 --annotations '{"isProcessing": "False"}'
+  """
+}
 
 // Validation for GENIE
 process validation {
@@ -435,12 +451,16 @@ workflow {
   ch_seq_date = Channel.value(seq_date)
   ch_center = Channel.value(params.center)
 
+  if (params.force) {
+    reset_processing()
+    reset_processing.out.view()
+  }
   if (params.only_validate) {
     validation(ch_project_id, ch_center)
-    // VALIDATION.out.view()
+    // validation.out.view()
   } else if (params.only_maf) {
     maf_process(ch_project_id, ch_center)
-    // MAF_PROCESS.out.view()
+    // maf_process.out.view()
   } else if (params.only_main) {
     main_process(ch_project_id, ch_center, "default")
   }
