@@ -50,7 +50,7 @@ process reset_processing {
 
   script:
   """
-  synapse set-annotations --id syn10061452 --annotations '{"isProcessing": "False"}'
+  synapse set-annotations --id $center_map_synid --annotations '{"isProcessing": "False"}'
   """
 }
 
