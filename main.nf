@@ -33,7 +33,7 @@ params.release = "TEST.consortium"
 */
 
 // Validation for GENIE
-process VALIDATION {
+process validation {
   debug true
   container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
@@ -70,7 +70,7 @@ process VALIDATION {
 }
 
 
-process MAF_PROCESS {
+process maf_process {
   debug true
   container 'sagebionetworks/genie:latest'
   secret 'SYNAPSE_AUTH_TOKEN'
@@ -126,7 +126,36 @@ process MAF_PROCESS {
       """
     }
   }
+}
 
+process main_process {
+  debug true
+  container 'sagebionetworks/genie:latest'
+  secret 'SYNAPSE_AUTH_TOKEN'
+
+  input:
+    val proj_id
+    val center
+    val previous
+
+  output:
+    stdout
+
+  script:
+  if (center == "ALL") {
+    """
+    python3 /root/Genie/bin/input_to_database.py \
+    main \
+    --project_id $proj_id
+    """
+  } else {
+    """
+    python3 /root/Genie/bin/input_to_database.py \
+    main \
+    --project_id $proj_id \
+    --center $center
+    """
+  }
 }
 
 // if (params.only_validate) {
@@ -229,7 +258,7 @@ process MAF_PROCESS {
 //   maf_process_out.view()
 
 //   process main_process {
-//     echo true
+//     debug true
 //     container 'sagebionetworks/genie:latest'
 //     secret 'SYNAPSE_AUTH_TOKEN'
 
@@ -407,10 +436,12 @@ workflow {
   ch_center = Channel.value(params.center)
 
   if (params.only_validate) {
-    VALIDATION(ch_project_id, ch_center)
+    validation(ch_project_id, ch_center)
     // VALIDATION.out.view()
   } else if (params.only_maf) {
-    MAF_PROCESS(ch_project_id, ch_center)
+    maf_process(ch_project_id, ch_center)
     // MAF_PROCESS.out.view()
+  } else if (params.only_main) {
+    main_process(ch_project_id, ch_center, "default")
   }
 }
