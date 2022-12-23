@@ -11,12 +11,8 @@ nextflow.enable.dsl = 2
 params.force = false
 // testing or production pipeline
 params.production = false
-// only run validation pipeline
-params.only_validate = false
-// only run main processing pipeline
-params.only_main = false
-// only run maf processing pipeline
-params.only_maf = false
+// Different process types (only_validate, main_process, maf_process, consortium_release, public_release)
+params.process_type = "only_validate"
 // Specify center
 params.center = "ALL"
 // to create new maf database
@@ -176,6 +172,38 @@ process main_process {
     main \
     --project_id $proj_id \
     --center $center
+    """
+  }
+}
+
+process public_release {
+  debug true
+  container 'sagebionetworks/genie:latest'
+  secret 'SYNAPSE_AUTH_TOKEN'
+
+  input:
+    val release
+    val seq
+
+  output:
+    stdout
+
+  script:
+  if (params.production) {
+    """
+    python3 /root/Genie/bin/consortium_to_public.py \
+    $seq \
+    /root/cbioportal \
+    $release
+    """
+  }
+  else {
+    """
+    python3 /root/Genie/bin/consortium_to_public.py \
+    $seq \
+    /root/cbioportal \
+    $release \
+    --test
     """
   }
 }
@@ -435,13 +463,16 @@ def public_map = [
   "TEST": "Jan-2022",
   "11": "Jan-2022",
   "12": "Jul-2022",
-  "13": "Jan-2023"
+  "13": "Jan-2023",
+  "14": "Jul-2023"
+
 ]
 def consortium_map = [
   "TEST": "Jul-2022",
   "11": "Jul-2021",
   "12": "Jan-2022",
-  "13": "Jul-2022"
+  "13": "Jul-2022",
+  "14": "Jan-2023"
 ]
 release_split = params.release.tokenize('.')
 major_release = release_split[0]
@@ -463,13 +494,20 @@ workflow {
     reset_processing(center_map_synid)
     reset_processing.out.view()
   }
-  if (params.only_validate) {
+  if (params.process_type == "only_validate") {
     validation(ch_project_id, ch_center)
     // validation.out.view()
-  } else if (params.only_maf) {
+  } else if (params.process_type == "maf_process") {
     maf_process(ch_project_id, ch_center)
     // maf_process.out.view()
-  } else if (params.only_main) {
+  } else if (params.process_type == "main_process") {
     main_process(ch_project_id, ch_center, "default")
+  } else if (params.process_type == "consortium") {
+    maf_process(ch_project_id, ch_center)
+    main_process(ch_project_id, ch_center, maf_process.out)
+  } else if (params.process_type == "public") {
+    public_release(ch_release, ch_seq_date)
+  } else {
+    throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium', 'public'")
   }
 }
