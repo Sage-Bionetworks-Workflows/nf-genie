@@ -34,13 +34,26 @@ def public_map = [
   "TEST": "Jan-2022",
   "11": "Jan-2022",
   "12": "Jul-2022",
-  "13": "Jan-2023"
+  "13": "Jan-2023",
+  "14": "Jul-2023",
+  "15": "Jan-2024",
+  "16": "Jul-2024",
+  "17": "Jan-2025",
+  "18": "Jul-2025",
+  "19": "Jan-2026",
+  "20": "Jul-2026"
 ]
 def consortium_map = [
   "TEST": "Jul-2022",
   "11": "Jul-2021",
   "12": "Jan-2022",
-  "13": "Jul-2022"
+  "13": "Jul-2022",
+  "14": "Jan-2023",
+  "15": "Jul-2023",
+  "16": "Jan-2024",
+  "17": "Jul-2024",
+  "18": "Jan-2025",
+  "20": "Jul-2025"
 ]
 release_split = params.release.tokenize('.')
 major_release = release_split[0]
@@ -50,6 +63,9 @@ if (params.release.contains("public")) {
 }
 else {
   seq_date = consortium_map[major_release]
+}
+if (!seq_date) {
+  throw new Exception("${major_release} release not supported in map variables in nf code.")
 }
 
 ch_release = Channel.value(params.release)
