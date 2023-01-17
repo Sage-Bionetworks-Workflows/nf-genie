@@ -401,3 +401,127 @@ Copy Number Calls
 -   CNVkit using a reference profile for normalization of approximately 30 pooled normal samples
 
 Variants are removed if present with frequency $\ge$ 1% in ESP6500, 1000 Genomes, or ExAC datasets. Known sequencing artifacts are removed. Variants with \< 50x total coverage in the tumor sample are removed.
+
+# Pipeline for Annotating Mutations and Filtering Putative Germline SNPs
+
+Contributing GENIE centers provided mutation data in [Variant Call Format (VCF)](http://samtools.github.io/hts-specs/) or Mutation Annotation Format ([GDC MAF v1.0.0](https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/)) with additional fields for read counts supporting variant alleles, reference alleles, and total depth. Some "MAF-like" text files with [minimal required columns](https://github.com/mskcc/vcf2maf/blob/v1.6.17/data/minimalist_test_maf.tsv) were also received from the participating centers. These various input formats were converted into a complete tab-separated MAF format, with [Genome Nexus](https://www.genomenexus.org/)
+
+While the GENIE data available from Sage contains all mutation data, the following mutation types are automatically filtered upon import into the [cBioPortal](http://www.cbioportal.org/genie): Silent, Intronic, 3' UTR, 3' Flank, 5' UTR, 5' Flank and Intergenic region (IGR).
+
+Seventeen of the nineteen GENIE participating centers performed tumor-only sequencing i.e. without also sequencing a patient-matched control sample like blood, to isolate somatic events. These centers minimized artifacts and germline events using pooled controls from unrelated individuals, or using databases of known artifacts, common germline variants, and recurrent somatic mutations. However, there remains a risk that such centers may inadvertently release germline variants that can theoretically be used for patient re-identification. To minimize this risk, the GENIE consortium developed a stringent germline filtering pipeline, and applied it uniformly to all variants across all centers. Genome Nexus will report gnomAD AFs by querying the Genome Aggregation Database to determine common variants. If any variant has a max gnomAD AF from any subpopulation that is over 0.0005, the variant will be filtered out. This cutoff was selected because it tagged no more than 1% of the somatic calls across all MSK-IMPACT samples with patient-matched controls.
+
+-   Hotspots from Chang et al. minus some likely artifacts.(dx.doi.org/10.1038/nbt.3391
+
+-   Somatic mutations associated with clonal hematopoietic expansion from Xie et al. (dx.doi.org/10.1038/nm.3733)
+
+-   Somatically mutable germline sites at MSH6:F1088, TP53:R290, TERT:E280, ASXL1:G645_G646.
+
+# Description of Data Files
+
+Description on most of the data files can be found under the "Data files" section for [cBioPortal file formats](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats).
+
++------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| File Name                          | Description                                                                  | Details                                                                                                                                      |
++====================================+==============================================================================+==============================================================================================================================================+
+| data_mutations-                    | Mutation data                                                                | [MAF format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#mutation-data)                                           |
+|                                    |                                                                              |                                                                                                                                              |
+| \_extended.txt                     |                                                                              |                                                                                                                                              |
++------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| data_CNA.txt                       | Discritized copy number data.                                                | [CNA format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#discrete-copy-number-data)                               |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    | Note: Not all centers contributed copy number data to GENIE                  |                                                                                                                                              |
++------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| data_sv.txt                        | Structural variant data                                                      | [Structural Variant format](https://docs.cbioportal.org/file-formats/#structural-variant-data)                                               |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    | Note: not all centers contributed structural rearrangement data to GENIE     |                                                                                                                                              |
++------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| genomic-                           | File describing genomic coordinates covered by all platforms for GENIE data. | This is not a cBioPortal file format.                                                                                                        |
+|                                    |                                                                              |                                                                                                                                              |
+| \_information.txt                  | Note: Not all centers contributed copy number data to GENIE.                 | Chromosome                                                                                                                                   |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | Start_Position                                                                                                                               |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | End_Position: Gene positions                                                                                                                 |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | Hugo_Symbol: Re-mapped gene symbol based on gene positions.                                                                                  |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | ID: Center submitted gene symbols.                                                                                                           |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | SEQ_ASSAY_ID: The institutional assay identifier for genomic testing platform.                                                               |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | Feature_Type: "exon", "intron", or "intergenic".                                                                                             |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | includeInPanel: Used to define gene panel files for cBioPortal.                                                                              |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | clinicalReported: These are the genes that were clinically Reported. Blank means information not provided.                                   |
++------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| assay-                             | Assay information                                                            | This is not a cBioPortal file format.                                                                                                        |
+|                                    |                                                                              |                                                                                                                                              |
+| \_information.txt                  |                                                                              | is_paried_end, library_selection, library_strategy, platform, read_length, target_capture_kit                                                |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | instrument_model: defined by [GDC read group](https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=read_group) |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | number_of_genes: Number of genes from which variants are called                                                                              |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | variant_classifications: List of types of variants that are reported for this assay.                                                         |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | gene_padding: Number of basepairs to add to exon endpoints for the inBED filter.                                                             |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | alteration_types: List of alteration types.                                                                                                  |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | specimen_type: List of specimen types                                                                                                        |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | specimen_tumor_cellularity: Tumor Cellularity Cutoff                                                                                         |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | calling_strategy: Tumor only or tumor normal                                                                                                 |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | coverage: List of coverage                                                                                                                   |
++------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| data_cna-                          | Segmented copy number data.                                                  | [SEG format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#segmented-data)                                          |
+|                                    |                                                                              |                                                                                                                                              |
+| \_hg19.seg                         | Note: Not all centers contributed copy number data to GENIE.                 |                                                                                                                                              |
++------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| data_clinical.txt                  | De-identified clinical data.                                                 | [Clinical format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#clinical-data)                                      |
+|                                    |                                                                              |                                                                                                                                              |
+|                                    |                                                                              | See Clinical Data section below for more details.                                                                                            |
++------------------------------------+------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+
+: GENIE Data Files
+
+# Clinical Data
+
+# Abbreviations and Acronym Glossary
+
+For center abbreviations please see Table 1.
+
++-------------------------+-----------------------------------------------------------------+
+| **Abbreviation**        | **Full Term**                                                   |
++-------------------------+-----------------------------------------------------------------+
+| AACR                    | American Association for Cancer Research, Philadelphia, PA, USA |
++-------------------------+-----------------------------------------------------------------+
+| CNA                     | Copy number alterations                                         |
++-------------------------+-----------------------------------------------------------------+
+| CNV                     | Copy number variants                                            |
++-------------------------+-----------------------------------------------------------------+
+| FFPE                    | Formalin-fixed, paraffin-embedded                               |
++-------------------------+-----------------------------------------------------------------+
+| GENIE                   | Genomics, Evidence, Neoplasia, Information, Exchange            |
++-------------------------+-----------------------------------------------------------------+
+| HIPAA                   | Health Insurance Portability and Accountability Act             |
++-------------------------+-----------------------------------------------------------------+
+| IRB                     | Institutional Review Board                                      |
++-------------------------+-----------------------------------------------------------------+
+| MAF                     | Mutation annotation format                                      |
++-------------------------+-----------------------------------------------------------------+
+| NAACCR                  | North American Association of Central Cancer Registries         |
++-------------------------+-----------------------------------------------------------------+
+| NGS                     | Next-generation sequencing                                      |
++-------------------------+-----------------------------------------------------------------+
+| PCR                     | Polymerase chain reaction                                       |
++-------------------------+-----------------------------------------------------------------+
+| SNP                     | Single-nucleotide polymorphism                                  |
++-------------------------+-----------------------------------------------------------------+
+| SNV                     | Single-nucleotide variants                                      |
++-------------------------+-----------------------------------------------------------------+
+| VCF                     | Variant Call Format                                             |
++-------------------------+-----------------------------------------------------------------+
