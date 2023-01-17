@@ -1,0 +1,399 @@
+---
+title: "AACR GENIE Data Guide"
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+editor: visual
+date: today
+author: "AACR"
+params:
+  release: "13.6-consortium"
+  db_mapping_synid: "syn10967259"
+---
+
+```{r setup, echo=F, include=F}
+library(synapser)
+library(glue)
+# library(xtable)
+library(knitr)
+library(ggplot2)
+library(ggpubr)
+synLogin()
+
+
+get_release_folder_synid <- function(database_synid_mappingid, release) {
+  database_synid_mapping = synTableQuery(glue('select * from {synid}',
+                                              synid = database_synid_mappingid))
+  database_synid_mappingdf = synapser::as.data.frame(database_synid_mapping)
+  release_folder_ind = database_synid_mappingdf$Database == "releaseFolder"
+  release_folder_fileview_synid = database_synid_mappingdf$Id[release_folder_ind]
+
+  choose_from_release = synTableQuery(glue("select distinct(name) as releases from {synid} where ",
+                                           "name not like 'Release%' and name <> 'case_lists'",
+                                           synid = release_folder_fileview_synid))
+  releases = synapser::as.data.frame(choose_from_release)
+  if (!any(releases$releases %in% release)) {
+    stop(glue("Must choose correct release: {releases}",
+              releases = paste0(releases$releases, collapse = ", ")))
+  }
+
+  release_folder = synTableQuery(glue("select id from {synid} where name = '{release}'",
+                                      synid = release_folder_fileview_synid,
+                                      release = release),
+                                 includeRowIdAndRowVersion = F)
+  release_folder$asDataFrame()$id
+}
+
+
+get_file_mapping = function(release_folder_synid) {
+  release_ent = synGet(release_folder_synid)
+  print(release_ent$properties$name)
+  release_files = synGetChildren(release_folder_synid)
+  release_files_list = as.list(release_files)
+  file_mapping = sapply(release_files_list, function(release_file) {
+    mapping = c()
+    if (release_file$name == "genie_combined.bed") {
+      release_file$name = "genomic_information.txt"
+    }
+    mapping[release_file$name] = release_file$id
+    mapping
+  })
+  file_mapping
+}
+
+
+get_list_assay_info_table <- function(allowed_values, assayinfodf, col) {
+  na_ind = is.na(assayinfodf[,col])
+  seq_assays = assayinfodf$SEQ_PIPELINE_ID[!na_ind]
+  col_per_panel = matrix(nrow = length(seq_assays),
+                         ncol = length(allowed_values),
+                         dimnames = list(seq_assays, allowed_values))
+  for (panel in seq_assays) {
+    str_value = assayinfodf[,col][assayinfodf$SEQ_PIPELINE_ID == panel]
+    str_value_vector = unlist(strsplit(str_value, ";"))
+    col_per_panel[panel, ] = ''
+    col_per_panel[panel, str_value_vector] = "\\checkmark"
+  }
+  col_per_panel
+}
+
+database_synid_mappingid = params$db_mapping_synid
+release = params$release
+
+release_folder_synid <- get_release_folder_synid(database_synid_mappingid, release)
+
+# Get release files mapping
+release_files_mapping = get_file_mapping(release_folder_synid)
+
+```
+
+# About this Document
+
+This document provides an overview of {{release}} release of American Association for Cancer Research (AACR) GENIE data.
+
+# Version of Data
+
+AACR GENIE Project Data: Version {{release}}
+
+AACR Project GENIE data versions follow a numbering scheme derived from [semantic versioning](https://semver.org/) where the digits in the version correspond to: major.patch-release-type. "Major" releases are public releases of new sample data. "Patch" releases are corrections to major releases, including data retractions. "Releasetype" refers to whether the release is a public AACR Project GENIE release or a private/consortium-only release. Public releases will be denoted with the nomenclature "X.X-public" and consortium-only private releases will be denoted with the nomenclature "X.X-consortium".
+
+# Data Access
+
+AACR GENIE Data is currently available via two mechanisms:
+
+-   Synapse Platform (Sage Bionetworks): https://synapse.org/genie
+
+-   cBioPortal for Cancer Genomics (MSK): https://www.cbioportal.org/genie/
+
+# Terms Of Access
+
+All users of the AACR Project GENIE data must agree to the following terms of use; failure to abide by any term herein will result in revocation of access.
+
+-   Users will not attempt to identify or contact individual participants from whom these data were collected by any means.
+
+-   Users will not redistribute the data without express written permission from the AACR Project GENIE Coordinating Center (send email to: info\@aacrgenie.org).
+
+When publishing or presenting work using or referencing the AACR Project GENIE dataset please include the following attributions:
+
+-   Please cite: *The AACR Project GENIE Consortium. AACR Project GENIE: Powering Precision Medicine Through An International Consortium, Cancer Discov. 2017 Aug;7(8):818-831* and include the version of the dataset used.
+
+-   The authors would like to acknowledge the American Association for Cancer Research and its financial and material support in the development of the AACR Project GENIE registry, as well as members of the consortium for their commitment to data sharing. Interpretations are the responsibility of study authors.
+
+Posters and presentations should include the AACR Project GENIE logo.
+
+# Introduction to AACR GENIE
+
+The AACR Project Genomics, Evidence, Neoplasia, Information, Exchange (GENIE) is a multi-phase, multi-year, international data-sharing project that aims to catalyze precision cancer medicine. The GENIE platform will integrate and link clinical-grade cancer genomic data with clinical outcome data for tens of thousands of cancer patients treated at multiple international institutions. The project fulfills an unmet need in oncology by providing the statistical power necessary to improve clinical decision-making, to identify novel therapeutic targets, to understand of patient response to therapy, and to design new biomarker-driven clinical trials. The project will also serve as a prototype for aggregating, harmonizing, and sharing clinical-grade, next-generation sequencing (NGS) data obtained during routine medical practice.
+
+The data within GENIE is being shared with the global research community. The database currently contains CLIA-/ISO-certified genomic data obtained during the course of routine practice at multiple international institutions (Table 1), and will continue to grow as more patients are treated at additional participating centers.
+
+```{r, echo=F, include=F}
+assay_synid = release_files_mapping[['assay_information.txt']]
+assayinfo = suppressMessages(synGet(assay_synid, followLink = T))
+assayinfodf = read.csv(assayinfo$path, sep = "\t", stringsAsFactors = F)
+processed_centers = unique(assayinfodf$CENTER)
+centers = suppressMessages(synTableQuery(glue('select "Center Abbreviation", "Center" from syn16982837 ',
+                                              "where \"Center Abbreviation\" in ('{centers}')",
+                                              centers = paste(processed_centers, collapse = "','")),
+                                         includeRowIdAndRowVersion = F))
+```
+
+```{r, echo=F}
+#| tbl-cap: "Participating Centers"
+
+kable(centers$asDataFrame())
+```
+
+# Human Subjects Protection and Privacy
+
+Protection of patient privacy is paramount, and the AACR GENIE Project therefore requires that each participating center share data in a manner consistent with patient consent and center-specific Institutional Review Board (IRB) policies. The exact approach varies by center, but largely falls into one of three categories: IRB-approved patient-consent to sharing of de-identified data, captured at time of molecular testing; IRB waivers and; and IRB approvals of GENIE-specific research proposals. Additionally, all data has been de-identified via the HIPAA Safe Harbor Method. Full details regarding the HIPAA Safe Harbor Method are available online at: https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/.
+
+# Summary of Sequence Pipeline
+
+Traditionally, the SEQ_ASSAY_ID was used as an institution's identifier for their assays when each assay had one associated gene panel. As GENIE grew, we wanted to support an assay having multiple gene panels. SEQ_ASSAY_ID was repurposed to be an identifier for a center's assay OR panel. For those centers that have multiple panels per assay, we introduced SEQ_PIPELINE_ID (pipeline), which encompasses multiple SEQ_ASSAY_ID (panel).
+
+```{r, echo=F, include=F}
+pipelinedf = assayinfodf[!duplicated(assayinfodf$SEQ_PIPELINE_ID), ]
+processed_centers = unique(assayinfodf$CENTER)
+```
+
+```{r, echo=F}
+#| tbl-cap: "Number of pipelines per Center"
+
+kable(table(pipelinedf$CENTER), col.names = c("Center", "# of Pipelines"))
+```
+
+```{r, echo=F}
+library_selection <- ggplot(pipelinedf, aes(library_selection)) +
+  geom_bar() +
+  theme_bw() +
+  labs(x = "Library Selection", y = "# of Pipelines")
+library_strategy <- ggplot(pipelinedf, aes(library_strategy)) +
+  geom_bar() +
+  theme_bw() +
+  labs(x = "Library Strategy", y = "# of Pipelines")
+
+platform <- ggplot(pipelinedf, aes(platform)) +
+  geom_bar() +
+  theme_bw() +
+  labs(x = "Platform", y = "# of Pipelines")
+
+specimen_tumor_cellularity <- ggplot(pipelinedf,
+                                     aes(specimen_tumor_cellularity)) +
+  geom_bar() +
+  theme_bw() +
+  labs(x = "Specimen Tumor Cellularity", y = "# of Pipelines")
+
+h = ggarrange(library_selection, library_strategy,
+              platform,
+              specimen_tumor_cellularity,
+              labels = c("A", "B", "C", "D"),
+              ncol = 2, nrow = 2)
+print(h)
+```
+
+# Genomic Profiling at Each Center
+
+### [Cancer Research UK Cambridge Centre, University of Cambridge](https://www.cruk.cam.ac.uk/) (CRUK)
+
+*Sequencing data (SNVs/Indels)*:
+
+DNA was quantified using Qubit HS dsDNA assay (Life Technologies, CA) and libraries were prepared from a total of 50 ng of DNA using Illumina's Nextera Custom Target Enrichment kit (Illumina, CA). In brief, a modified Tn5 transposase was used to simultaneously fragment DNA and attach a transposon sequence to both end of the fragments generated. This was followed by a limited cycle PCR amplification (11 cycles) using barcoded oligonucleotides that have primer sites on the transposon sequence generating 96 uniquely barcoded libraries per run. The libraries were then diluted and quantified using Qubit HS dsDNA assay.
+
+Five hundred nanograms from each library were pooled into a capture pool of 12 samples. Enrichment probes (80-mer) were designed and synthesized by Illumina; these probes were designed to enrich for all exons of the target genes, as well for 500 bp up- and downstream of the gene. The capture was performed twice to increase the specificity of the enrichment. Enriched libraries were amplified using universal primers in a limited cycle PCR (11 cycles). The quality of the libraries was assessed using Bioanalyser (Agilent Technologies, CA) and quantified using KAPA Library Quantification Kits (Kapa Biosystems, MA).
+
+Products from four capture reactions (that is, 48 samples) were pooled for sequencing in a lane of Illumina HiSeq 2,000. Sequencing (paired-end, 100 bp) of samples and demultiplexing of libraries was performed by Illumina (Great Chesterford, UK).
+
+The sequenced reads were aligned with Novoalign, and the resulting BAM files were preprocessed using the GATK Toolkit. Sequencing quality statistics were obtained using the GATK's DepthOfCoverage tool and Picard's CalculateHsMetrics. Coverage metrics are presented in Supplementary Fig. 1. Samples were excluded if \<25% of the targeted bases were covered at a minimum coverage of 50x.
+
+The identities of those samples with copy number array data available were confirmed by analyzing the samples' genotypes at loci covered by the Affymetrix SNP6 array. Genotype calls from the sequencing data were compared with those from the SNP6 data that was generated for the original studies. This was to identify possible contamination and sample mix-ups, as this would affect associations with other data sets and clinical parameters.\\ To identify all variants in the samples, we used MuTect (without any filtering) for SNVs and the Haplotype Caller for indels. All reads with a mapping quality \<70 were removed prior to calling. Variants were annotated with ANNOVAR using the genes' canonical transcripts as defined by Ensembl. Custom scripts were written to identify variants affecting splice sites using exon coordinates provided by Ensembl. Indels were referenced by the first codon they affected irrespective of length; for example, insertions of two bases and five bases at the same codon were classed together.\\\\ To obtain the final set of mutation calls, we used a two-step approach, first removing any spurious variant calls arising as a consequence of sequencing artefacts (generic filtering) and then making use of our normal samples and the existing data to identify somatic mutations (somatic filtering). For both levels of filtering, we used hard thresholds that were obtained, wherever possible, from the data itself. For example, some of our filtering parameters were derived from considering mutations in technical replicates (15 samples sequenced in triplicate). We compared the distributions of key parameters (including quality scores, depth, VAF) for concordant (present in all three replicates) and discordant (present in only one out of three replicates) variants to obtain thresholds, and used ROC analysis to select the parameters that best identified concordant variants.
+
+SNV filtering
+
+-   Based on our analysis of replicates, SNVs with MuTect quality scores \<6.95 were removed.
+
+-   We removed those variants that overlapped with repetitive regions of MUC16 (chromosome 19: 8,955,441--9,044,530). This segment contains multiple tandem repeats (mucin repeats) that are highly susceptible to misalignment due to sequence similarity.
+
+-   Variants that failed MuTect's internal filters due to 'nearby_gap_events' and 'poor_mapping\_-regional_alternate_allele_mapq' were removed.
+
+-   Fisher's exact test was used to identify variants exhibiting read direction bias (variants occurring significantly more frequently in one read direction than in the other; FDR=0.0001). These were filtered out from the variant calls.
+
+-   SNVs present at VAFs smaller than 0.1 or at loci covered by fewer than 10 reads were removed, unless they were also present and confirmed somatic in the Catalogue of Somatic Mutations in Cancer (COSMIC). The presence of well-known PIK3CA mutations present at low VAFs was confirmed by digital PCR (see below), and supported the use of COSMIC when filtering SNVs.
+
+-   We removed all SNVs that were present in any of the three populations (AMR, ASN, AFR) in the 1,000 Genomes study (Phase 1, release 3) with a population alternate allele frequency of \>1%.
+
+-   We used the normal samples in our data set (normal pool) to control for both sequencing noise and germline variants, and removed any SNV observed in the normal pool (at a VAF of at least 0.1). However, for SNVs present in more than two breast cancer samples in COSMIC, we used more stringent thresholds, removing only those that were observed in \>5% of normal breast tissue or in \>1% of blood samples. The different thresholds were used to avoid the possibility of contamination in the normal pool affecting filtering of known somatic mutations. This is analogous to the optional 'panel of normals' filtering step used by MuTect in paired mode, in which mutations present in normal samples are removed unless present in a list of known mutations61.
+
+Indel filtering
+
+-   As for SNVs, we removed all indels falling within tandem repeats of MUC16 (coordinates given above).
+
+-   We removed all indels deemed to be of 'LowQual' by the Haplotype Caller with default parameters (Phred-scaled confidence threshold=30).
+
+-   As for SNVs, we removed indels displaying read direction bias. Indels with strand bias Phred-scaled scores \>40 were removed.
+
+-   We downloaded the Simple Repeats and Microsatellites tracks from the UCSC Table Browser, and removed all indels overlapping these regions. We also removed all indels that overlapped homopolymer stretches of six or more bases.
+
+-   As for SNVs, indels were removed if present in the 1,000 Genomes database at an allele frequency \>1%, or if they were present in normal samples in our data set. Thresholds were adjusted as for SNVs if the indel was present in COSMIC. The same thresholds for depth and VAF were used.
+
+*Microarray data (Copy number):*
+
+DNA was hybridized to Affymetrix SNP 6.0 arrays per the manufacturer's instructions. ASCAT was used to obtain segmented copy number calls and estimates of tumour ploidy and purity. Somatic CNAs were obtained by removing germline CNVs as defined in the original METABRIC study3. We defined regions of LOH as those in which there were no copies present of either the major or minor allele, irrespective of total copy number. Recurrent CNAs were identified with GISTIC2, with log2 ratios obtained by dividing the total number of copies by tumour ploidy for each ASCAT segment. Thresholds for identifying gains and losses were set to 0.4 and (-)0.5, respectively; these values were obtained by examining the distribution of log2 ratios to identify peaks associated with copy number states. A broad length cut-off of 0.98 was used, and peaks were assessed to rule out probe artefacts and CNVs that may have been originally missed.
+
+### [Herbert Irving Comprehensive Cancer Center, Columbia University](https://cancer.columbia.edu/) (COLU)
+
+Columbia University Irving Medical Center usesthe Illumina TruSeq Amplicon --Cancer Panel (TSACP) to detect known cancer hotspots.DNA is extracted from unstained sections of FFPE tissue paired with an H&E stained section that is used to ensure adequate tumor cellularity (human assessment \> 30%) and marking of the tumor region of interest (macrodissection). Extraction for FFPE tissue is performed on the QiaCube instrument (Qiagen). 50-250ng of genomic DNA is used as input.Tumors are sequenced to an average depth of at least 1000X. Alignment (to hg19) and variant calling is performed using NextGENe v2.4.2software. Variants lower than 1% allele frequency in all three control populations (White, African American, Asian) of the Exome Variant Server database, the 1000 genome project database are retained, and annotation of variants is performed using a custom pipeline. All cases are reviewed and interpreted by a molecular pathologist.
+
+### [Dana-Farber Cancer Institute](https://www.dana-farber.org/) (DFCI)
+
+DFCI uses a custom, hybridization-based capture panel (OncoPanel) to detect single nucleotide variants, small indels, copy number alterations, and structural variants from tumor-only sequencing data. Three (3) versions of the panel have been submitted to GENIE:version 1 containing 275 genes, version 2 containing 300 genes, version 3 containing 447 genes. Specimens are reviewed by a pathologist to ensure tumor cellularity of at least 20%. Tumors are sequenced to an average unique depth of coverage of approximately 200x for version 1 and 350x for version 2. Reads are aligned using BWA, flagged for duplicate read pairs using Picard Tools, and locally realigned using GATK. Sequence mutations are called using MuTect for SNVs and GATK SomaticIndelDetector for small indels. Putative germline variants are filtered out using a panel of historical normals or if present in ESP at a frequency $\ge$.1%, unless the variant is also present in COSMIC. Copy number alterations are called using a custom pipeline and reported for fold-change \>1. Structural rearrangements are called using BreaKmer. Testing is performed for all patients across all solid tumor types. Version 3 includes the exonicregions of 447 genes and 191 intronic regions across 60 genes targeted for rearrangement detection. 52 genes present in previous versions were retired in the v3 test.
+
+### [Duke Cancer Institute](http://www.dukecancerinstitute.org/) (DUKE)
+
+Foundation medicine panels: Duke uses Illumina hybridization-based capture panels from Foundation Medicine to detect single nucleotide variants, small indels, copy number alterations and structural variants from FFPE, tumor-only sequencing data. Three gene panels were used: Panel 1 (T5a bait set), covering 326 genes, Panel 2 (T7 bait set), covering 434 genes, and Panel 3 (DX1 bait set), covering 324 genes. The clinical sequencing data were analyzed by Foundation Medicine-developed pipelines. Briefly: A pool of 5'-biotinylated DNA 120bp oligonucleotides were designed as baits with 60bp overlap in targeted exon regions and 20bp overlap in targeted introns with a minimum of 3 baits per target and 1 bait per SNP target. The goal was a depth of sequencing between 750x and 1000x. Mapping to the reference genome was accomplished using BWA, local alignment optimizations with GATK, and PCR duplicate read removal and sequence metric collection with Picard and Samtools. A Bayesian methodology incorporating tissue-specific prior expectations allowed for detection of novel somatic mutations at low MAF and increased sensitivity at hotspots. Final single nucleotide variant (SNV) calls were made at MAF $\ge$ 5% (MAF $\ge$ 1% at hotspots) with filtering for strand bias, read location bias and presence of two or more normal controls. Indels were detected using the deBrujn approach of de novo local assembly within each targeted exon and through direct read alignment and then filtered as described for SNVs. Copy number alterations were detected utilizing a comparative genomic hybridization-like method to obtain a log-ratio profile of the sample to estimate tumor purity and copy number. Absolute copy number was assigned to segments based on Gibbs sampling. To detect gene fusions, chimeric read pairs were clustered by genomic coordinates and clusters containing at least 10 chimeric pairs were identified as rearrangement candidates.
+
+### [Institut Gustave Roussy](https://www.gustaveroussy.fr/en) (GRCC)
+
+Gustave Roussy Cancer Centre submitted data includes somatic variants (single nucleotide variants and small indels) identified with CancerHotspot Panel v2 from tumor-only sequence data. Several versions of the panel have been used: CHP2 covering hotspots in 50 genes, MOSC3 covering hotspots in 74 genes and MOSC4 covering 89 genes. Tumors are sequenced to an average unique depth of coverage of \>500X. The sequencing data were analyzed with the Torrent SuiteTMVariant Caller 4.2 and higher and reported somatic variants were compared with the reference genome GRCh37 (hg19). The variants were called if \>5 reads supported the variant and/or total base depth \>50 and/or variant allele frequency \>1% was observed. All the variants identified were visually controlled on .bam files using Alamut v2.4.2 software (Interactive Biosoftware). All the germline variants found in 1000 Genomes Project or ESP (Exome Sequencing Project database) with frequency \>0.1% were removed. All somatic mutations were annotated, sorted, and interpreted by an expert molecular biologist according to available databases (COSMIC, TCGA) and medical literature.
+
+The submitted data set was obtained from selected patients that were included in the MOSCATO trial (Molecular Screening for CAncer Treatment Optimization) (NCT01566019). This trial collected on-purpose tumour samples (from the primary or from a metastatic site) that are immediately fresh-frozen, and subsequently analyzed for targeted gene panel sequencing. Tumour cellularity was assessed by a senior pathologist on a haematoxylin and eosin slide from the same biopsy core to ensure tumor cellularity of at least 10%.
+
+### [The University of Texas MD Anderson Cancer Center](https://www.mdanderson.org/) (MDA)
+
+The University of Texas MD Anderson Cancer Center submitted data in the current data set includes sequence variants (small indels and point mutations) identified using an amplicon-based targeted hotspot tumor-only assay, and sequence variants/gene level amplifications identified on anamplicon-based exonic gene panel which incorporates germline variant subtraction (MDA-409). Two different amplicon pools and pipeline versions are included for the hotspot tumor-only assays: a 46-gene assay (MDA-46) corresponding to customized version of AmpliSeq Cancer Hotspot Panel, v1 (Life Technologies), and a 50-gene assay (MDA-50) corresponding to the AmpliSeq Hotspot Panel v2. The exonic assay with germline variant subtraction and amplification detection corresponds to the AmpliSeq Comprehensive Cancer Panel. DNA wasextracted from unstained sections of tissue paired with astained section that was used to ensure adequate tumor cellularity (human assessment \> 20%) and marking of the tumor region of interest (macrodissection). Sequencing was performed on an Ion Torrent PGM (hotspot) or Proton (exonic). Tumors were sequenced to a minimum depth of coverage (per amplicon) of approximately 250X. Bioinformatics pipeline for MDA-46 was executed using TorrentSuite 2.0.1 signal processing, basecalling, alignment and variant calling. For MDA-50, TorrentSuite 3.6 was used. Initial calls were made by Torrent Variant Caller (TVC) using low-stringency somatic parameters. For MDA-50, TorrentSuite 3.6 was used. For MDA-409, TorrentSuite 4.4 was used. For MDA-409, TorrentSuite 4.4 was used. Initial calls were made by Torrent Variant Caller (TVC) using low-stringency somatic parameters. All called variants were parsed into a custom annotation & reporting system, OncoSeek, with a back-end SQL Server database using a convergent data model for all sequencing platforms used by the laboratory. Calls were reviewed with initial low stringency to help ensure that low effective tumor cellularity samples do not get reported as false negative samples. Nominal variant filters (5% variantallelic frequency minimum, 25 variant coverage minimum, variant not present in paired germline DNA for the exonic assay) can then be applied dynamically. Clinical sequencing reports were generated using OncoSeek to transform genomic representations into HGVS nomenclature. To create VCF files for this project, unfiltered low stringency VCF files were computationally cross checked against a regular expressions-based variant extract from clinical reports. Only cases where all extracted variants from the clinical report were deterministically mappable to the unfiltered VCF file and corresponding genomic coordinates were marked for inclusion in this dataset. This method filters a small number of cases where complex indels may not have originally been called correctly at the VCF level. Testing is performed for patients with advanced metastatic cancer across all solid tumor types.
+
+### [Memorial Sloan Kettering Cancer Center](https://www.mskcc.org/) (MSK)
+
+MSK uses a custom, hybridization-based capture panel (MSK-IMPACT) to detect single nucleotide variants, small indels, copy number alterations, and structural variants from matched tumor-normal sequence data (a pool of normals is used for a small subset of samples with a missing normal). Three (3) versions of the panel have been submitted to GENIE: version 1 containing 341 genes, version 2 containing 410 genes, version 3 containing 468 genes. Specimens are reviewed by a pathologist to ensure tumor cellularity of at least 10%. Tumors are sequenced to an average unique depth of coverage of approximately 750X. Reads are aligned using BWA, flagged for duplicate read pairs using GATK, and locally realigned using ABRA. Sequence mutations are called using MuTect, VarDict, and Somatic indel detector, and reported for \>5% allele frequency (novel variants) or \>2% allele frequency (recurrent hotspots). Copy number alterations are called using a custom pipeline and reported for fold-change \>2. Structural rearrangements are called using Delly. All somatic mutations are reported without regard to biological function. Testing is performed for patients with advanced metastatic cancer across all solid tumor types
+
+### [Johns Hopkins Sidney Kimmel Comprehensive Cancer Center](https://www.jhu.edu/) (JHU)
+
+Johns Hopkins submitted genomic data from the Ion AmpliSeqCancer Hotspot Panel v2, which detects mutations in cancer hotspots from tumor-only analysis. Data from the JHU_50GP_V2 panel covering frequently mutated regions in 50 genes was submitted to GENIE. Pathologist inspection of an H&E section ensured adequatetumor cellularity (approximately 10% or greater). DNA was extracted from the macro-dissected FFPE tumor region of interest. Tumors are sequenced to an average unique read depth of coverage of greater than 500X. For alignment the TMAP aligner developed by Life Technology for the Ion Torrent sequencing platform is used to align to hg19/GRCh37 using the manufacturer's suggested settings. Tumor variants are called with a variety of tools. Samtools mpileup is run on the aligned .bam file and then processed withcustom perl scripts (via a naive variant caller) to identify SNV and INS/DEL. Specimen variant filters have a total read depth filter of $\ge$ 100, a variant allele coverage of $\ge$ 10, variant allele frequency for substitutions $\ge$ 0.05, variant allele frequency for small (less than 50 base pair) insertions or deletions $\ge$ 0.05, and "strand bias" of total reads and of variant alleles are both less than 2-fold when comparing forward and reverse reads. Additionally, variants seen in greater than 20% of a set of non-neoplastic control tissues (\>3 of 16 samples) with the same filter criteria are excluded. Finally, variants documented as "common" in dbSNP and not known to COSMIC are excluded. The cohort includes both primary and metastatic lesions and some repeated sampling of the same patient.
+
+### [Netherlands Cancer Center, The Netherlands](https://www.nki.nl/) (NKI)
+
+NKI uses Illumina TruSeq Amplicon --Cancer Panel (TSACP) to detect known cancer hotspots from tumor-only sequencing data. A single gene panel, NKI-TSACP covering known hotspots in 48 genes with 212 amplicons has been used. Specimens are reviewed by a pathologist to ensure tumor cellularity of at least 10%. Tumors are sequenced to an average unique depth of coverage of approximately 4000x. The sample plate and sample sheet are made using the Illumina Experiment Manager software before running the sample on the MiSeq Sequencing System (Illumina, SY-410-1003) and MiSeq Reporter (v2.5) is used for data analysis. Reads are aligned using Banded Smith Waterman (v2.5.1.3), and samtools isused to further sort and index the BAM files. Variant calling is performed via the Illumina somatic variant caller (v3.5.2.1). Further detailed variant analysis (e.g. removal of known artifacts, known benign SNPs and variants with read depth \< 200 or VAF \< 0.05 and manual classification) is performed via Cartagenia BenchLab (https://cartagenia.com/). Testing is performed for all patients across all solid tumor types.
+
+### [Providence Health & Services Cancer Institute](https://www.providence.org/locations/or/cancer-institute) (PROV)
+
+PROV has submitted data from two assays: PROV-focus-v1 and PROV-triseq-v1. For the PROV-focus-v1 we have employed the Thermo Fisher Oncomine Focus Assay for amplification of 52 genes from DNA extracted from macro-dissected FFPE samples taken from Pathologist specified tumor regionsof interest (ROIs), with 20% minimal tumor cellularity. Samples include primary and metastatic tumor ROIs. The assay is a tumor only assay, no paired "normal" DNA is extracted from each case.
+
+The PROV-focus-v1 BED file describes the positions of the genome assayed by the PROV-focus-v1 panel relative to hg19.
+
+Amplification products are sequenced on the Life Technology Ion Torrent platform to an average read depth of coverage greater than 500X average per base coverage.
+
+The TMAP aligner developed by Life Technology for the ION torrent sequencing platform was used to align reads to hg19 using the manufacture suggested settings. Variants are called with the Torrent Suite Variant Caller 4.2 software plug-in.
+
+Variant filters requiring a total read depth of greater than 100X, variant allele coverage of greater than 10X, and a variant allele frequency for substitutions of greater than or equal to 0.03 are applied. Also, the specimen variant must not be annotated as "COMMON" (a variant allele frequency for substitutions of $\ge$ 0.05) in dnSNP. VCF files were created for upload to GENIE 6.1 by further filtering all detected variants to only those reported after expert review by clinicians.
+
+For the PROV-triseq-v1 we used DNA extracted from macro-dissected FFPE samples taken from Pathologist specified tumor regions of interest (ROIs), with 20% minimal tumor cellularity for extraction of tumor DNA, and whole peripheral blood for extraction of normal DNA. Tumor samples include both primary and metastatic tumor ROIs.
+
+The PROV-triseq-v1 BED file describes the positions of the genome assayed by the PROV-triseq-v1 panel relative to hg19.
+
+Libraries are prepared using the KAPA for Illumina reagents protocols. Indexed libraries are pooled for exome capture on the xGen V1.0 panel (https://www.idtdna.com/). Sequencing is performed on Illumina 2500, 4000, or Novaseq platforms.
+
+Raw sequencing data in the form of BCL files are uploaded to the Providence secure computing cloud environment maintained by Amazon Web Services. Following upload, raw files are converted to unaligned reads in FASTQ format using the software program bcl2fastq2, and resultant FASTQ files are aligned to the hg19 human reference genome using the Burrows-Wheeler Aligner (BWA). Aligned reads in the SAM format are subsequently converted to binary BAM format using the samtools software package, and aligned reads are processed for single-nucleotide variants (SNVs) and short insertions and deletions (indels) using our custom variant calling pipeline (see below). FASTQ and aligned BAM files are analyzed with FastQC and Picard metrics for Molecular Genomics Lab staff run-level and sample-level review.
+
+The Providence variant calling pipeline includes multiple variant calling algorithms including VarScan2, SomaticSniper, Mutect2 and Strelka. Variant filters requiring a total read depth of greater than 100X, variant allele coverage of greater than 10X, and a variant allele frequency for substitutions of greater than or equal to 0.03 are applied. Calls with low-quality variants, silent mutations, and germline variants are also filtered. Annotations from SnpEff, ClinVar, ExAC, 1000 Genomes, ANNOVAR, and COSMIC are incorporated for each call. Finally, all common variants, with non-zero allele frequencies the ExAC or 1000 Genomes databases, are removed.
+
+GENIE 6.1 VCF files containing annotated calls from Mutect2 were created for upload to GENIE 6.1.
+
+### [Princess Margaret Cancer Centre, University Health Network](https://www.uhn.ca/PrincessMargaret) (UHN)
+
+Princess Margaret Cancer Centre used three (6) panels to sequence samples - UHN-48-V1, UHN-50-V2, UHN-54-V1, UHN-555-V1, UHN-555-V2 and UHN-OCAv3. Each panel is described below:
+
+Illumina TruSeq Amplicon panel (UHN-48-V1): Princess Margaret Cancer Centre used the TruSeq Amplicon Cancer Panel (TSACP, Illumina) to detect single nucleotide variants and small indels from matched tumor-normal sequencing data. Specimens are reviewed by a pathologist to ensure tumor cellularity of at least 20%. Tumors are sequenced to an average unique depth of coverage of approximately 500x and normal blood samples to 100x. Data was processed using one of two workflows:
+
+-   Data analysis of tumor-normal pairs processed by UHN\\\_TSACP\\\_workflow\\\_v2: MiSeq fastq were aligned using (MiSeq Reporter v2.4.60 and the corresponding default version of hg19) followed by local realignment and BQSR using GATK v3.3.0. Somatic sequence mutations were called, using MuTect (v1.1.5) for SNVs and Varscan (v2.3.8) for indels, using both normal and tumor data. Data were filtered to ensure there are no variants included with frequency of 3% or more in the normal sample. Results were filtered to keep only those with tumor variant allele frequency of at least 10%.
+
+-   Data analysis of tumor only processed by UHN\\\_TSACP\\\_tumorONLY\\\_v2\\\_workflow: MiSeq fastq were aligned using (MiSeqReporter v2.4.60 and the corresponding default version of hg19) followed by local realignment and BQSR using GATK v3.3.0. Sequence mutations (SNV and indel) were called using Varscan (v2.3.8). Results were filtered to keep only those with tumor variant allele frequency of at least 10%.
+
+ThermoFisher Ion AmpliSeq Cancer Panel (UHN-50-V2): Princess Margaret Cancer Centre also used the TruSeq Amplicon Cancer Panel (TSACP, Illumina) to detect single nucleotide variants and small indels from matched tumor-normal sequencing data. Specimens were reviewed by a pathologist to ensure tumor cellularity of at least 20%. Tumors were sequenced to an average unique depth of coverage of approximately 500x and normal blood samples to 100x. Ion Torrent data was converted to fastq and sequences were aligned using NextGENe Software v2.3.1. NextGENe Software v2.3.1 provides a version of hg19 (Human_v37_3\_dbsnp_135_dna). NextGENe was used to call SNV and indels. Results were then filtered to keep all with VAF of at least 10% and total coverage of at least 100x.
+
+Illumina TruSeq Myeloid Sequencing Panel (UHN-54-V1): Princess Margaret Cancer Centre also used the TruSeq Myeloid Sequencing Panel (Illumina) to detect single nucleotide variants and small indels in DNA from bone marrow or peripheral blood samples from patients with acute leukemia, myelodysplastic syndrome, or myeloproliferative neoplasms. The diagnosis of each patient was confirmed by hematopathologist using the 2016 revision of the World Health Organization classification system for myeloid neoplasms. Tumors were sequenced to an average unique depth of coverage of approximately 500x. MiSeq fastq were aligned using (MiSeq Reporter v2.4.60 and the corresponding default version of hg19). MiSeq Reporter was then used to call variants. In the "Illumina Experiment Manager", "TruSeq Amplicon Workflow --specific settings" were adjusted as follows: "Export to gVCF --MaxIndelSize" from default "25" to "55". Results were then filtered to keep only those with tumor variant allele frequency of at least 10% and a depth of coverage greater than 500x.
+
+UHN Custom 555 Gene Panel (UHN-555-V1 and UHN-55-V2): Princess Margaret Cancer Centre used a custom Sure Select (Agilent) 555 gene panel to detect single nucleotide variants and small indels in DNA from tumour tissue. Specimens are reviewed by a pathologist to ensure tumor cellularity of at least 10% (usually \>20%). Tumors are sequenced to an average unique depth of coverage of approximately 500x. NextSeq fastq were aligned using bwa-mem and the BAMs were processed using GATK best practices. Variants were called using VarScan v2.3.8. VCF files were filtered to remove known artifacts. Variants that are not on a manually curated list of hotspots that have depth less than 50, or if depth 50 to 100 with frequency \<10%, or if depth was at least 100 with frequency \<5%, were removed.
+
+Ion Oncomine Comprehensive Assay v3 (UHN-OCAv3): Princess Margaret Cancer Centre used the Thermofisher Oncomine Comprehensive Assay v3 to detect relevant single nucleotide variants, small indels, copy number changes and gene fusions. Genomic DNA and RNA were co-isolated and then sequencing was performed on the Ion S5 XL System. Variant calls were generated using Torrent Browser 5.12 (ThermoFisher) with alignment to genome build GRCh37/hg19. Filtering of reportable variants uses the Oncomine Variant Annotator plugin to annotate variants in Ion Reporter 5.12, with variant criteria and thresholds as supplied. The reportable range is 5%-100% variant allele frequency. Minimum acceptable coverage for all reported genomic regions is \>200x. Copy number gains and losses are assessed using the Oncomine Variant Annotator plugin, with thresholds of \<0.5 or \>4 copies reported. Gene fusions are assessed using the Oncomine Variant Annotator plugin, with variant criteria and thresholds as supplied (quality threshold of \>500,000 reads reported as 'pass' for gene fusion sequencing). The assay detects recurrent and novel gene partners with expressed gene fusions of the genes listed and minimum acceptable read count for all reported fusions is \>2000.
+
+### [Vall d'Hebron Institute of Oncology](https://www.vhio.net/en/) (VHIO)
+
+Vall d'Hebron institute of Oncology (VHIO) submitted data that includes somatic variants (single nucleotide variants and small indels) identified with VHIO Card Amplicon panels that target frequently mutated regions in oncogenes and tumor suppressors. A total of fifteen panels have been submitted taking different tumor types into consideration. The panels are:
+
+-   VHIO-GENERAL-V01: Panel containing 56 oncogenes and tumor suppressor genes
+
+-   VHIO-BRAIN-V01 (General + NF1 v1: 57 genes)
+
+-   VHIO-BILIARY-V01 (General + \*FGFR v1 + \*\*NOTCH v1: 59 genes)
+
+-   VHIO-COLORECTAL-V01 (General + RingFingers v1 + \*\*NOTCH v1: 60 genes)
+
+-   VHIO-HEAD-NECK-V1 (General + MTOR v1 + \*\*NOTCH v1: 61 genes)
+
+-   VHIO-ENDOMETRIUM-V01 (General + RingFingers v1 + \*FGFR v1 + NF1 v1: 60 genes)
+
+-   VHIO-GASTRIC-V01 (General + RingFingers v1 + MTOR v1 + \*\*NOTCH v1: 63 genes)
+
+-   VHIO-PAROTIDE-V01 (General + \*\*NOTCH v1: 58 genes)
+
+-   VHIO-BREAST-V01 (General + \*FGFR v1 + \*\*NOTCH v1+ GATA3 v1: 60 genes)
+
+-   VHIO-OVARY-V01 (General + BRCA v1: 58 genes)
+
+-   VHIO-PANCREAS-V01 (General + Ring Fingers v1 + BRCA v1: 60 genes)
+
+-   VHIO-SKIN-V01 (General + NF1 v1 + MTOR v1: 60 genes)
+
+-   VHIO-LUNG-V01 (General + NF1 v1 + MET v1 + FGFRw7 v1: 58 genes)
+
+-   VHIO-KIDNEY-V01 (General + MTOR v1: 59 genes)
+
+-   VHIO-URINARY-BLADDER-V01 (General + \*FGFR v1 + NF1 v1 + MTOR v1: 61 genes)
+
+\*FGFRv1 panel includes extra regions in FGFR1, FGFR2 and FGFR3 genes. \*\*NOTCHv1 panel includes extra regions in FBXW7 and NOTCH1 genes. FGFRw7 v1 panel includes extra regions in FGFR1 gene. MET v1 panel includes intronic regions flanking Exon 14 of MET gene.
+
+Tumor samples are reviewed by a pathologist to ensure tumor cellularity of at least 20%. For the sample loading into tumor-specific panels, we use a FREEDOM EVO 150 Platform from TECAN. Tumors are sequenced in an Illumina MiSeq instrument, to an average depth of coverage of approximately 1000X. Samples are sequenced, and two independent chemistries are performed and sequenced. Sequencing reads are aligned (BWA v0.7.17, Samtools v1.9), base recalibrated, Indel realigned (GATK v3.7.0), and variant called (VarScan2 v2.4.3). A minimum of 7 reads supporting the variant allele is required in order to call a mutation. Frequent SNPs in the population are filtered with the 1000g database (MAF\>0.005). The average number of reads representing a given nucleotide in the panel (Sample Average Coverage) is calculated. Manual curation of variants is performed after manual search of available literature and databases, in terms of their clinical significance.
+
+### [Vanderbilt-Ingram Cancer Center](https://www.vicc.org/) (VICC)
+
+Foundation medicine panels: VICC uses Illumina hybridization-based capture panels from Foundation Medicine to detect single nucleotide variants, small indels, copy number alterations and structural variants from tumor-only sequencing data. Two gene panels were used: Panel 1 (T5a bait set), covering 326 genes and; and Panel 2 (T7 bait set), covering 434 genes. DNA was extracted from unstained FFPE sections, and H&E stained sections were used to ensure nucleated cellularity $\ge$ 80% and tumor cellularity $\ge$ 20%, with use of macro-dissection to enrich samples with $\le$ 20% tumor content. A pool of 5'-biotinylated DNA 120bp oligonucleotides were designed as baits with 60bp overlap in targeted exon regions and 20bp overlap in targeted introns with a minimum of 3 baits per target and 1 bait per SNP target. The goal was a depth of sequencing between 750x and 1000x. Mapping to the reference genome was accomplished using BWA, local alignment optimizations with GATK, and PCR duplicate read removal and sequence metric collection with Picard and Samtools. A Bayesian methodology incorporating tissue-specific prior expectations allowed for detection of novel somatic mutations at low MAF and increased sensitivity at hotspots. Final single nucleotide variant (SNV) calls were made at MAF $\ge$ 5% (MAF $\ge$ 1% at hotspots) with filtering for strand bias, read location bias and presence of two or more normal controls. Indels were detected using the deBrujn approach of de novo local assembly within each targeted exon and through direct read alignment and then filtered as described for SNVs. Copy number alterations were detected utilizing a comparative genomic hybridization-like method to obtain a log-ratio profile of the sample to estimate tumor purity and copy number. Absolute copy number was assigned to segments based on Gibbs sampling. To detect gene fusions, chimeric read pairs were clustered by genomic coordinates and clusters containing at least 10 chimeric pairs were identified as rearrangement candidates. Rare tumors and metastatic samples were prioritized for sequencing, but ultimately sequencing was at the clinician's discretion.
+
+VICC also submitted data from 2 smaller hotspot amplicon panels, one used for all myeloid (VICC-01-myeloid) tumors and 1 used for some solid tumors (VICC-01-solidtumor). These panels detect point mutations and small indels from 37 and 31 genes, respectively. Solid tumor H&E were inspected to ensure adequate tumor cellularity (\>10%). Sections were macrodissected if necessary, and DNA was extracted. Tumors were sequenced to an average depth greater than 1000X. Reads were aligned to hg19/GRCh37 with novoalign, and single nucleotide variants, insertions and deletions greater than 5% were called utilizing a customized bioinformatic pipeline. Large (15bp and greater) FLT3 insertions were called using a specialized protocol and were detected to a 0.5% allelic burden.
+
+### [Wake Forest University Health Sciences, Wake Forest Baptist Medical Center](https://www.wakehealth.edu/) (WAKE)
+
+We utilized thesequencing analysis pipelines from Foundation Medicine and Caristo analyze clinical samples and support.Enrichment of target sequences was achieved by solution-based hybrid capture with custom biotinylated oligonucleotide bases. Enriched libraries were sequenced to an average median depth of \>500× with 99% of bases covered \>100× (IlluminaHiSeq2000 platform using 49 × 49 paired-end reads).The clinical sequencing data were analyzed by Foundation Medicine and Carisdevelopedpipelines.Sequenced readswere mapped to the reference human genome (hg19) using the Burrows-Wheeler Aligner and the publicly available SAM tools, Picard, and Genome Analysis Toolkit. Point mutations were identified by a Bayesian algorithm; short insertions and deletions determined by local assembly; gene copy numberalterations identified by comparison to process-matched normal controls; and gene fusions/rearrangements determined by clustering chimeric reads mapped to targeted introns.Following by computational analysis with tools such asMutSigand CHASM, the driver mutations can be identified which may help the selection of treatment strategy. In addition, the initial report of the analysis of 470 cases has been published and highlightedon the cover of the journalTheranosticsin 2017.
+
+### [Yale University, Yale Cancer Center](https://www.yale.edu/) (YALE)
+
+GENIE samples submitted by Yale belong to one of three targeted NGS panels (1) YALE-HSM-V1, (2) YALE-OCP-V2, or (3) YALE-OCP-V3. The first panel corresponds to the Thermofisher Ion AmpliSeq Cancer Hotspot Panel v2, which is designed to assess hotspot variants in 50 of the most frequently mutated genes in cancer, and is performed as a tumor-only analysis. The latter two panels refer to v2 and v3C of the Thermofisher Oncomine Comprehensive Assay, which provides a more comprehensive assessment of somatic alterations including single nucleotide variants, insertions, deletions, copy number alterations (CNAs), and gene fusions across 143 and 161 genes, respectively. Target region design (i.e. full exonic, hotspot only, intronic, promoter) varies based on known relevance of each gene. Pathologist inspection of an H&E section ensured adequate tumor cellularity (approximately 10% or greater). Tumor samples are enriched for malignant cells by manual microdissection of unstained formalin-fixed, paraffin-embedded (FFPE) tissue sections. If available, germline control DNA from the same patient is obtained either from FFPE non-tumor tissue, from the patient's blood, or from a buccal swab. Subsequent libraries are barcoded and sequenced on either an Ion Torrent PGM™ or an Ion S5™ XL next generation sequencer.
+
+Pre-processing and alignment of reads is performed within Torrent Suite, with TMAP serving as the alignment algorithm. Resulting BAM files are uploaded to the Ion Reporter software for variant detection, as well as CNA and gene fusion assessment for Oncomine samples. The bioinformatics pipeline also uses MuTect2 (GATK) and Strelka (Illumina) to assess somatic variants. Variants are initially filtered based on quality metrics; a minimum read depth of 20x and avariant allelic fraction (VAF) of 0.02 is required. All variants passing quality filters are passed through the Ensembl Variant Effect Predictor for variant annotation. Variants that are intronic or synonymous are filtered at this stage; all other variants are manually reviewed for accuracy before submission to the attending pathologist. Variants below a VAF below 0.05 are not typically reviewed unless tumor cellularity estimates are low. CNA assessment is performed using the IonReporter CNV algorithm,as well as an internally developed workflow that uses the DNAcopy R package. Custom visualizations for amplified genes are used to confirm accuracy of CNAs reported by the pipeline. Only CNAs with a ploidy of 5 or higher are reported. Gene fusion assessment is handled by a custom workflow in the Ion Reporter software which aligns cDNA reads to known fusion breakpoints. A fusion read is mapped successfully if there is an overlap of 70% and exact matches of 66.66%.
+
+### [Swedish Cancer Institute](https://www.swedish.org/services/cancer-institute) (SCI)
+
+SCI uses CellNetixPMP gene panel to detect hotspot mutations in known cancer genes from solid tumor DNA (Formalin-fixed, paraffin-embedded tissue). The hotspot gene panel covers 68 genes. Tumor cell content is greater than 10% verified by pathologist. Tumor DNA is sequenced to \>200x on average (Variant that allele frequency is less than 10% requires more than 400X) on Illumina MiSeq (TruSeq Amplicon) platform, and data is analyzed in MiSeq Reporter 2.5. Reads are aligned to hg19 reference genome by the BWA (v0.6.1-r104-tpx) aligner adapted by the MiSeq Reporter Software (v2.4.1 or v2.5) using the manufacture suggested settings. MiSeq Reporter provided Somatic Variant Caller (v2.1.12) is run on the aligned .bam files to identify variants present in DNA samples. Detailed stepsplease refer toIllumina MiSeq Reporter User Guide. Variants are filtered for allele frequency greater than 3% except for actionable mutations. Variants that are observed in $\ge$ 75% samples on the same run, or common variant with population frequency of \> 50%, or average population frequency \>5% reported in the 1000 genome and/or in ExAc. are filtered
+
+### [University of California-San Francisco (UCSF Helen Diller Family Comprehensive Cancer Center)](https://cancer.ucsf.edu/) (UCSF)
+
+UCSF uses a custom, hybridization-based capture panel (UCSF500) to detect single nucleotide variants, small indels, copy number alterations, and structural variants from both matched tumor-normal and tumor-only specimens. Two versions of the panel have been submitted to GENIE: UCSF-NIMV4 consists of 481 genes and includes coverage of select promoter regions (TERT and SDHD) as well as the intronic or UTR regions of 47 genes for the detection of structural rearrangements. UCSF-IDTV5 consists of 529 genes, retains TERT and SDHD promoter coverage, and expands intronic or UTR region coverage to 73 genes for the detection of structural rearrangements. Testing is performed for patients with solid or hematological malignancies. Specimens are reviewed by a pathologist to ensure tumor cellularity of greater than 25%. Tumor DNA is extracted from sections of FFPE tissue; for uveal melanoma cases, frozen fresh fine needle aspirates are accepted. Normal DNA can be extracted from peripheral blood draw, buccal swab, or micro-dissected non-lesional areas. Hybridization capture is performed with SeqCap EZ target enrichment kit; sequencing platform is the HiSeq2500 prior to October 2020, and NovaSeq6000 after. Tumors are sequenced to an average unique depth of coverage of approximately \>500X. FASTQC is run on unaligned sequencing reads to collect read-level summary statistics for downstream quality control; additionally, a suite of Picard tools are also run to assess quality metrics from sequencing runs. BWA-MEM aligner is used to align sequencing reads from each sample to the reference genome (hg19). The following bioinformatic workflows are used for variant calling:
+
+SNV callers
+
+-   Tumor sample: FreeBayes, GATK UnifiedGenotyper, Pindel Normal sample: FreeBayes, GATK HaplotypeCaller, Pindel
+
+-   Matched pairs: FreeBayes, Mutect, GATK SomaticIndelDetector
+
+Structural variant callers
+
+-   DELLY
+
+-   Pindel calls larger than 100bp are treated as structural variants
+
+Copy Number Calls
+
+-   CNVkit using a reference profile for normalization of approximately 30 pooled normal samples
+
+Variants are removed if present with frequency $\ge$ 1% in ESP6500, 1000 Genomes, or ExAC datasets. Known sequencing artifacts are removed. Variants with \< 50x total coverage in the tumor sample are removed.
