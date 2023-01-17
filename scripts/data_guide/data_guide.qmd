@@ -3,7 +3,7 @@ title: "AACR GENIE `r params$release` Data Guide"
 format:
   pdf:
     toc: true
-    number-sections: true
+    number-sections: false
     colorlinks: true
 editor: visual
 date: today
