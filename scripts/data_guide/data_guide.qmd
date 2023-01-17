@@ -1,5 +1,5 @@
 ---
-title: "AACR GENIE Data Guide"
+title: "AACR GENIE `r params$release` Data Guide"
 format:
   pdf:
     toc: true
@@ -91,11 +91,11 @@ release_files_mapping = get_file_mapping(release_folder_synid)
 
 # About this Document
 
-This document provides an overview of {{release}} release of American Association for Cancer Research (AACR) GENIE data.
+This document provides an overview of `r params$release` release of American Association for Cancer Research (AACR) GENIE data.
 
 # Version of Data
 
-AACR GENIE Project Data: Version {{release}}
+AACR GENIE Project Data: Version `r params$release`
 
 AACR Project GENIE data versions follow a numbering scheme derived from [semantic versioning](https://semver.org/) where the digits in the version correspond to: major.patch-release-type. "Major" releases are public releases of new sample data. "Patch" releases are corrections to major releases, including data retractions. "Releasetype" refers to whether the release is a public AACR Project GENIE release or a private/consortium-only release. Public releases will be denoted with the nomenclature "X.X-public" and consortium-only private releases will be denoted with the nomenclature "X.X-consortium".
 
