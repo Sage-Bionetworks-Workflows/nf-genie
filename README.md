@@ -1,6 +1,17 @@
 # nf-genie
 Nextflow workflow for main GENIE processing.  This follows the SOP outlined in the GENIE confluence page.
 
+## Configuration
+Prior to running the test pipeline, you will need to create a Nextflow secret called `SYNAPSE_AUTH_TOKEN`
+with a Synapse personal access token ([docs](#authentication)).
+
+## Authentication
+
+This workflow takes care of transferring files to and from Synapse. Hence, it requires a secret with a personal access token for authentication. To configure Nextflow with such a token, follow these steps:
+
+1. Generate a personal access token (PAT) on Synapse using [this dashboard](https://www.synapse.org/#!PersonalAccessTokens:). Make sure to enable the `view`, `download`, and `modify` scopes since this workflow both downloads and uploads to Synapse.
+2. Create a secret called `SYNAPSE_AUTH_TOKEN` containing a Synapse personal access token using the [Nextflow CLI](https://nextflow.io/docs/latest/secrets.html) or [Nextflow Tower](https://help.tower.nf/latest/secrets/overview/).
+3. (Tower only) When launching the workflow, include the `SYNAPSE_AUTH_TOKEN` as a pipeline secret from either your user or workspace secrets.
 
 ## Command
 
@@ -27,7 +38,6 @@ Nextflow workflow for main GENIE processing.  This follows the SOP outlined in t
     ```
     nextflow run main.nf --production --release 13.0-public
     ```
-
 
 ## Processing
 
