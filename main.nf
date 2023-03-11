@@ -222,7 +222,8 @@ else if (params.release.contains("public")) {
     script:
     if (params.production) {
       """
-      python3 /root/Genie/bin/database_to_staging.py \
+      cd /root/Genie
+      python3 bin/database_to_staging.py \
       $seq \
       /root/cbioportal \
       $release
@@ -230,7 +231,8 @@ else if (params.release.contains("public")) {
     }
     else {
       """
-      python3 /root/Genie/bin/database_to_staging.py \
+      cd /root/Genie
+      python3 bin/database_to_staging.py \
       $seq \
       /root/cbioportal \
       $release \
