@@ -1,0 +1,37 @@
+### [Vall d'Hebron Institute of Oncology](https://www.vhio.net/en/) (VHIO)
+
+Vall d'Hebron institute of Oncology (VHIO) submitted data that includes somatic variants (single nucleotide variants and small indels) identified with VHIO Card Amplicon panels that target frequently mutated regions in oncogenes and tumor suppressors. A total of fifteen panels have been submitted taking different tumor types into consideration. The panels are:
+
+-   VHIO-GENERAL-V01: Panel containing 56 oncogenes and tumor suppressor genes
+
+-   VHIO-BRAIN-V01 (General + NF1 v1: 57 genes)
+
+-   VHIO-BILIARY-V01 (General + \*FGFR v1 + \*\*NOTCH v1: 59 genes)
+
+-   VHIO-COLORECTAL-V01 (General + RingFingers v1 + \*\*NOTCH v1: 60 genes)
+
+-   VHIO-HEAD-NECK-V1 (General + MTOR v1 + \*\*NOTCH v1: 61 genes)
+
+-   VHIO-ENDOMETRIUM-V01 (General + RingFingers v1 + \*FGFR v1 + NF1 v1: 60 genes)
+
+-   VHIO-GASTRIC-V01 (General + RingFingers v1 + MTOR v1 + \*\*NOTCH v1: 63 genes)
+
+-   VHIO-PAROTIDE-V01 (General + \*\*NOTCH v1: 58 genes)
+
+-   VHIO-BREAST-V01 (General + \*FGFR v1 + \*\*NOTCH v1+ GATA3 v1: 60 genes)
+
+-   VHIO-OVARY-V01 (General + BRCA v1: 58 genes)
+
+-   VHIO-PANCREAS-V01 (General + Ring Fingers v1 + BRCA v1: 60 genes)
+
+-   VHIO-SKIN-V01 (General + NF1 v1 + MTOR v1: 60 genes)
+
+-   VHIO-LUNG-V01 (General + NF1 v1 + MET v1 + FGFRw7 v1: 58 genes)
+
+-   VHIO-KIDNEY-V01 (General + MTOR v1: 59 genes)
+
+-   VHIO-URINARY-BLADDER-V01 (General + \*FGFR v1 + NF1 v1 + MTOR v1: 61 genes)
+
+\*FGFRv1 panel includes extra regions in FGFR1, FGFR2 and FGFR3 genes. \*\*NOTCHv1 panel includes extra regions in FBXW7 and NOTCH1 genes. FGFRw7 v1 panel includes extra regions in FGFR1 gene. MET v1 panel includes intronic regions flanking Exon 14 of MET gene.
+
+Tumor samples are reviewed by a pathologist to ensure tumor cellularity of at least 20%. For the sample loading into tumor-specific panels, we use a FREEDOM EVO 150 Platform from TECAN. Tumors are sequenced in an Illumina MiSeq instrument, to an average depth of coverage of approximately 1000X. Samples are sequenced, and two independent chemistries are performed and sequenced. Sequencing reads are aligned (BWA v0.7.17, Samtools v1.9), base recalibrated, Indel realigned (GATK v3.7.0), and variant called (VarScan2 v2.4.3). A minimum of 7 reads supporting the variant allele is required in order to call a mutation. Frequent SNPs in the population are filtered with the 1000g database (MAF\>0.005). The average number of reads representing a given nucleotide in the panel (Sample Average Coverage) is calculated. Manual curation of variants is performed after manual search of available literature and databases, in terms of their clinical significance.

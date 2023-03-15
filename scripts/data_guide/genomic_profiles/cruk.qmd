@@ -1,0 +1,49 @@
+### [Cancer Research UK Cambridge Centre, University of Cambridge](https://www.cruk.cam.ac.uk/) (CRUK)
+
+*Sequencing data (SNVs/Indels)*:
+
+DNA was quantified using Qubit HS dsDNA assay (Life Technologies, CA) and libraries were prepared from a total of 50 ng of DNA using Illumina's Nextera Custom Target Enrichment kit (Illumina, CA). In brief, a modified Tn5 transposase was used to simultaneously fragment DNA and attach a transposon sequence to both end of the fragments generated. This was followed by a limited cycle PCR amplification (11 cycles) using barcoded oligonucleotides that have primer sites on the transposon sequence generating 96 uniquely barcoded libraries per run. The libraries were then diluted and quantified using Qubit HS dsDNA assay.
+
+Five hundred nanograms from each library were pooled into a capture pool of 12 samples. Enrichment probes (80-mer) were designed and synthesized by Illumina; these probes were designed to enrich for all exons of the target genes, as well for 500 bp up- and downstream of the gene. The capture was performed twice to increase the specificity of the enrichment. Enriched libraries were amplified using universal primers in a limited cycle PCR (11 cycles). The quality of the libraries was assessed using Bioanalyser (Agilent Technologies, CA) and quantified using KAPA Library Quantification Kits (Kapa Biosystems, MA).
+
+Products from four capture reactions (that is, 48 samples) were pooled for sequencing in a lane of Illumina HiSeq 2,000. Sequencing (paired-end, 100 bp) of samples and demultiplexing of libraries was performed by Illumina (Great Chesterford, UK).
+
+The sequenced reads were aligned with Novoalign, and the resulting BAM files were preprocessed using the GATK Toolkit. Sequencing quality statistics were obtained using the GATK's DepthOfCoverage tool and Picard's CalculateHsMetrics. Coverage metrics are presented in Supplementary Fig. 1. Samples were excluded if \<25% of the targeted bases were covered at a minimum coverage of 50x.
+
+The identities of those samples with copy number array data available were confirmed by analyzing the samples' genotypes at loci covered by the Affymetrix SNP6 array. Genotype calls from the sequencing data were compared with those from the SNP6 data that was generated for the original studies. This was to identify possible contamination and sample mix-ups, as this would affect associations with other data sets and clinical parameters.
+
+To identify all variants in the samples, we used MuTect (without any filtering) for SNVs and the Haplotype Caller for indels. All reads with a mapping quality \<70 were removed prior to calling. Variants were annotated with ANNOVAR using the genes' canonical transcripts as defined by Ensembl. Custom scripts were written to identify variants affecting splice sites using exon coordinates provided by Ensembl. Indels were referenced by the first codon they affected irrespective of length; for example, insertions of two bases and five bases at the same codon were classed together.
+
+To obtain the final set of mutation calls, we used a two-step approach, first removing any spurious variant calls arising as a consequence of sequencing artefacts (generic filtering) and then making use of our normal samples and the existing data to identify somatic mutations (somatic filtering). For both levels of filtering, we used hard thresholds that were obtained, wherever possible, from the data itself. For example, some of our filtering parameters were derived from considering mutations in technical replicates (15 samples sequenced in triplicate). We compared the distributions of key parameters (including quality scores, depth, VAF) for concordant (present in all three replicates) and discordant (present in only one out of three replicates) variants to obtain thresholds, and used ROC analysis to select the parameters that best identified concordant variants.
+
+SNV filtering
+
+-   Based on our analysis of replicates, SNVs with MuTect quality scores \<6.95 were removed.
+
+-   We removed those variants that overlapped with repetitive regions of MUC16 (chromosome 19: 8,955,441--9,044,530). This segment contains multiple tandem repeats (mucin repeats) that are highly susceptible to misalignment due to sequence similarity.
+
+-   Variants that failed MuTect's internal filters due to 'nearby_gap_events' and 'poor_mapping\_-regional_alternate_allele_mapq' were removed.
+
+-   Fisher's exact test was used to identify variants exhibiting read direction bias (variants occurring significantly more frequently in one read direction than in the other; FDR=0.0001). These were filtered out from the variant calls.
+
+-   SNVs present at VAFs smaller than 0.1 or at loci covered by fewer than 10 reads were removed, unless they were also present and confirmed somatic in the Catalogue of Somatic Mutations in Cancer (COSMIC). The presence of well-known PIK3CA mutations present at low VAFs was confirmed by digital PCR (see below), and supported the use of COSMIC when filtering SNVs.
+
+-   We removed all SNVs that were present in any of the three populations (AMR, ASN, AFR) in the 1,000 Genomes study (Phase 1, release 3) with a population alternate allele frequency of \>1%.
+
+-   We used the normal samples in our data set (normal pool) to control for both sequencing noise and germline variants, and removed any SNV observed in the normal pool (at a VAF of at least 0.1). However, for SNVs present in more than two breast cancer samples in COSMIC, we used more stringent thresholds, removing only those that were observed in \>5% of normal breast tissue or in \>1% of blood samples. The different thresholds were used to avoid the possibility of contamination in the normal pool affecting filtering of known somatic mutations. This is analogous to the optional 'panel of normals' filtering step used by MuTect in paired mode, in which mutations present in normal samples are removed unless present in a list of known mutations61.
+
+Indel filtering
+
+-   As for SNVs, we removed all indels falling within tandem repeats of MUC16 (coordinates given above).
+
+-   We removed all indels deemed to be of 'LowQual' by the Haplotype Caller with default parameters (Phred-scaled confidence threshold=30).
+
+-   As for SNVs, we removed indels displaying read direction bias. Indels with strand bias Phred-scaled scores \>40 were removed.
+
+-   We downloaded the Simple Repeats and Microsatellites tracks from the UCSC Table Browser, and removed all indels overlapping these regions. We also removed all indels that overlapped homopolymer stretches of six or more bases.
+
+-   As for SNVs, indels were removed if present in the 1,000 Genomes database at an allele frequency \>1%, or if they were present in normal samples in our data set. Thresholds were adjusted as for SNVs if the indel was present in COSMIC. The same thresholds for depth and VAF were used.
+
+*Microarray data (Copy number):*
+
+DNA was hybridized to Affymetrix SNP 6.0 arrays per the manufacturer's instructions. ASCAT was used to obtain segmented copy number calls and estimates of tumour ploidy and purity. Somatic CNAs were obtained by removing germline CNVs as defined in the original METABRIC study3. We defined regions of LOH as those in which there were no copies present of either the major or minor allele, irrespective of total copy number. Recurrent CNAs were identified with GISTIC2, with log2 ratios obtained by dividing the total number of copies by tumour ploidy for each ASCAT segment. Thresholds for identifying gains and losses were set to 0.4 and (-)0.5, respectively; these values were obtained by examining the distribution of log2 ratios to identify peaks associated with copy number states. A broad length cut-off of 0.98 was used, and peaks were assessed to rule out probe artefacts and CNVs that may have been originally missed.

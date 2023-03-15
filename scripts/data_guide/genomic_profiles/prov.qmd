@@ -1,0 +1,23 @@
+### [Providence Health & Services Cancer Institute](https://www.providence.org/locations/or/cancer-institute) (PROV)
+
+PROV has submitted data from two assays: PROV-focus-v1 and PROV-triseq-v1. For the PROV-focus-v1 we have employed the Thermo Fisher Oncomine Focus Assay for amplification of 52 genes from DNA extracted from macro-dissected FFPE samples taken from Pathologist specified tumor regionsof interest (ROIs), with 20% minimal tumor cellularity. Samples include primary and metastatic tumor ROIs. The assay is a tumor only assay, no paired "normal" DNA is extracted from each case.
+
+The PROV-focus-v1 BED file describes the positions of the genome assayed by the PROV-focus-v1 panel relative to hg19.
+
+Amplification products are sequenced on the Life Technology Ion Torrent platform to an average read depth of coverage greater than 500X average per base coverage.
+
+The TMAP aligner developed by Life Technology for the ION torrent sequencing platform was used to align reads to hg19 using the manufacture suggested settings. Variants are called with the Torrent Suite Variant Caller 4.2 software plug-in.
+
+Variant filters requiring a total read depth of greater than 100X, variant allele coverage of greater than 10X, and a variant allele frequency for substitutions of greater than or equal to 0.03 are applied. Also, the specimen variant must not be annotated as "COMMON" (a variant allele frequency for substitutions of $\ge$ 0.05) in dnSNP. VCF files were created for upload to GENIE 6.1 by further filtering all detected variants to only those reported after expert review by clinicians.
+
+For the PROV-triseq-v1 we used DNA extracted from macro-dissected FFPE samples taken from Pathologist specified tumor regions of interest (ROIs), with 20% minimal tumor cellularity for extraction of tumor DNA, and whole peripheral blood for extraction of normal DNA. Tumor samples include both primary and metastatic tumor ROIs.
+
+The PROV-triseq-v1 BED file describes the positions of the genome assayed by the PROV-triseq-v1 panel relative to hg19.
+
+Libraries are prepared using the KAPA for Illumina reagents protocols. Indexed libraries are pooled for exome capture on the xGen V1.0 panel (https://www.idtdna.com/). Sequencing is performed on Illumina 2500, 4000, or Novaseq platforms.
+
+Raw sequencing data in the form of BCL files are uploaded to the Providence secure computing cloud environment maintained by Amazon Web Services. Following upload, raw files are converted to unaligned reads in FASTQ format using the software program bcl2fastq2, and resultant FASTQ files are aligned to the hg19 human reference genome using the Burrows-Wheeler Aligner (BWA). Aligned reads in the SAM format are subsequently converted to binary BAM format using the samtools software package, and aligned reads are processed for single-nucleotide variants (SNVs) and short insertions and deletions (indels) using our custom variant calling pipeline (see below). FASTQ and aligned BAM files are analyzed with FastQC and Picard metrics for Molecular Genomics Lab staff run-level and sample-level review.
+
+The Providence variant calling pipeline includes multiple variant calling algorithms including VarScan2, SomaticSniper, Mutect2 and Strelka. Variant filters requiring a total read depth of greater than 100X, variant allele coverage of greater than 10X, and a variant allele frequency for substitutions of greater than or equal to 0.03 are applied. Calls with low-quality variants, silent mutations, and germline variants are also filtered. Annotations from SnpEff, ClinVar, ExAC, 1000 Genomes, ANNOVAR, and COSMIC are incorporated for each call. Finally, all common variants, with non-zero allele frequencies the ExAC or 1000 Genomes databases, are removed.
+
+GENIE 6.1 VCF files containing annotated calls from Mutect2 were created for upload to GENIE 6.1.
