@@ -367,7 +367,7 @@ oc_df = oc_df[oc_df$center %in% processed_centers, c("center", "oncotree_assignm
 flextable(oc_df) %>%
   set_caption(caption = "Center Strategies for OncoTree Assignment") %>%
   width(j = 'center', 1, unit = "in") %>%
-  width(j = 'oncotree_assignment', 4, unit = "in") 
+  width(j = 'oncotree_assignment', 4, unit = "in")
 ```
 
 # Abbreviations and Acronym Glossary
