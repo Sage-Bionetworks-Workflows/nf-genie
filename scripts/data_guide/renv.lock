@@ -5,6 +5,10 @@
       {
         "Name": "CRAN",
         "URL": "https://cran.rstudio.com"
+      },
+      {
+        "Name": "SAGE",
+        "URL": "http://ran.synapse.org"
       }
     ]
   },
@@ -890,6 +894,14 @@
         "askpass"
       ]
     },
+    "packrat": {
+      "Package": "packrat",
+      "Version": "0.9.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "481428983c19a7c443f7ea1beff0a2de",
+      "Requirements": []
+    },
     "pbkrtest": {
       "Package": "pbkrtest",
       "Version": "0.5.1",
@@ -1033,6 +1045,22 @@
         "survival"
       ]
     },
+    "quarto": {
+      "Package": "quarto",
+      "Version": "1.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "298a252816cabed120391c955aced484",
+      "Requirements": [
+        "jsonlite",
+        "later",
+        "processx",
+        "rmarkdown",
+        "rsconnect",
+        "rstudioapi",
+        "yaml"
+      ]
+    },
     "ragg": {
       "Package": "ragg",
       "Version": "1.2.5",
@@ -1130,6 +1158,22 @@
       "Hash": "1de7ab598047a87bba48434ba35d497d",
       "Requirements": []
     },
+    "rsconnect": {
+      "Package": "rsconnect",
+      "Version": "0.8.29",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fe178fc15af80952f546aafedf655b36",
+      "Requirements": [
+        "curl",
+        "digest",
+        "jsonlite",
+        "openssl",
+        "packrat",
+        "rstudioapi",
+        "yaml"
+      ]
+    },
     "rstatix": {
       "Package": "rstatix",
       "Version": "0.7.1",
@@ -1149,6 +1193,14 @@
         "tidyr",
         "tidyselect"
       ]
+    },
+    "rstudioapi": {
+      "Package": "rstudioapi",
+      "Version": "0.14",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "690bd2acc42a9166ce34845884459320",
+      "Requirements": []
     },
     "sass": {
       "Package": "sass",
@@ -1254,15 +1306,10 @@
     },
     "synapser": {
       "Package": "synapser",
-      "Version": "0.15.33",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "synapser",
-      "RemoteUsername": "generalui",
-      "RemoteRef": "reticulate",
-      "RemoteSha": "1944d783830578e0ef11461778589131ab850f45",
-      "Hash": "45429b8b3f2b307ca47afe567ac70c91",
+      "Version": "1.0.59",
+      "Source": "Repository",
+      "Repository": "SAGE",
+      "Hash": "a093d64da4562649484e13920faad510",
       "Requirements": [
         "reticulate",
         "rjson"
