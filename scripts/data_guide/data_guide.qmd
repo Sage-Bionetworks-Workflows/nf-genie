@@ -5,6 +5,11 @@ format:
     toc: true
     number-sections: false
     colorlinks: true
+    include-in-header:
+      text: |
+        \usepackage{titling}
+        \pretitle{\begin{center}\LARGE\includegraphics[width=20cm]{genie_banner.png}\\[\bigskipamount]}
+        \posttitle{\end{center}}
 editor: source
 date: today
 author: "AACR"
