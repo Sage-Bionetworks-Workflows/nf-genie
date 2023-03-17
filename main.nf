@@ -235,39 +235,6 @@ else if (params.release.contains("public")) {
 
   // Create release dashboard
 
-  // Create data guide
-  process data_guide {
-    debug true
-    container '../'
-    secret 'SYNAPSE_AUTH_TOKEN'
-
-    input:
-    val previous from consortium_release_out
-    val release from ch_release
-
-
-    output:
-    stdout into consortium_release_out
-
-    script:
-    if (params.production) {
-      """
-      python3 /root/Genie/bin/database_to_staging.py \
-      $seq \
-      /root/cbioportal \
-      $release
-      """
-    }
-    else {
-      """
-      python3 /root/Genie/bin/database_to_staging.py \
-      $seq \
-      /root/cbioportal \
-      $release \
-      --test
-      """
-    }
-  }
   // Create skeleton release notes
 
   // run artifact finder
@@ -338,4 +305,77 @@ else if (params.release.contains("public")) {
   check_retraction_out.view()
 
   // TMB code
+}
+
+if (!params.only_validate) {
+
+  // Create data guide
+  process data_guide {
+    debug true
+    container 'test'
+    secret 'SYNAPSE_AUTH_TOKEN'
+
+    input:
+    val previous from consortium_release_out
+    val release from ch_release
+    val proj_id from ch_project_id
+
+    output:
+    path "data_guide.pdf" into data_guide_out
+
+    script:
+    if (params.production) {
+      """
+      # cd /data_guide
+      quarto render /data_guide/data_guide.qmd -P release:$release -P project_id:$proj_id --to pdf
+      mv /data_guide/data_guide.pdf ./
+      """
+    } else if (params.release.contains("public")) {
+      """
+      # cd /data_guide
+      quarto render data_guide.qmd -P release:TESTpublic -P project_id:$proj_id --to pdf
+      mv /data_guide/data_guide.pdf ./
+      """
+    } else {
+      """
+      # cd /data_guide
+      quarto render /data_guide/data_guide.qmd -P release:TESTING -P project_id:$proj_id --to pdf
+      mv /data_guide/data_guide.pdf ./
+      """
+    }
+  }
+  //
+  process syn_store {
+    debug true
+    container 'sagebionetworks/genie:latest'
+    secret 'SYNAPSE_AUTH_TOKEN'
+
+    input:
+    val release from ch_release
+    val proj_id from ch_project_id
+    path guide from data_guide_out
+
+    output:
+    stdout into syn_store_out
+
+    script:
+    """
+    #!/usr/bin/python3
+    from genie import extract
+    import synapseclient
+    syn = synapseclient.login()
+    config = extract.get_genie_config(syn=syn, project_id="$proj_id")
+    fileview = config['releaseFolder']
+    release_files = syn.tableQuery(f"select * from {fileview}")
+    release_files_df = release_files.asDataFrame()
+    if "$release" == "TEST.consortium":
+      release = "TESTING"
+    elif "$release" == "TEST.public":
+      release = "TESTpublic"
+    else:
+      release = "$release"
+    synid = release_files_df['id'][release_files_df.name == release].values[0]
+    syn.store(synapseclient.File("$guide", parentId=synid))
+    """
+  }
 }

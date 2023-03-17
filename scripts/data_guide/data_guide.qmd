@@ -15,7 +15,7 @@ date: today
 author: "AACR"
 params:
   release: "13.6-consortium"
-  db_mapping_synid: "syn10967259"
+  project_id: "syn3380222"
 ---
 
 ```{r setup, echo=F, include=F}
@@ -85,7 +85,9 @@ get_list_assay_info_table <- function(allowed_values, assayinfodf, col) {
   col_per_panel
 }
 
-database_synid_mappingid = params$db_mapping_synid
+project_ent = synGet(params$project_id)
+
+database_synid_mappingid = project_ent$annotations$dbMapping
 release = params$release
 
 release_folder_synid <- get_release_folder_synid(database_synid_mappingid, release)

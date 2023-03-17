@@ -1,5 +1,6 @@
 FROM r-base:4.2.2
 
+# These will allow for the renv install
 ENV RENV_VERSION 0.16.0
 ENV RENV_PATHS_LIBRARY renv/library
 
@@ -28,8 +29,22 @@ RUN R -e "install.packages('remotes', repos = c(CRAN = 'https://cloud.r-project.
 RUN R -e "remotes::install_github('rstudio/renv@${RENV_VERSION}')"
 
 WORKDIR /data_guide
+# only copy renv file
 COPY renv.lock renv.lock
 
 RUN R -e "renv::restore()"
 
+# Must install quarto cli
+WORKDIR /opt
+RUN wget https://github.com/quarto-dev/quarto-cli/releases/download/v1.2.335/quarto-1.2.335-linux-amd64.tar.gz
+RUN tar -C /opt -xvzf quarto-1.2.335-linux-amd64.tar.gz
+
+# Set quarto path
+ENV PATH="${PATH}:/opt/quarto-1.2.335/bin/"
+
+RUN quarto install tinytex
+
+WORKDIR /data_guide
 COPY . .
+# have to run this command again for some reason
+RUN R -e "renv::restore()"
