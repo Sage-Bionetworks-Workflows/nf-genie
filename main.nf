@@ -236,7 +236,38 @@ else if (params.release.contains("public")) {
   // Create release dashboard
 
   // Create data guide
+  process data_guide {
+    debug true
+    container '../'
+    secret 'SYNAPSE_AUTH_TOKEN'
 
+    input:
+    val previous from consortium_release_out
+    val release from ch_release
+
+
+    output:
+    stdout into consortium_release_out
+
+    script:
+    if (params.production) {
+      """
+      python3 /root/Genie/bin/database_to_staging.py \
+      $seq \
+      /root/cbioportal \
+      $release
+      """
+    }
+    else {
+      """
+      python3 /root/Genie/bin/database_to_staging.py \
+      $seq \
+      /root/cbioportal \
+      $release \
+      --test
+      """
+    }
+  }
   // Create skeleton release notes
 
   // run artifact finder
