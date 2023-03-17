@@ -8,6 +8,8 @@
 params.production = false
 // only run validation pipeline
 params.only_validate = false
+// Skip maf processing
+params.skip_maf = false
 // to create new maf database
 params.create_new_maf_db = false
 // release name (pass in TEST.public to test the public release scripts)
@@ -154,26 +156,31 @@ else if (params.release.contains("public")) {
     stdout into maf_process_out
 
     script:
-    if (params.create_new_maf_db) {
+    if (!params.skip_maf) {
+      if (params.create_new_maf_db) {
+        """
+        python3 /root/Genie/bin/input_to_database.py \
+        mutation \
+        --project_id $proj_id \
+        --genie_annotation_pkg \
+        /root/annotation-tools \
+        --createNewMafDatabase
+        """
+      }
+      else {
+        """
+        python3 /root/Genie/bin/input_to_database.py \
+        mutation \
+        --project_id $proj_id \
+        --genie_annotation_pkg \
+        /root/annotation-tools
+        """
+      }
+    } else {
       """
-      python3 /root/Genie/bin/input_to_database.py \
-      mutation \
-      --project_id $proj_id \
-      --genie_annotation_pkg \
-      /root/annotation-tools \
-      --createNewMafDatabase
+      echo "Skipped maf processing"
       """
     }
-    else {
-      """
-      python3 /root/Genie/bin/input_to_database.py \
-      mutation \
-      --project_id $proj_id \
-      --genie_annotation_pkg \
-      /root/annotation-tools
-      """
-    }
-
   }
   maf_process_out.view()
 
@@ -215,7 +222,8 @@ else if (params.release.contains("public")) {
     script:
     if (params.production) {
       """
-      python3 /root/Genie/bin/database_to_staging.py \
+      cd /root/Genie
+      python3 bin/database_to_staging.py \
       $seq \
       /root/cbioportal \
       $release
@@ -223,7 +231,8 @@ else if (params.release.contains("public")) {
     }
     else {
       """
-      python3 /root/Genie/bin/database_to_staging.py \
+      cd /root/Genie
+      python3 bin/database_to_staging.py \
       $seq \
       /root/cbioportal \
       $release \
