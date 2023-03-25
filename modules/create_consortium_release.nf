@@ -17,7 +17,9 @@ process create_consortium_release {
     script:
     if (production) {
         """
-        python3 /root/Genie/bin/database_to_staging.py \
+        # Fixes renv issue
+        cd /root/Genie
+        python3 bin/database_to_staging.py \
         $seq \
         /root/cbioportal \
         $release
@@ -25,7 +27,9 @@ process create_consortium_release {
     }
     else {
         """
-        python3 /root/Genie/bin/database_to_staging.py \
+        # Fixes renv issue
+        cd /root/Genie
+        python3 bin/database_to_staging.py \
         $seq \
         /root/cbioportal \
         $release \
