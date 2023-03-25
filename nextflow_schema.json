@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/Sage-Bionetworks-Workflows/nf-genie/master/nextflow_schema.json",
+    "title": "Sage-Bionetworks-Workflows/nf-genie pipeline parameters",
+    "description": "Nextflow pipeline for main GENIE processing",
+    "type": "object",
+    "properties": {
+        "force": {
+            "type": "boolean",
+            "description": "Force start the pipeline by resetting the center mapping annotation"
+        },
+        "production": {
+            "type": "boolean",
+            "description": "Run testing or production pipeline"
+        },
+        "process_type": {
+            "type": "string",
+            "default": "only_validate",
+            "description": "Available GENIE processing functions",
+            "enum": [
+                "only_validate",
+                "main_process",
+                "maf_process",
+                "consortium_release",
+                "public_release)"
+            ]
+        },
+        "center": {
+            "type": "string",
+            "description": "Center to process",
+            "default": "ALL"
+        },
+        "create_new_maf_db": {
+            "type": "boolean",
+            "description": "Creates new maf Synapse Table"
+        },
+        "release": {
+            "type": "string",
+            "description": "Release name (specify TEST.consortium/TEST.public to test consortium and public releases)",
+            "default": "TEST.consortium"
+        }
+    }
+}

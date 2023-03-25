@@ -18,7 +18,6 @@ include { process_maf } from './modules/process_maf'
 // SET PARAMETERS
 
 // TODO: centers to process / exclude
-
 // force start the pipeline, by resetting the center
 // mapping annotation
 params.force = false
@@ -32,6 +31,10 @@ params.center = "ALL"
 params.create_new_maf_db = false
 // release name (pass in TEST.public to test the public release scripts)
 params.release = "TEST.consortium"
+
+// Validate input parameters
+WorkflowMain.initialise(workflow, params, log)
+
 
 // Determine which synapse id to pass into processing
 if (params.production) {
