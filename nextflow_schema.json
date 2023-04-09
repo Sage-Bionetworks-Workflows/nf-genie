@@ -28,7 +28,7 @@
                         "main_process",
                         "maf_process",
                         "consortium_release",
-                        "public_release)"
+                        "public_release"
                     ]
                 },
                 "center": {
