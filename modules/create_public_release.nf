@@ -14,7 +14,9 @@ process create_public_release {
     script:
     if (production) {
         """
-        python3 /root/Genie/bin/consortium_to_public.py \
+        # Fixes renv issue
+        cd /root/Genie
+        python3 bin/consortium_to_public.py \
         $seq \
         /root/cbioportal \
         $release
@@ -22,7 +24,9 @@ process create_public_release {
     }
     else {
         """
-        python3 /root/Genie/bin/consortium_to_public.py \
+        # Fixes renv issue
+        cd /root/Genie
+        python3 bin/consortium_to_public.py \
         $seq \
         /root/cbioportal \
         $release \
