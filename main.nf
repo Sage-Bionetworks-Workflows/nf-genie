@@ -107,10 +107,10 @@ workflow {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
-    process_maf(ch_project_id, ch_center)
+    process_maf(ch_project_id, ch_center, params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
-    process_main(ch_project_id, ch_center, "default")
+    process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
     process_maf(ch_project_id, ch_center, params.create_new_maf_db)
     process_main(process_maf.out, ch_project_id, ch_center)
