@@ -25,12 +25,12 @@
                 },
                 "center": {
                     "type": "string",
-                    "description": "Pick a center to process or validate. Defaults too ALL which means all centers. This value should be ALL if you pick consortium release or public release.",
+                    "description": "Pick a center to process or validate. Defaults to ALL which means all centers. This value should be ALL if you pick consortium release or public release.",
                     "default": "ALL"
                 },
                 "create_new_maf_db": {
                     "type": "boolean",
-                    "description": "Create a new maf Synapse Table. Set this to True every consortium release"
+                    "description": "Create a new maf Synapse Table. Toggle this for every consortium release."
                 },
                 "release": {
                     "type": "string",
