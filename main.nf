@@ -86,12 +86,12 @@ if (!seq_date) {
 if (major_release != "TEST") {
   project_id = "syn3380222"
   center_map_synid = "syn10061452"
-  is_prod = True
+  is_prod = true
 }
 else {
   project_id = "syn7208886"
   center_map_synid = "syn11601248"
-  is_prod = False
+  is_prod = false
 }
 
 workflow {
