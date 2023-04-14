@@ -20,7 +20,7 @@ include { process_maf } from './modules/process_maf'
 // TODO: centers to process / exclude
 // force start the pipeline, by resetting the center
 // mapping annotation
-params.force = false
+// params.force = false
 // testing or production pipeline
 params.production = false
 // Different process types (only_validate, main_process, maf_process, consortium_release, public_release)
@@ -99,10 +99,10 @@ workflow {
   ch_seq_date = Channel.value(seq_date)
   ch_center = Channel.value(params.center)
 
-  if (params.force) {
-    reset_processing(center_map_synid)
-    reset_processing.out.view()
-  }
+  // if (params.force) {
+  //   reset_processing(center_map_synid)
+  //   reset_processing.out.view()
+  // }
   if (params.process_type == "only_validate") {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
