@@ -29,7 +29,7 @@
                 },
                 "center": {
                     "type": "string",
-                    "description": "Center to process. Defaults too ALL which means all centers.",
+                    "description": "Pick a center to process or validate. Defaults too ALL which means all centers. This value should be ALL if you pick consortium release or public release.",
                     "default": "ALL"
                 },
                 "create_new_maf_db": {
