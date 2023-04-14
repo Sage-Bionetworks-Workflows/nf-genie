@@ -39,7 +39,8 @@
                 "release": {
                     "type": "string",
                     "description": "Release name (specify TEST.consortium/TEST.public to test consortium and public releases)",
-                    "default": "TEST.consortium"
+                    "default": "TEST.consortium",
+                    "pattern": "\\d+[.]\\d+-(consortium|public)$|TEST.public|TEST.consortium"
                 }
             }
         }
