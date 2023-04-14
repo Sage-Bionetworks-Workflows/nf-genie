@@ -11,10 +11,6 @@
             "fa_icon": "fas fa-terminal",
             "description": "Define GENIE pipeline parameters.",
             "properties": {
-                "production": {
-                    "type": "boolean",
-                    "description": "Run production pipeline"
-                },
                 "process_type": {
                     "type": "string",
                     "default": "only_validate",
