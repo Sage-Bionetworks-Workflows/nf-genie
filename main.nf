@@ -21,8 +21,6 @@ include { process_maf } from './modules/process_maf'
 // force start the pipeline, by resetting the center
 // mapping annotation
 // params.force = false
-// testing or production pipeline
-params.production = false
 // Different process types (only_validate, main_process, maf_process, consortium_release, public_release)
 params.process_type = "only_validate"
 // Specify center
@@ -35,16 +33,6 @@ params.release = "TEST.consortium"
 // Validate input parameters
 WorkflowMain.initialise(workflow, params, log)
 
-
-// Determine which synapse id to pass into processing
-if (params.production) {
-  project_id = "syn3380222"
-  center_map_synid = "syn10061452"
-}
-else {
-  project_id = "syn7208886"
-  center_map_synid = "syn11601248"
-}
 /*
 release, seq
 11-consortium, Jul-2021
@@ -93,11 +81,25 @@ if (!seq_date) {
   throw new Exception("${major_release} release not supported in map variables in nf code.")
 }
 
+// If major release is not TEST
+// Specify production synapse id to pass into processing
+if (major_release != "TEST") {
+  project_id = "syn3380222"
+  center_map_synid = "syn10061452"
+  is_prod = True
+}
+else {
+  project_id = "syn7208886"
+  center_map_synid = "syn11601248"
+  is_prod = False
+}
+
 workflow {
   ch_release = Channel.value(params.release)
   ch_project_id = Channel.value(project_id)
   ch_seq_date = Channel.value(seq_date)
   ch_center = Channel.value(params.center)
+  ch_is_prod = Channel.value(is_prod)
 
   // if (params.force) {
   //   reset_processing(center_map_synid)
@@ -114,15 +116,15 @@ workflow {
   } else if (params.process_type == "consortium_release") {
     process_maf(ch_project_id, ch_center, params.create_new_maf_db)
     process_main(process_maf.out, ch_project_id, ch_center)
-    create_consortium_release(process_main.out, ch_release, params.production, ch_seq_date)
-    if (params.production) {
+    create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date)
+    if (ch_is_prod) {
       find_maf_artifacts(create_consortium_release.out, ch_release)
       load_to_bpc(create_consortium_release.out, ch_release)
       check_for_retractions(create_consortium_release.out)
     }
   } else if (params.process_type == "public_release") {
-    create_public_release(ch_release, ch_seq_date, params.production)
+    create_public_release(ch_release, ch_seq_date, ch_is_prod)
   } else {
-    throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium', 'public'")
+    throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium_release', 'public_release'")
   }
 }
