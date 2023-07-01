@@ -10,3 +10,12 @@ project_id <- args[2]
 quarto::quarto_render("data_guide.qmd",
                       execute_params = list("release" = release,
                                             "project_id" = project_id))
+
+project_ent = synGet(project_id)
+
+database_synid_mappingid = project_ent$annotations$dbMapping
+release = params$release
+
+release_folder_synid <- get_release_folder_synid(database_synid_mappingid, release)
+data_guide_ent = File("data_guide.pdf", parentId=release_folder_synid)
+synStore(data_guide_ent)
