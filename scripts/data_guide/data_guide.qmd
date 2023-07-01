@@ -80,7 +80,7 @@ get_list_assay_info_table <- function(allowed_values, assayinfodf, col) {
     str_value = assayinfodf[,col][assayinfodf$SEQ_PIPELINE_ID == panel]
     str_value_vector = unlist(strsplit(str_value, ";"))
     col_per_panel[panel, ] = ''
-    col_per_panel[panel, str_value_vector] = "\\checkmark"
+    col_per_panel[panel, str_value_vector] = "X"
   }
   col_per_panel
 }
@@ -200,6 +200,44 @@ h = ggarrange(library_selection, library_strategy,
               labels = c("A", "B", "C", "D"),
               ncol = 2, nrow = 2)
 print(h)
+```
+
+```{r, echo=F}
+allowed_coverage = c('hotspot_regions', 'coding_exons',
+                     'introns', 'promoters')
+coverage_per_panel = get_list_assay_info_table(allowed_coverage,
+                                               pipelinedf,
+                                               "coverage")
+kable(coverage_per_panel, caption = 'Coverage per Panel/Pipeline')
+```
+
+```{r, echo=F}
+allowed_alterations = c("snv", "small_indels", "gene_level_cna",
+                        "intragenic_cna", "structural_variants")
+
+alterations_per_panel = get_list_assay_info_table(allowed_alterations,
+                                                  pipelinedf,
+                                                  "alteration_types")
+
+kable(alterations_per_panel, caption = 'Alteration Types per Panel/Pipeline')
+```
+
+```{r, echo=F}
+allowed_specimen_types = c("FFPE", 'fresh_frozen')
+
+specimen_per_panel = get_list_assay_info_table(allowed_specimen_types,
+                                               pipelinedf,
+                                               "preservation_technique")
+
+kable(specimen_per_panel, caption = 'Preservation Techniques per Panels/Pipelines')
+```
+
+```{r, echo=F}
+gene_number_info = assayinfodf[, c("SEQ_ASSAY_ID", "calling_strategy", "number_of_genes", "target_capture_kit")]
+gene_number_info$number_of_genes <- as.integer(gene_number_info$number_of_genes)
+kable(gene_number_info[order(gene_number_info$SEQ_ASSAY_ID), ],
+      caption = 'Sequence Assay Genomic Information',
+      row.names = F, col.names = c("Sequencing Assay", "Calling Strategy", "Number of genes", "Target Capture Kit"))
 ```
 
 # Genomic Profiling at Each Center
@@ -381,19 +419,34 @@ flextable(oc_df) %>%
 
 For center abbreviations please see Table 1.
 
++------------------+-----------------------------------------------------------------+
 | **Abbreviation** | **Full Term**                                                   |
-|------------------|-----------------------------------------------------------------|
++==================+=================================================================+
 | AACR             | American Association for Cancer Research, Philadelphia, PA, USA |
++------------------+-----------------------------------------------------------------+
 | CNA              | Copy number alterations                                         |
++------------------+-----------------------------------------------------------------+
 | CNV              | Copy number variants                                            |
++------------------+-----------------------------------------------------------------+
 | FFPE             | Formalin-fixed, paraffin-embedded                               |
++------------------+-----------------------------------------------------------------+
 | GENIE            | Genomics, Evidence, Neoplasia, Information, Exchange            |
++------------------+-----------------------------------------------------------------+
 | HIPAA            | Health Insurance Portability and Accountability Act             |
++------------------+-----------------------------------------------------------------+
 | IRB              | Institutional Review Board                                      |
++------------------+-----------------------------------------------------------------+
 | MAF              | Mutation annotation format                                      |
++------------------+-----------------------------------------------------------------+
 | NAACCR           | North American Association of Central Cancer Registries         |
++------------------+-----------------------------------------------------------------+
 | NGS              | Next-generation sequencing                                      |
++------------------+-----------------------------------------------------------------+
 | PCR              | Polymerase chain reaction                                       |
++------------------+-----------------------------------------------------------------+
 | SNP              | Single-nucleotide polymorphism                                  |
++------------------+-----------------------------------------------------------------+
 | SNV              | Single-nucleotide variants                                      |
++------------------+-----------------------------------------------------------------+
 | VCF              | Variant Call Format                                             |
++------------------+-----------------------------------------------------------------+
