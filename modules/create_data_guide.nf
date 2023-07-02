@@ -1,5 +1,4 @@
-
-  // Create data guide
+// Create data guide
 process create_data_guide {
     debug true
     container 'sagebionetworks/genie-data-guide:latest'

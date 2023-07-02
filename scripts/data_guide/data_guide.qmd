@@ -40,6 +40,11 @@ get_release_folder_synid <- function(database_synid_mappingid, release) {
                                            "name not like 'Release%' and name <> 'case_lists'",
                                            synid = release_folder_fileview_synid))
   releases = synapser::as.data.frame(choose_from_release)
+  if (release == "TEST.consortium") {
+    release = "TESTING"
+  } else if (release == "TEST.public") {
+    release = "TESTpublic"
+  }
   if (!any(releases$releases %in% release)) {
     stop(glue("Must choose correct release: {releases}",
               releases = paste0(releases$releases, collapse = ", ")))
