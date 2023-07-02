@@ -11,13 +11,14 @@ process create_data_guide {
     val proj_id
 
     output:
-    path "data_guide.pdf"
+    stdout
+    // path "data_guide.pdf"
 
     script:
     """
-    # quarto render /data_guide/data_guide.qmd -P release:$release -P project_id:$proj_id --to pdf
-    # mv /data_guide/data_guide.pdf ./
     cd /data_guide
+    # This is the quarto cli
+    # quarto render data_guide.qmd -P release:$release -P project_id:$proj_id --to pdf
     Rscript generate_data_guide_cli.R $release $proj_id
     """
 }
