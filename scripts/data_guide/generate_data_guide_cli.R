@@ -14,8 +14,7 @@ quarto::quarto_render("data_guide.qmd",
 project_ent = synGet(project_id)
 
 database_synid_mappingid = project_ent$annotations$dbMapping
-release = params$release
 
 release_folder_synid <- get_release_folder_synid(database_synid_mappingid, release)
 data_guide_ent = File("data_guide.pdf", parentId=release_folder_synid)
-synStore(data_guide_ent)
+synStore(data_guide_ent, executed="https://github.com/Sage-Bionetworks-Workflows/nf-genie")

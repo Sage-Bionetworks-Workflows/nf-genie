@@ -15,9 +15,10 @@ process create_data_guide {
 
     script:
     """
-    # cd /data_guide
-    quarto render /data_guide/data_guide.qmd -P release:$release -P project_id:$proj_id --to pdf
-    mv /data_guide/data_guide.pdf ./
+    # quarto render /data_guide/data_guide.qmd -P release:$release -P project_id:$proj_id --to pdf
+    # mv /data_guide/data_guide.pdf ./
+    cd /data_guide
+    Rscript generate_data_guide_cli.R $release $proj_id
     """
 }
 //   //
