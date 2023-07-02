@@ -3,6 +3,7 @@ FROM r-base:4.2.2
 # These will allow for the renv install
 ENV RENV_VERSION 0.16.0
 ENV RENV_PATHS_LIBRARY renv/library
+ENV QUARTO_VERSION 1.3.433
 
 RUN apt-get update && apt-get -y install \
       libpng-dev \
@@ -36,11 +37,11 @@ RUN R -e "renv::restore()"
 
 # Must install quarto cli
 WORKDIR /opt
-RUN wget https://github.com/quarto-dev/quarto-cli/releases/download/v1.2.335/quarto-1.2.335-linux-amd64.tar.gz
-RUN tar -C /opt -xvzf quarto-1.2.335-linux-amd64.tar.gz
+RUN wget https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.tar.gz
+RUN tar -C /opt -xvzf quarto-${QUARTO_VERSION}-linux-amd64.tar.gz
 
 # Set quarto path
-ENV PATH="${PATH}:/opt/quarto-1.2.335/bin/"
+ENV PATH="${PATH}:/opt/quarto-${QUARTO_VERSION}/bin/"
 
 RUN quarto install tinytex
 

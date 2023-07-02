@@ -27,12 +27,12 @@ process create_data_guide {
 //     secret 'SYNAPSE_AUTH_TOKEN'
 
 //     input:
-//     val release from ch_release
-//     val proj_id from ch_project_id
-//     path guide from data_guide_out
+//     val release
+//     val proj_id
+//     path guide
 
 //     output:
-//     stdout into syn_store_out
+//     stdout
 
 //     script:
 //     """
