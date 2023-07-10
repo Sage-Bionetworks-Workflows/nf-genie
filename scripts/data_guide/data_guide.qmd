@@ -14,7 +14,7 @@ editor: source
 date: today
 author: "AACR"
 params:
-  release: "13.6-consortium"
+  release: "14.6-consortium"
   project_id: "syn3380222"
 ---
 
@@ -163,6 +163,146 @@ kable(centers$asDataFrame())
 
 Protection of patient privacy is paramount, and the AACR GENIE Project therefore requires that each participating center share data in a manner consistent with patient consent and center-specific Institutional Review Board (IRB) policies. The exact approach varies by center, but largely falls into one of three categories: IRB-approved patient-consent to sharing of de-identified data, captured at time of molecular testing; IRB waivers and; and IRB approvals of GENIE-specific research proposals. Additionally, all data has been de-identified via the HIPAA Safe Harbor Method. Full details regarding the HIPAA Safe Harbor Method are available online at: https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/.
 
+# Data Hamonization & QC Process
+
+The GENIE dataset is generated from data curated by multiple cancer centers. Each center prepares their data by uploading their files onto the Synapse platform.
+
+**Required files:**
+
+-   Clinical patient and sample data
+-   Variant data (MAF or VCF file)
+-   Assay information
+-   Genomic regions data (BED file)
+
+**Optional files:**
+
+-   Structural variant data
+-   Segmented data
+-   Discrete copy number data
+-   Mutations in cis data
+-   Sample and/or patient retraction file
+
+Only validated files that adhere to the submission guidelines will be pushed to the release. The files that do not pass these validation checks will not be processed and an email notifying any errors or warnings will be sent to each center to correct. Each accepted file type has its own submission guidelines the centers must follow. Some examples of these validation checks are given below:
+
+-   assay information file: `SEQ_ASSAY_ID`s must start with center abbreviation.
+-   BED file: `Start_Position` must only be integers and is the 2nd column.
+-   MAF file: `T_ALT_COUNT` must be an integer.
+
+Every month the center files are merged and processed into the release files. During processing, specific sample and variant filters and transformations are applied to the each center's validated files. After processing, the release files go through some manual and automated review processes.
+
+For more information on the filters and review processes, see below.
+
+## Sample Filters
+
+[Sequence Date]{.underline}
+
+Samples from every major release and its associated consortium releases are vetted by its SEQ_DATE. For instance, samples in the 5.0 consortium and public releases will only contain samples that were sequenced prior to Jan-2018 (not including Jan-2018)
+
+[No BED file]{.underline}
+
+Samples that have a SEQ_ASSAY_ID that don't have a bed file associated with them will be removed.
+
+[Oncotree]{.underline}
+
+Samples with deprecated codes (as defined by the oncotree source version used in the release) will be removed.
+
+[cfDNA]{.underline}
+
+Any sample with SAMPLE_CLASS that is cfDNA is removed from the public release.
+
+[Patient and sample retractions]{.underline}
+
+-   Implicit retraction occurs when any data that is has been withdrawn from new uploads will automatically be removed from the upcoming consortium/public releases.
+-   Explicit retractions occurs when centers submit a patient or sample ID in their retraction file. This may occur when a patient decides to retract their consent.
+
+[Age information redaction]{.underline}
+
+When AGE_AT_SEQ_REPORT is \>32485, the fields BIRTH_YEAR, INT_CONTACT, INT_DOD, and AGE_AT_SEQ_REPORT are redacted. If the difference between the BIRTH_YEAR and YEAR_CONTACT or BIRTH_YEAR and YEAR_DEATH is greater than 89, those values will be redacted.
+
+-   Intervals are redacted with \>32485
+-   Ages are redacted with \>89 and \<18
+-   Years are redacted with cannotReleaseHIPAA and withheld.
+
+## Variant Data Filters
+
+[Germline Filter]{.underline}
+
+-   All germline variants are filtered out in all releases.
+    -   We added a whitelist of GRCh37 loci where pathogenic somatic events are known to occur. The whitelist can be viewed here.
+-   Genome Nexus reports gnomAD AFs by querying the Genome Aggregation Database to determine common variants. An additional filter named common_variant is also appended if allele count across at least one ExAC subpopulation is \>10 (this default cutoff can be changed when running vcf2maf). If any variant has a max gnomAD AF from any subpopulation that is over 0.0005, the variant will be filtered out. This \>10 allele count (AC) cutoff was selected because it tagged no more than 1% of the somatic calls across all MSK-IMPACT samples with patient-matched controls.
+    -   So if you're handling somatic variants, the common_variant tag means this is likely a false-positive. It is less likely to be a legit somatic variant at a site that ExAC classifies as germline or artifact.
+-   While the GENIE data available from Sage contains all mutation data, the following mutation types are automatically altered upon import into the cBioPortal: Silent, Intronic, 3' UTR, 3' Flank, 5' UTR, 5' Flank and Intergenic region (IGR).
+-   Seventeen of the nineteen GENIE participating centers performed tumor-only sequencing i.e. without also sequencing a patient-matched control sample like blood, to isolate somatic events. These centers minimized artifacts and germline events using pooled controls from unrelated individuals, or using databases of known artifacts, common germline variants, and recurrent somatic mutations. However, there remains a risk that such centers may inadvertently release germline variants that can theoretically be used for patient re-identication. To minimize this risk, the GENIE consortium developed a stringent germline filtering pipeline, and applied it uniformly to all variants across all centers.
+    -   Hotspots from Chang et al. minus some likely artifacts. (http://dx.doi.org/10.1038/nbt.3391 )
+    -   Somatic mutations associated with clonal hematopoietic expansion from Xie et al. (http://dx.doi.org/10.1038/nm.3733 ) 
+    -   Somatically mutable germline sites at MSH6:F1088, TP53:R290, TERT:E280, ASXL1:G645_G646.
+
+[MAF in BED]{.underline}
+
+Any variants in the mutation file that isn't described by the bed file will be filtered out
+
+[Mutations-in-cis]{.underline}
+
+Samples that have variants that could be merged together will be filtered out. This filter looks for close proximity variants (within 6bp) and difference of variant allele frequency between two variants (\<0.05). Sites review the variants that are filtered out and select one of the three options for this filter:
+
+-   ON: Sage filters out all samples with variants flagged
+-   OFF: If a center already does this filter prior to upload, the filter can be turned off
+-   FLAG: The samples are not removed, but the variants are annotated in the maf file. (Discussed May 6th, 2019)
+
+## Processing Transformations
+
+[Genome Nexus Annotation Pipeline]{.underline}
+
+-   Contributing GENIE centers provided mutation data in Variant Call Format (VCF) or Mutation Annotation Format (GDC MAF v1.0.0) with additionalfields for read counts supporting variant alleles, reference alleles, and total depth. Some "MAF-like" text files with minimal required columns were also received from the participating centers. These various input formats were converted into a complete tab-separated MAF format, with Genome Nexus.
+-   The GENIE dataset is annotating all variants with Genome Nexus starting from the 9.1-consortium release (instead of vcf2maf).
+
+[Gene symbol harmonization]{.underline}
+
+All submitted HUGO gene symbols will be harmonized against GRCh37 by checking the coordinates against the annotation. The below diagram illustrates how conflicts between submitted and harmonized symbols will be resolved.
+
+-   Every single row of your bed file will be matched against the gene database. If the submitted symbol matches a row in the gene database and there is an overlap from the submitted bed region, the submitted symbol will be returned.
+-   If the submitted symbol does not exist in the database or there is not any overlap, an attempt to find any gene that completely encapsulates the submitted bed region is made. If the bed region is contained completely inside one gene, then it is labelled as that gene. If a bed region is enclosed completely in more than one gene, and the submitted symbol doesn't match any of the genes returned, NULL will be returned.
+-   If the submitted region isn't enclosed in any gene, then calculations are made to check if the bed region resides at least 90% in a gene. If there is more than one gene returned while doing 90% boundary calculations, NULL is returned.
+
+[CNA Value Harmonization]{.underline}
+
+On a per site basis, if there are more two rows that are the same gene, the values are updated using the following logic:
+
+-   If there is one value, keep that value
+-   If there are two values (e.g. 2 or 0), we take the non-zero value.
+-   If there are two values that aren't zero (e.g. 1 and 2), it is NA.
+-   If there are more than two values (e.g. 0 or 1 or 2), it is NA.
+
+[Clinical Tier Release Scope Filters]{.underline}
+
+Some parts of the clinical data is masked from the public releases. This is based on a clinical tier release scope of release document.
+
+## Post-Release Quality Checks
+
+[GENIE-ArtifactFinder]{.underline}
+
+Finds potential genomic artifacts by filtering unique variants for which counts in a given panel \>= 10, and counts aggregated from all other panels is \< 10 for which there are \>= 3 different panels that cover the variant in question.
+
+The resulting set is annotated with a fisher p-value for the variants that pass this filtering:
+
++--------------------------------------------------------------------------+-------------------------------------------------------------+
+| Number of variants called in panel                                       | Number of samples for this panel                            |
++==========================================================================+=============================================================+
+| Number of variants called in other panels with coverage for this variant | Number of samples for panels with coverage for this variant |
++--------------------------------------------------------------------------+-------------------------------------------------------------+
+
+[Release Report]{.underline}
+
+After release, each center performs a manual review of their data based on an auto-generated dashboard that summarizes some key elements. Some examples of items sites review are given below:
+
+-   Confirm sample count
+-   Confirm variant count (flagged mutations). Most of these variants are potential artifacts flagged by manual review of cBioPortal. Suggestions for variants that should be part of this list or any variant shouldn't be part of this list are welcome.
+-   Fix BED and assay information discrepancies
+-   Confirm top 5 most frequently mutated genes per pipeline for all non-synonymous mutations
+-   Remove blacklisted variants
+-   Confirm clinical attribute distributions/values are valid
+-   Confirm patients and samples that were marked for retraction
+
 # Summary of Sequence Pipeline
 
 Traditionally, the SEQ_ASSAY_ID was used as an institution's identifier for their assays when each assay had one associated gene panel. As GENIE grew, we wanted to support an assay having multiple gene panels. SEQ_ASSAY_ID was repurposed to be an identifier for a center's assay OR panel. For those centers that have multiple panels per assay, we introduced SEQ_PIPELINE_ID (pipeline), which encompasses multiple SEQ_ASSAY_ID (panel).
@@ -259,20 +399,6 @@ for (center in sort(processed_centers)) {
 }
 
 ```
-
-# Pipeline for Annotating Mutations and Filtering Putative Germline SNPs
-
-Contributing GENIE centers provided mutation data in [Variant Call Format (VCF)](http://samtools.github.io/hts-specs/) or Mutation Annotation Format ([GDC MAF v1.0.0](https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/)) with additional fields for read counts supporting variant alleles, reference alleles, and total depth. Some "MAF-like" text files with [minimal required columns](https://github.com/mskcc/vcf2maf/blob/v1.6.17/data/minimalist_test_maf.tsv) were also received from the participating centers. These various input formats were converted into a complete tab-separated MAF format, with [Genome Nexus](https://www.genomenexus.org/)
-
-While the GENIE data available from Sage contains all mutation data, the following mutation types are automatically filtered upon import into the [cBioPortal](http://www.cbioportal.org/genie): Silent, Intronic, 3' UTR, 3' Flank, 5' UTR, 5' Flank and Intergenic region (IGR).
-
-Seventeen of the nineteen GENIE participating centers performed tumor-only sequencing i.e. without also sequencing a patient-matched control sample like blood, to isolate somatic events. These centers minimized artifacts and germline events using pooled controls from unrelated individuals, or using databases of known artifacts, common germline variants, and recurrent somatic mutations. However, there remains a risk that such centers may inadvertently release germline variants that can theoretically be used for patient re-identification. To minimize this risk, the GENIE consortium developed a stringent germline filtering pipeline, and applied it uniformly to all variants across all centers. Genome Nexus will report gnomAD AFs by querying the Genome Aggregation Database to determine common variants. If any variant has a max gnomAD AF from any subpopulation that is over 0.0005, the variant will be filtered out. This cutoff was selected because it tagged no more than 1% of the somatic calls across all MSK-IMPACT samples with patient-matched controls.
-
--   Hotspots from Chang et al. minus some likely artifacts.(dx.doi.org/10.1038/nbt.3391
-
--   Somatic mutations associated with clonal hematopoietic expansion from Xie et al. (dx.doi.org/10.1038/nm.3733)
-
--   Somatically mutable germline sites at MSH6:F1088, TP53:R290, TERT:E280, ASXL1:G645_G646.
 
 # Description of Data Files
 
