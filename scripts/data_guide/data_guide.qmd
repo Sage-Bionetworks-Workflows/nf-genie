@@ -354,7 +354,8 @@ allowed_coverage = c('hotspot_regions', 'coding_exons',
 coverage_per_panel = get_list_assay_info_table(allowed_coverage,
                                                pipelinedf,
                                                "coverage")
-kbl(coverage_per_panel, longtable = T, booktabs = T, caption = 'Coverage per Panel/Pipeline') %>% kable_styling(latex_options = c("repeat_header", "striped"))
+kbl(coverage_per_panel, longtable = T, booktabs = T, caption = 'Coverage per Panel/Pipeline') %>%
+  kable_styling(latex_options = c("repeat_header", "striped"))
 ```
 
 ```{r, echo=F}
@@ -365,7 +366,8 @@ alterations_per_panel = get_list_assay_info_table(allowed_alterations,
                                                   pipelinedf,
                                                   "alteration_types")
 
-kbl(alterations_per_panel, longtable = T, booktabs = T, caption = 'Alteration Types per Panel/Pipeline')  %>% kable_styling(latex_options = c("repeat_header", "striped", "scale_down"), font_size=5)
+kbl(alterations_per_panel, longtable = T, booktabs = T, caption = 'Alteration Types per Panel/Pipeline')  %>%
+  kable_styling(latex_options = c("repeat_header", "striped"), font_size=5)
 ```
 
 ```{r, echo=F}
@@ -455,85 +457,127 @@ data_cna_hg19.seg
 
 # Clinical Data
 
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Data Element         | Example Values                                        | Data Description                                                                                                                                                                                                                                                                                                                                                                                                                      |
-+======================+=======================================================+=======================================================================================================================================================================================================================================================================================================================================================================================================================================+
-| AGE_AT_SEQ_REPORT    | Integer values, \<18, or \>89                         | The age of the patient at the time that the sequencing results were reported. Age is masked for patients aged 90 years and greater and for patients under 18 years.                                                                                                                                                                                                                                                                   |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CENTER               | MSK                                                   | The center submitting the clinical and genomic data                                                                                                                                                                                                                                                                                                                                                                                   |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ETHNICITY            | Non-Spanish/nonHispanic Spanish/Hispanic Unknown      | Indication of Spanish/Hispanic origin of the patient; this data element maps to the NAACCR v16, Element #190. Institutions not collecting Spanish/Hispanic origin have set this column to Unknown.                                                                                                                                                                                                                                    |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ONCOTREE_CODE        | LUAD                                                  | The primary cancer diagnosis "main type", based on the OncoTree ontology. The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02                                                                                                                                                                                                                                                                 |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| PATIENT_ID           | GENIE-JHU-1234                                        | The unique, anonymized patient identifier for the GENIE project. Conforms to the following the convention: GENIE-CENTER-1234. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized unique identifier for the patient.                                                                                                                                    |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| PRIMARY_RACE         | Asian Black Native American Other Unknown White       | The primary race recorded for the patient; this data element maps to the NAACCR v16, Element #160. For institutions collecting more than one race category, this race code is the primary race for the patient. Institutions not collecting race have set this field to Unknown.                                                                                                                                                      |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| SAMPLE_ID            | GENIE-JHU-1234-9876                                   | The unique, anonymized sample identifier for the GENIE project. Conforms to the following the convention: GENIE-CENTER-1234-9876. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized, unique patient identifier. The fourth component is a unique identifier for the sample that will distinguish between two or more specimens from a single patient. |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| SAMPLE_TYPE          | Primary Metastasis Unspecified Not Applicable or Heme | The specimen's type including primary, metastasis and etc\...                                                                                                                                                                                                                                                                                                                                                                         |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| SAMPLE_TYPE_DETAILED | Primary tumor Lymph node metastasis                   | The specimen's detailed type based on its location, including primary site, site of local recurrence, distant metastasis or hematologic malignancy.                                                                                                                                                                                                                                                                                   |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| SEQ_ASSAY_ID         | DFCI-ONCOPANEL-1                                      | The institutional assay identifier for genomic testing platform. Components are separated by hyphens, with the first component corresponding to the Center's abbreviation. All specimens tested by the same platform should have the same identifier.                                                                                                                                                                                 |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| SEX                  | Female\                                               | The patient's sex code; this data element maps to the NAACCR v16, Element #220.                                                                                                                                                                                                                                                                                                                                                       |
-|                      | Male                                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CANCER_TYPE          | Non-Small Cell Lung Cancer                            | The primary cancer diagnosis "main type", based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to: "Non-Small Cell Lung Cancer". The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02.                                                                                                                                                                                  |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| CANCER_TYPE_DETAILED | Lung Adenocarcinoma                                   | The primary cancer diagnosis label, based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to the label: "Lung Adenocarcinoma (LUAD)". The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02                                                                                                                                                                               |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| BIRTH_YEAR           | 1965                                                  | The four-digit year associated with the patient's date of birth.                                                                                                                                                                                                                                                                                                                                                                      |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| YEAR_CONTACT         | 1990                                                  | Record the year that the patient is last known to be alive - data to be derived from information including and EHR, tumor registry, or other system.                                                                                                                                                                                                                                                                                  |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| YEAR_DEATH           | 2010                                                  | Year of death.                                                                                                                                                                                                                                                                                                                                                                                                                        |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| INT_CONTACT          | 15000                                                 | Interval in days from DOB to date of last contact.                                                                                                                                                                                                                                                                                                                                                                                    |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| INT_DOD              | 15000                                                 | Interval in days from DOB to DOD.                                                                                                                                                                                                                                                                                                                                                                                                     |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| DEAD                 | Yes No                                                | Is this patient known to be deceased?                                                                                                                                                                                                                                                                                                                                                                                                 |
-+----------------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+AGE_AT_SEQ_REPORT
 
-: GENIE Clinical Data Fields {tbl-colwidths="\[35,35,30\]"}
+* Example Values: Integer values, <18, or >89
+* Data Description: The age of the patient at the time that the sequencing results were reported. Age is masked for patients aged 90 years and greater and for patients under 18 years.
 
-Cancer types are reported using the OncoTree ontology originally developed at Memorial Sloan Kettering Cancer Center. The 13.0-public uses the OncoTree version oncotree_2021_11_02. The centers participating in GENIE applied the OncoTree cancer types to the tested specimens in a variety of methods depending on center-specific workflows. A brief description of how the cancer type assignment process for each center is specified in Table 9.
+CENTER
 
-```{r}
-#| echo: false
+* Example Values: MSK
+* Data Description: The center submitting the clinical and genomic data
 
-oncotree_assignment = c(
-  "CHOP"="",
-  "CRUK"="Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.",
-  "COLU"="Original diagnosis from pathologist was mapped to OncoTree diagnosis by medical oncologist and research manager.",
-  "DFCI"="Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.",
-  "DUKE"="Anatomic and molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.",
-  "GRCC"="OncoTree cancer types were mapped from ICD-O codes. If no ICD-O code was available, a staff scientist and an oncologist mapped the diagnosis made by the pathologist to OncoTree cancer type.",
-  "JHU"="Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.",
-  "MDA"="OncoTree cancer types were mapped from ICD-O codes.",
-  "MSK"="Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.",
-  "NKI"="Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.",
-  "PROV"="",
-  "SCI"="Original diagnosis from the pathology report was mapped to OncoTree diagnosis by a research coordinator and molecular pathologist.",
-  "UCHI"="",
-  "UCSF"="The original diagnosis was mapped to OncoTree by molecular pathologists from the Clinical Cancer Genomics Laboratory.",
-  "UHN"="The original diagnosis was mapped to OncoTree by a medical oncologist and research manager",
-  "VHIO"="Original diagnosis from pathologist or medical oncologist was mapped to OncoTree diagnosis by research data curator",
-  "VICC"="OncoTree cancer types were mapped from ICD-O codes. If no ICD-O code was available, a research manager mapped the diagnosis to an OncoTree cancer type.",
-  "WAKE"="Diagnoses from Foundation Medicine and Caris Diagnostics to ICD-O-3, then mapped from ICD-O-3 to Oncotree.",
-  "YALE"="Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type."
-)
-oc_df = data.frame(oncotree_assignment)
-oc_df$center = row.names(oc_df)
-oc_df = oc_df[oc_df$center %in% processed_centers, c("center", "oncotree_assignment")]
-kbl(oc_df,
-    row.names = F,
-    caption = "Center Strategies for OncoTree Assignment") %>%
-  kable_styling(latex_options = c("striped", "scale_down"))
-```
+ETHNICITY
+
+* Example Values: Non-Spanish/nonHispanic Spanish/Hispanic Unknown
+* Data Description: Indication of Spanish/Hispanic origin of the patient; this data element maps to the NAACCR v16, Element #190. Institutions not collecting Spanish/Hispanic origin have set this column to Unknown.
+
+ONCOTREE_CODE
+
+* Example Values: LUAD
+* Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02
+
+PATIENT_ID
+
+* Example Values: GENIE-JHU-1234
+* Data Description: The unique, anonymized patient identifier for the GENIE project. Conforms to the following the convention: GENIE-CENTER-1234. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized unique identifier for the patient.
+
+PRIMARY_RACE
+
+* Example Values: Asian Black Native American Other Unknown White
+* Data Description: The primary race recorded for the patient; this data element maps to the NAACCR v16, Element #160. For institutions collecting more than one race category, this race code is the primary race for the patient. Institutions not collecting race have set this field to Unknown.
+
+SAMPLE_ID
+
+* Example Values: GENIE-JHU-1234-9876
+* Data Description: The unique, anonymized sample identifier for the GENIE project. Conforms to the following the convention: GENIE-CENTER-1234-9876. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized, unique patient identifier. The fourth component is a unique identifier for the sample that will distinguish between two or more specimens from a single patient.
+
+SAMPLE_TYPE
+
+* Example Values: Primary Metastasis Unspecified Not Applicable or Heme
+* Data Description: The specimen's type including primary, metastasis and etc...
+
+SAMPLE_TYPE_DETAILED
+
+* Example Values: Primary tumor Lymph node metastasis
+* Data Description: The specimen's detailed type based on its location, including primary site, site of local recurrence, distant metastasis or hematologic malignancy.
+
+SEQ_ASSAY_ID
+
+* Example Values: DFCI-ONCOPANEL-1
+* Data Description: The institutional assay identifier for genomic testing platform. Components are separated by hyphens, with the first component corresponding to the Center's abbreviation. All specimens tested by the same platform should have the same identifier.
+
+SEX
+
+* Example Values: Female, Male
+* Data Description: The patient's sex code; this data element maps to the NAACCR v16, Element #220.
+
+CANCER_TYPE
+
+* Example Values: Non-Small Cell Lung Cancer
+* Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to: "Non-Small Cell Lung Cancer". The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02.
+
+CANCER_TYPE_DETAILED
+
+* Example Values: Lung Adenocarcinoma
+* Data Description: The primary cancer diagnosis label, based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to the label: "Lung Adenocarcinoma (LUAD)". The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02
+
+BIRTH_YEAR
+
+* Example Values: 1965
+* Data Description: The four-digit year associated with the patient's date of birth.
+
+YEAR_CONTACT
+
+* Example Values: 1990
+* Data Description: Record the year that the patient is last known to be alive - data to be derived from information including and EHR, tumor registry, or other system.
+
+YEAR_DEATH
+
+* Example Values: 2010
+* Data Description: Year of death.
+
+INT_CONTACT
+
+* Example Values: 15000
+* Data Description: Interval in days from DOB to date of last contact.
+
+
+INT_DOD
+
+* Example Values: 15000
+* Data Description: Interval in days from DOB to DOD.
+
+DEAD
+
+* Example Values: Yes No
+* Data Description: Is this patient known to be deceased?
+
+
+### Center Strategies for OncoTree Assignment
+
+Cancer types are reported using the OncoTree ontology originally developed at Memorial Sloan Kettering Cancer Center. The 13.0-public uses the OncoTree version oncotree_2021_11_02. The centers participating in GENIE applied the OncoTree cancer types to the tested specimens in a variety of methods depending on center-specific workflows. Here is a brief description of how the cancer type assignment process for each center is specified.
+
+* CHOP:
+* CRUK: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
+* COLU: Original diagnosis from pathologist was mapped to OncoTree diagnosis by medical oncologist and research manager
+* DFCI: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type
+* DUKE: Anatomic and molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
+* GRCC: OncoTree cancer types were mapped from ICD-O codes. If no ICD-O code was available, a staff scientist and an oncologist mapped the diagnosis made by the pathologist to OncoTree cancer type.
+* JHU: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
+* MDA: OncoTree cancer types were mapped from ICD-O codes.
+* MSK: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
+* NKI: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
+* PROV:
+* SCI: Original diagnosis from the pathology report was mapped to OncoTree diagnosis by a research coordinator and molecular pathologist.
+* UCHI:
+* UCSF: The original diagnosis was mapped to OncoTree by molecular pathologists from the Clinical Cancer Genomics Laboratory.
+* UHN: The original diagnosis was mapped to OncoTree by a medical oncologist and research manager
+* VHIO: Original diagnosis from pathologist or medical oncologist was mapped to OncoTree diagnosis by research data curator
+* VICC: OncoTree cancer types were mapped from ICD-O codes. If no ICD-O code was available, a research manager mapped the diagnosis to an OncoTree cancer type.
+* WAKE: Diagnoses from Foundation Medicine and Caris Diagnostics to ICD-O-3, then mapped from ICD-O-3 to Oncotree.
+* YALE: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
+
 
 # Abbreviations and Acronym Glossary
 
