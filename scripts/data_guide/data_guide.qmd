@@ -27,6 +27,8 @@ library(kableExtra)
 # library(flextable)
 library(ggplot2)
 library(ggpubr)
+library(forcats)
+
 synLogin()
 
 
@@ -314,9 +316,11 @@ processed_centers = unique(assayinfodf$CENTER)
 ```
 
 ```{r, echo=F}
-#| tbl-cap: "Number of pipelines per Center"
-
-kable(table(pipelinedf$CENTER), col.names = c("Center", "# of Pipelines"))
+ggplot(pipelinedf, aes(x=fct_infreq(as.factor(CENTER)))) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  xlab("Center") +
+  ylab("Number of Pipelines")
 ```
 
 ```{r, echo=F}
