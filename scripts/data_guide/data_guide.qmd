@@ -93,6 +93,19 @@ get_list_assay_info_table <- function(allowed_values, assayinfodf, col) {
   col_per_panel
 }
 
+# Gets the oncotree link used in latest release
+# This code doesn't grab oncotree used for specific releases
+get_oncotree_link <- function(database_synid_mappingid) {
+  database_synid_mapping = synTableQuery(glue('select * from {synid}',
+                                              synid = database_synid_mappingid))
+  database_synid_mappingdf = synapser::as.data.frame(database_synid_mapping)
+  oncotree_ent_idx = database_synid_mappingdf$Database == "oncotreeLink"
+  oncotree_ent_synid = database_synid_mappingdf$Id[oncotree_ent_idx]
+  oncotree_ent = synGet(oncotree_ent_synid, downloadFile=F)
+  filehandle = oncotree_ent$get("_file_handle")
+  filehandle$externalURL
+}
+
 project_ent = synGet(params$project_id)
 
 database_synid_mappingid = project_ent$annotations$dbMapping
@@ -100,6 +113,8 @@ release = params$release
 
 release_folder_synid <- get_release_folder_synid(database_synid_mappingid, release)
 
+oncotree_link <- get_oncotree_link(database_synid_mappingid)
+print(oncotree_link)
 # Get release files mapping
 release_files_mapping = get_file_mapping(release_folder_synid)
 
@@ -464,7 +479,7 @@ data_cna_hg19.seg
 
 `AGE_AT_SEQ_REPORT`
 
-* Expected Values: Integer values, <18, or >89
+* Expected Values: [Integer], <18, >89, Unknown
 * Data Description: The age of the patient at the time that the sequencing results were reported. Age is masked for patients aged 90 years and greater and for patients under 18 years.
 
 `CENTER`
@@ -474,13 +489,14 @@ data_cna_hg19.seg
 
 `ETHNICITY`
 
-* Expected Values: Non-Spanish/nonHispanic Spanish/Hispanic Unknown
+* Expected Values: Non-Spanish/non-Hispanic, Spanish/Hispanic, Unknown, Not Collected
 * Data Description: Indication of Spanish/Hispanic origin of the patient; this data element maps to the NAACCR v16, Element #190. Institutions not collecting Spanish/Hispanic origin have set this column to Unknown.
 
 `ONCOTREE_CODE`
 
-* Expected Values: LUAD
-* Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02
+* Expected Values: Values can be explored here:
+    http://oncotree.mskcc.org/#/home?version=`r strsplit(oncotree_link, "=")[[1]][2]`
+* Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. The version of Oncotree ontology that was used for this release is `r strsplit(oncotree_link, "=")[[1]][2]`.
 
 `PATIENT_ID`
 
@@ -489,7 +505,7 @@ data_cna_hg19.seg
 
 `PRIMARY_RACE`
 
-* Expected Values: Asian Black Native American Other Unknown White
+* Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
 * Data Description: The primary race recorded for the patient; this data element maps to the NAACCR v16, Element #160. For institutions collecting more than one race category, this race code is the primary race for the patient. Institutions not collecting race have set this field to Unknown.
 
 `SAMPLE_ID`
@@ -499,12 +515,12 @@ data_cna_hg19.seg
 
 `SAMPLE_TYPE`
 
-* Expected Values: Primary Metastasis Unspecified Not Applicable or Heme
+* Expected Values: Primary, Metastasis, Unspecified, Not Applicable or Heme, Not Collected
 * Data Description: The specimen's type including primary, metastasis and etc...
 
 `SAMPLE_TYPE_DETAILED`
 
-* Expected Values: Primary tumor Lymph node metastasis
+* Expected Values: Primary tumor, Lymph node metastasis
 * Data Description: The specimen's detailed type based on its location, including primary site, site of local recurrence, distant metastasis or hematologic malignancy.
 
 `SEQ_ASSAY_ID`
@@ -514,54 +530,67 @@ data_cna_hg19.seg
 
 `SEX`
 
-* Expected Values: Female, Male
+* Expected Values: Female, Male, Other, Transsexual, Not Collected, Unknown
 * Data Description: The patient's sex code; this data element maps to the NAACCR v16, Element #220.
 
 `CANCER_TYPE`
 
 * Expected Values: Non-Small Cell Lung Cancer
-* Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to: "Non-Small Cell Lung Cancer". The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02.
+* Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to: "Non-Small Cell Lung Cancer". The version of Oncotree ontology that was used for this release is `r strsplit(oncotree_link, "=")[[1]][2]`.
 
 `CANCER_TYPE_DETAILED`
 
 * Expected Values: Lung Adenocarcinoma
-* Data Description: The primary cancer diagnosis label, based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to the label: "Lung Adenocarcinoma (LUAD)". The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02
-
-`BIRTH_YEAR`
-
-* Expected Values: 1965
-* Data Description: The four-digit year associated with the patient's date of birth.
+* Data Description: The primary cancer diagnosis label, based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to the label: "Lung Adenocarcinoma (LUAD)". The version of Oncotree ontology that was used for this release is `r strsplit(oncotree_link, "=")[[1]][2]`.
 
 `YEAR_CONTACT`
 
-* Expected Values: 1990
-* Data Description: Record the year that the patient is last known to be alive - data to be derived from information including and EHR, tumor registry, or other system.
+* Expected Values: [Integer], <18, >89, Not Collected, Not Released, Unknown
+* Data Description: Record of the year that the patient is last known to be alive - data to be derived from information including and EHR, tumor registry, or other system.
 
 `YEAR_DEATH`
 
-* Expected Values: 2010
+* Expected Values: [Integer], <18, >89, Not Collected, Not Released, Not Applicable, Unknown
 * Data Description: Year of death.
 
 `INT_CONTACT`
 
-* Expected Values: 15000
+* Expected Values: [Integer], <6570, >32485, Not Collected, Not Released, Unknown
 * Data Description: Interval in days from DOB to date of last contact.
-
 
 `INT_DOD`
 
-* Expected Values: 15000
+* Expected Values: [Integer], <6570, >32485, Not Collected, Not Released, Not Applicable, Unknown
 * Data Description: Interval in days from DOB to DOD.
 
 `DEAD`
 
-* Expected Values: Yes No
+* Expected Values: TRUE, FALSE, Not Collected, Not Released, Not Applicable, Unknown
 * Data Description: Is this patient known to be deceased?
 
+`BIRTH_YEAR` [Not available for public releases]
+
+* Expected Values: [Integer], Unknown, cannotReleaseHIPAA, withheld
+* Data Description: The four-digit year associated with the patient's date of birth.
+
+`SAMPLE_CLASS` [Not available for public releases]
+
+* Expected Values: Tumor, cfDNA
+* Data Description: Annotate samples as Tumor or cfDNA samples.  cfDNA samples are not available for public releases.
+
+`SEQ_YEAR` [Not available for public releases]
+
+* Expected Values: [Integer]
+* Data Description: Each record has a year of sequencing.
+
+`AGE_AT_SEQ_REPORT_DAYS` [Not available for public releases]
+
+* Expected Values: [Integer], >32485, <6570, Unknown
+* Data Description: The interval in days between the patient's date of birth and the date of the sequencing report that is associated with the sample.  The interval is masked for >32485 and <6570.
 
 ### Center Strategies for OncoTree Assignment
 
-Cancer types are reported using the OncoTree ontology originally developed at Memorial Sloan Kettering Cancer Center. The 13.0-public uses the OncoTree version oncotree_2021_11_02. The centers participating in GENIE applied the OncoTree cancer types to the tested specimens in a variety of methods depending on center-specific workflows. Here is a brief description of how the cancer type assignment process for each center is specified.
+Cancer types are reported using the OncoTree ontology originally developed at Memorial Sloan Kettering Cancer Center. This release uses the OncoTree version `r strsplit(oncotree_link, "=")[[1]][2]`. The centers participating in GENIE applied the OncoTree cancer types to the tested specimens in a variety of methods depending on center-specific workflows. Here is a brief description of how the cancer type assignment process for each center is specified.
 
 * CHOP:
 * CRUK: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
