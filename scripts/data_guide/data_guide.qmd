@@ -410,27 +410,27 @@ for (center in sort(processed_centers)) {
 
 # Description of Data Files
 
-Description on most of the data files can be found under the "Data files" section for [cBioPortal file formats](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats).
+Description on most of the data files can be found in the [cBioPortal file formats](https://docs.cbioportal.org/file-formats/0) docs.
 
 
 data_mutations_extended.txt
 
-* Description: Mutation data
+* Description: The mutation data file extends the Mutation Annotation Format (MAF) created as part of the Cancer Genome Atlas project, by adding extra annotations to each mutation record.
 * Details: [MAF format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#mutation-data)
 
 data_CNA.txt
 
-* Description: Discritized copy number data
+* Description: The copy number data file contain values that would be derived from copy-number analysis algorithms like GISTIC or RAE. GISTIC can be installed or run online using the GISTIC 2.0 module on GenePattern.
 * Details: [CNA format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#discrete-copy-number-data)
 
 data_sv.txt
 
-* Description: Structural variant data
+* Description: The structural variant file contains information on structural variants.
 * Details: [Structural Variant format](https://docs.cbioportal.org/file-formats/#structural-variant-data)
 
 genomic_information.txt
 
-* Description: File describing genomic coordinates covered by all platforms for GENIE data. Note: Not all centers contributed copy number data to GENIE
+* Description: File describing genomic coordinates covered by all platforms for GENIE data. This file is used for MAF in BED filter and to generate gene panel files
 * Details: This is not a cBioPortal file format.
   * `Chromosome`, `Start_Position`, `End_Position`: Gene positions
   * `Hugo_Symbol`: Re-mapped gene symbol based on gene positions
@@ -441,7 +441,7 @@ genomic_information.txt
 
 assay_information.txt
 
-* Description: Assay information
+* Description: This describes the genomic profile information for each assay and is used to auto write the summary of pipeline section of the data guide.
 * Details: This is not a cBioPortal file format
   * `is_paired_end`, `library_selection`, `library_strategy`, `platform`, `read_length`, target_capture_kit, instrument_model: defined by [GDC read group](https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=read_group)
   * `number_of_genes`: Number of genes from which variants are called
@@ -454,7 +454,7 @@ assay_information.txt
 
 data_cna_hg19.seg
 
-* Description: Segmented copy number data. Note: Not all centers contributed copy number data to GENIE
+* Description: A SEG file (segmented data; .seg or .cbs) is a tab-delimited text file that lists loci and associated numeric values.
 * Details: [SEG format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#segmented-data)
 
 
