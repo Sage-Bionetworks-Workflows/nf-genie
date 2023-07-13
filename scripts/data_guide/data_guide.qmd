@@ -432,24 +432,25 @@ genomic_information.txt
 
 * Description: File describing genomic coordinates covered by all platforms for GENIE data. Note: Not all centers contributed copy number data to GENIE
 * Details: This is not a cBioPortal file format.
-  * Chromosome, Start_Position, End_Position: Gene positions
-  * Hugo_Symbol: Re-mapped gene symbol based on gene positions
-  * ID: Center submitted gene symbols
-  * SEQ_ASSAY_ID: The institutional assay identifier for genomic testing platform. Feature_Type: "exon", "intron", or "intergenic"
-  * includeInPanel: Used to define gene panel files for cBioPortal. clinicalReported: These are the genes that were clinically Reported. Blank means information not provided.
+  * `Chromosome`, `Start_Position`, `End_Position`: Gene positions
+  * `Hugo_Symbol`: Re-mapped gene symbol based on gene positions
+  * `ID`: Center submitted gene symbols
+  * `SEQ_ASSAY_ID`: The institutional assay identifier for genomic testing platform. Feature_Type: "exon", "intron", or "intergenic"
+  * `includeInPanel`: Used to define gene panel files for cBioPortal.
+  * `clinicalReported`: These are the genes that were clinically Reported. Blank means information not provided.
 
 assay_information.txt
 
 * Description: Assay information
 * Details: This is not a cBioPortal file format
-  * is_paired_end, library_selection, library_strategy, platform, read_length, target_capture_kit, instrument_model: defined by [GDC read group](https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=read_group)
-  * number_of_genes: Number of genes from which variants are called
-  * variant_classifications: List of types of variants that are reported for this assay.
-  * gene_padding: Number of base pairs to add to exon endpoints for the inBED filter.
-  * alteration_types: List of alteration types. specimen_type: List of specimen types.
-  * specimen_tumor_cellularity: Tumor Cellularity Cutoff
-  * calling_strategy: Tumor only or tumor normal.
-  * coverage: List of coverage
+  * `is_paired_end`, `library_selection`, `library_strategy`, `platform`, `read_length`, target_capture_kit, instrument_model: defined by [GDC read group](https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=read_group)
+  * `number_of_genes`: Number of genes from which variants are called
+  * `variant_classifications`: List of types of variants that are reported for this assay.
+  * `gene_padding`: Number of base pairs to add to exon endpoints for the inBED filter.
+  * `alteration_types`: List of alteration types. specimen_type: List of specimen types.
+  * `specimen_tumor_cellularity`: Tumor Cellularity Cutoff
+  * `calling_strategy`: Tumor only or tumor normal.
+  * `coverage`: List of coverage
 
 data_cna_hg19.seg
 
@@ -461,98 +462,98 @@ data_cna_hg19.seg
 
 # Clinical Data
 
-AGE_AT_SEQ_REPORT
+`AGE_AT_SEQ_REPORT`
 
 * Example Values: Integer values, <18, or >89
 * Data Description: The age of the patient at the time that the sequencing results were reported. Age is masked for patients aged 90 years and greater and for patients under 18 years.
 
-CENTER
+`CENTER`
 
 * Example Values: MSK
 * Data Description: The center submitting the clinical and genomic data
 
-ETHNICITY
+`ETHNICITY`
 
 * Example Values: Non-Spanish/nonHispanic Spanish/Hispanic Unknown
 * Data Description: Indication of Spanish/Hispanic origin of the patient; this data element maps to the NAACCR v16, Element #190. Institutions not collecting Spanish/Hispanic origin have set this column to Unknown.
 
-ONCOTREE_CODE
+`ONCOTREE_CODE`
 
 * Example Values: LUAD
 * Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02
 
-PATIENT_ID
+`PATIENT_ID`
 
 * Example Values: GENIE-JHU-1234
 * Data Description: The unique, anonymized patient identifier for the GENIE project. Conforms to the following the convention: GENIE-CENTER-1234. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized unique identifier for the patient.
 
-PRIMARY_RACE
+`PRIMARY_RACE`
 
 * Example Values: Asian Black Native American Other Unknown White
 * Data Description: The primary race recorded for the patient; this data element maps to the NAACCR v16, Element #160. For institutions collecting more than one race category, this race code is the primary race for the patient. Institutions not collecting race have set this field to Unknown.
 
-SAMPLE_ID
+`SAMPLE_ID`
 
 * Example Values: GENIE-JHU-1234-9876
 * Data Description: The unique, anonymized sample identifier for the GENIE project. Conforms to the following the convention: GENIE-CENTER-1234-9876. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized, unique patient identifier. The fourth component is a unique identifier for the sample that will distinguish between two or more specimens from a single patient.
 
-SAMPLE_TYPE
+`SAMPLE_TYPE`
 
 * Example Values: Primary Metastasis Unspecified Not Applicable or Heme
 * Data Description: The specimen's type including primary, metastasis and etc...
 
-SAMPLE_TYPE_DETAILED
+`SAMPLE_TYPE_DETAILED`
 
 * Example Values: Primary tumor Lymph node metastasis
 * Data Description: The specimen's detailed type based on its location, including primary site, site of local recurrence, distant metastasis or hematologic malignancy.
 
-SEQ_ASSAY_ID
+`SEQ_ASSAY_ID`
 
 * Example Values: DFCI-ONCOPANEL-1
 * Data Description: The institutional assay identifier for genomic testing platform. Components are separated by hyphens, with the first component corresponding to the Center's abbreviation. All specimens tested by the same platform should have the same identifier.
 
-SEX
+`SEX`
 
 * Example Values: Female, Male
 * Data Description: The patient's sex code; this data element maps to the NAACCR v16, Element #220.
 
-CANCER_TYPE
+`CANCER_TYPE`
 
 * Example Values: Non-Small Cell Lung Cancer
 * Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to: "Non-Small Cell Lung Cancer". The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02.
 
-CANCER_TYPE_DETAILED
+`CANCER_TYPE_DETAILED`
 
 * Example Values: Lung Adenocarcinoma
 * Data Description: The primary cancer diagnosis label, based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to the label: "Lung Adenocarcinoma (LUAD)". The version of Oncotree ontology that was used for GENIE 13.0-public is oncotree_2021_11_02
 
-BIRTH_YEAR
+`BIRTH_YEAR`
 
 * Example Values: 1965
 * Data Description: The four-digit year associated with the patient's date of birth.
 
-YEAR_CONTACT
+`YEAR_CONTACT`
 
 * Example Values: 1990
 * Data Description: Record the year that the patient is last known to be alive - data to be derived from information including and EHR, tumor registry, or other system.
 
-YEAR_DEATH
+`YEAR_DEATH`
 
 * Example Values: 2010
 * Data Description: Year of death.
 
-INT_CONTACT
+`INT_CONTACT`
 
 * Example Values: 15000
 * Data Description: Interval in days from DOB to date of last contact.
 
 
-INT_DOD
+`INT_DOD`
 
 * Example Values: 15000
 * Data Description: Interval in days from DOB to DOD.
 
-DEAD
+`DEAD`
 
 * Example Values: Yes No
 * Data Description: Is this patient known to be deceased?
