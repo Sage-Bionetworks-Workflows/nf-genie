@@ -1,5 +1,5 @@
 ---
-title: "AACR GENIE `r params$release` Data Guide"
+title: "AACR Project GENIE `r params$release` Data Guide"
 format:
   pdf:
     toc: true
@@ -111,13 +111,13 @@ This document provides an overview of `r params$release` release of American Ass
 
 # Version of Data
 
-AACR GENIE Project Data: Version `r params$release`
+AACR Project GENIE Data: Version `r params$release`
 
 AACR Project GENIE data versions follow a numbering scheme derived from [semantic versioning](https://semver.org/) where the digits in the version correspond to: major.patch-release-type. "Major" releases are public releases of new sample data. "Patch" releases are corrections to major releases, including data retractions. "Releasetype" refers to whether the release is a public AACR Project GENIE release or a private/consortium-only release. Public releases will be denoted with the nomenclature "X.X-public" and consortium-only private releases will be denoted with the nomenclature "X.X-consortium".
 
 # Data Access
 
-AACR GENIE Data is currently available via two mechanisms:
+AACR Project GENIE Data is currently available via two mechanisms:
 
 -   Synapse Platform (Sage Bionetworks): https://synapse.org/genie
 
@@ -164,7 +164,7 @@ kbl(centers$asDataFrame(), booktabs = T) %>% kable_styling(latex_options = c("re
 
 # Human Subjects Protection and Privacy
 
-Protection of patient privacy is paramount, and the AACR GENIE Project therefore requires that each participating center share data in a manner consistent with patient consent and center-specific Institutional Review Board (IRB) policies. The exact approach varies by center, but largely falls into one of three categories: IRB-approved patient-consent to sharing of de-identified data, captured at time of molecular testing; IRB waivers and; and IRB approvals of GENIE-specific research proposals. Additionally, all data has been de-identified via the HIPAA Safe Harbor Method. Full details regarding the HIPAA Safe Harbor Method are available online at: https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/.
+Protection of patient privacy is paramount, and the AACR Project GENIE therefore requires that each participating center share data in a manner consistent with patient consent and center-specific Institutional Review Board (IRB) policies. The exact approach varies by center, but largely falls into one of three categories: IRB-approved patient-consent to sharing of de-identified data, captured at time of molecular testing; IRB waivers and; and IRB approvals of GENIE-specific research proposals. Additionally, all data has been de-identified via the HIPAA Safe Harbor Method. Full details regarding the HIPAA Safe Harbor Method are available online at: https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/.
 
 # Data Hamonization & QC Process
 
@@ -199,11 +199,11 @@ For more information on the filters and review processes, see below.
 
 [Sequence Date]{.underline}
 
-Samples from every major release and its associated consortium releases are vetted by its SEQ_DATE. For instance, samples in the 5.0 consortium and public releases will only contain samples that were sequenced prior to Jan-2018 (not including Jan-2018)
+Samples from every major release and its associated consortium releases are vetted by its `SEQ_DATE`. For instance, samples in the 5.0 consortium and public releases will only contain samples that were sequenced prior to Jan-2018 (not including Jan-2018)
 
 [No BED file]{.underline}
 
-Samples that have a SEQ_ASSAY_ID that don't have a bed file associated with them will be removed.
+Samples that have a `SEQ_ASSAY_ID` that don't have a bed file associated with them will be removed.
 
 [Oncotree]{.underline}
 
@@ -211,7 +211,7 @@ Samples with deprecated codes (as defined by the oncotree source version used in
 
 [cfDNA]{.underline}
 
-Any sample with SAMPLE_CLASS that is cfDNA is removed from the public release.
+Any sample with `SAMPLE_CLASS` that is cfDNA is removed from the public release.
 
 [Patient and sample retractions]{.underline}
 
@@ -220,11 +220,11 @@ Any sample with SAMPLE_CLASS that is cfDNA is removed from the public release.
 
 [Age information redaction]{.underline}
 
-When AGE_AT_SEQ_REPORT is \>32485, the fields BIRTH_YEAR, INT_CONTACT, INT_DOD, and AGE_AT_SEQ_REPORT are redacted. If the difference between the BIRTH_YEAR and YEAR_CONTACT or BIRTH_YEAR and YEAR_DEATH is greater than 89, those values will be redacted.
+When `AGE_AT_SEQ_REPORT`, `INT_CONTACT`, or `INT_DOD` is >32485 or <6570, the fields `BIRTH_YEAR`, `YEAR_CONTACT`, `YEAR_DEATH`, `INT_CONTACT`, `INT_DOD`, and `AGE_AT_SEQ_REPORT` are redacted. If the difference between the `BIRTH_YEAR` and `YEAR_CONTACT` or `BIRTH_YEAR` and `YEAR_DEATH` is greater than 89, those values will be redacted.
 
--   Intervals are redacted with \>32485
--   Ages are redacted with \>89 and \<18
--   Years are redacted with cannotReleaseHIPAA and withheld.
+-   Intervals are redacted with ">32485" and "<6570"
+-   Ages are redacted with ">89" and "<18"
+-   Years are redacted with "cannotReleaseHIPAA" and "withheld".
 
 ## Variant Data Filters
 
