@@ -425,28 +425,31 @@ for (center in sort(processed_centers)) {
 
 # Description of Data Files
 
-Description on most of the data files can be found in the [cBioPortal file formats](https://docs.cbioportal.org/file-formats/0) docs.
-
+Description on most of the data files can be found in the [cBioPortal file formats](https://docs.cbioportal.org/file-formats) docs.
 
 data_mutations_extended.txt
 
 * Description: The mutation data file extends the Mutation Annotation Format (MAF) created as part of the Cancer Genome Atlas project, by adding extra annotations to each mutation record.
-* Details: [MAF format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#mutation-data)
+* Details: [MAF format](https://docs.cbioportal.org/file-formats/#mutation-data)
+
+data_clinical_patient.txt/data_clinical_sample.txt
+
+* Description: The clinical data is used to capture both clinical attributes and the mapping between patient and sample IDs.
+* Details: [Clinical format](https://docs.cbioportal.org/file-formats/#clinical-data)
 
 data_CNA.txt
 
 * Description: The copy number data file contain values that would be derived from copy-number analysis algorithms like GISTIC or RAE. GISTIC can be installed or run online using the GISTIC 2.0 module on GenePattern.
-* Details: [CNA format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#discrete-copy-number-data)
+* Details: [CNA format](https://docs.cbioportal.org/file-formats/#discrete-copy-number-data)
 
 data_sv.txt
 
-* Description: The structural variant file contains information on structural variants.
+* Description: The structural variant file contains information on structural variants. This file format replaces the deprecated data_fusions.txt file format.
 * Details: [Structural Variant format](https://docs.cbioportal.org/file-formats/#structural-variant-data)
 
 genomic_information.txt
 
-* Description: File describing genomic coordinates covered by all platforms for GENIE data. This file is used for MAF in BED filter and to generate gene panel files
-* Details: This is not a cBioPortal file format.
+* Description: The genomic information file describes genomic coordinates covered by all platforms contributed to GENIE. This is used for the MAF and in BED filter, and generating gene panel files.
   * `Chromosome`, `Start_Position`, `End_Position`: Gene positions
   * `Hugo_Symbol`: Re-mapped gene symbol based on gene positions
   * `ID`: Center submitted gene symbols
@@ -470,7 +473,32 @@ assay_information.txt
 data_cna_hg19.seg
 
 * Description: A SEG file (segmented data; .seg or .cbs) is a tab-delimited text file that lists loci and associated numeric values.
-* Details: [SEG format](https://docs.cbioportal.org/5.1-data-loading/data-loading/file-formats#segmented-data)
+* Details: [SEG format](https://docs.cbioportal.org/file-formats/#segmented-data)
+
+data_gene_matrix.txt
+
+* Description: This file contains a mapping between `SAMPLE_ID` and `SEQ_ASSAY_ID`. This assumes the type of genomic data extracted for the sample based on the associated SEQ_ASSAY_ID.
+* Details: [Gene Matrix format](https://docs.cbioportal.org/file-formats/#gene-panel-matrix-file)
+
+data_gene_panel_* files
+
+* Description: Gene panel functionality can specify which genes are assayed on a panel and assign samples and genetic profiles (such as mutation data) to a panel.
+* Details: [Gene panel format](https://docs.cbioportal.org/file-formats/#gene-panel-data)
+
+release_notes.pdf
+
+* Description: Detailed release notes for the release.
+
+meta_* files
+
+* Description: Metadata files required for import into cBioPortal.
+* Details: Each cBioPortal file format has an associated meta file.
+
+case_lists files
+
+* Description: Case lists are used to define sample lists that can be selected on the query page. Each case list file has the naming format cases_{type}.txt and is located in the case_lists folder found under each GENIE release.
+* Details: [Case list format](https://docs.cbioportal.org/file-formats/#case-lists)
+
 
 
 <!-- : GENIE Data Files {tbl-colwidths="\[35,35,30\]"} This is the control table col widths-->
