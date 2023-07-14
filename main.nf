@@ -5,7 +5,7 @@ nextflow.enable.dsl = 2
 // IMPORT MODULES
 include { check_for_retractions } from './modules/check_for_retractions'
 include { create_consortium_release } from './modules/create_consortium_release'
-// include { create_data_guide } from './modules/create_data_guide'
+include { create_data_guide } from './modules/create_data_guide'
 include { create_public_release } from './modules/create_public_release'
 include { find_maf_artifacts } from './modules/find_maf_artifacts'
 // include { generate_tmb } from './modules/generate_tmb'
@@ -117,13 +117,15 @@ workflow {
     process_maf(ch_project_id, ch_center, params.create_new_maf_db)
     process_main(process_maf.out, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date)
-    if (ch_is_prod) {
+    create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
+    if (is_prod) {
       find_maf_artifacts(create_consortium_release.out, ch_release)
       load_to_bpc(create_consortium_release.out, ch_release)
       check_for_retractions(create_consortium_release.out)
     }
   } else if (params.process_type == "public_release") {
     create_public_release(ch_release, ch_seq_date, ch_is_prod)
+    create_data_guide(create_public_release.out, ch_release, ch_project_id)
   } else {
     throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium_release', 'public_release'")
   }

@@ -1,0 +1,21 @@
+### [University of California-San Francisco (UCSF Helen Diller Family Comprehensive Cancer Center)](https://cancer.ucsf.edu/) (UCSF)
+
+UCSF uses a custom, hybridization-based capture panel (UCSF500) to detect single nucleotide variants, small indels, copy number alterations, and structural variants from both matched tumor-normal and tumor-only specimens. Two versions of the panel have been submitted to GENIE: UCSF-NIMV4 consists of 481 genes and includes coverage of select promoter regions (TERT and SDHD) as well as the intronic or UTR regions of 47 genes for the detection of structural rearrangements. UCSF-IDTV5 consists of 529 genes, retains TERT and SDHD promoter coverage, and expands intronic or UTR region coverage to 73 genes for the detection of structural rearrangements. Testing is performed for patients with solid or hematological malignancies. Specimens are reviewed by a pathologist to ensure tumor cellularity of greater than 25%. Tumor DNA is extracted from sections of FFPE tissue; for uveal melanoma cases, frozen fresh fine needle aspirates are accepted. Normal DNA can be extracted from peripheral blood draw, buccal swab, or micro-dissected non-lesional areas. Hybridization capture is performed with SeqCap EZ target enrichment kit; sequencing platform is the HiSeq2500 prior to October 2020, and NovaSeq6000 after. Tumors are sequenced to an average unique depth of coverage of approximately \>500X. FASTQC is run on unaligned sequencing reads to collect read-level summary statistics for downstream quality control; additionally, a suite of Picard tools are also run to assess quality metrics from sequencing runs. BWA-MEM aligner is used to align sequencing reads from each sample to the reference genome (hg19). The following bioinformatic workflows are used for variant calling:
+
+SNV callers
+
+-   Tumor sample: FreeBayes, GATK UnifiedGenotyper, Pindel Normal sample: FreeBayes, GATK HaplotypeCaller, Pindel
+
+-   Matched pairs: FreeBayes, Mutect, GATK SomaticIndelDetector
+
+Structural variant callers
+
+-   DELLY
+
+-   Pindel calls larger than 100bp are treated as structural variants
+
+Copy Number Calls
+
+-   CNVkit using a reference profile for normalization of approximately 30 pooled normal samples
+
+Variants are removed if present with frequency $\ge$ 1% in ESP6500, 1000 Genomes, or ExAC datasets. Known sequencing artifacts are removed. Variants with \< 50x total coverage in the tumor sample are removed.
