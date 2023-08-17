@@ -267,6 +267,10 @@ Samples that have variants that could be merged together will be filtered out. T
 -   OFF: If a center already does this filter prior to upload, the filter can be turned off
 -   FLAG: The samples are not removed, but the variants are annotated in the maf file. (Discussed May 6th, 2019)
 
+[Genome Nexus Annotation Status]{.underline}
+
+Variants that are unable to be annotated by Genome Nexus are removed.
+
 ## Processing Transformations
 
 [Genome Nexus Annotation Pipeline]{.underline}
