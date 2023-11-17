@@ -634,7 +634,7 @@ Cancer types are reported using the OncoTree ontology originally developed at Me
 * MDA: OncoTree cancer types were mapped from ICD-O codes.
 * MSK: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
 * NKI: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
-* PROV:
+* PROV: Pathology PhD assigns OncoTree code after reviewing patholoy report. Pathologist (MD) adjusts OncoTree code as needed prior to sign out.
 * SCI: Original diagnosis from the pathology report was mapped to OncoTree diagnosis by a research coordinator and molecular pathologist.
 * UCHI:
 * UCSF: The original diagnosis was mapped to OncoTree by molecular pathologists from the Clinical Cancer Genomics Laboratory.
