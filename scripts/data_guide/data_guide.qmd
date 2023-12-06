@@ -246,13 +246,13 @@ When `AGE_AT_SEQ_REPORT`, `INT_CONTACT`, or `INT_DOD` is >32485 or <6570, the fi
 [Germline Filter]{.underline}
 
 -   All germline variants are filtered out in all releases.
-    -   We added a whitelist of GRCh37 loci where pathogenic somatic events are known to occur. The whitelist can be viewed here.
+    -   We added a whitelist of GRCh37 loci where pathogenic somatic events are known to occur. The whitelist can be viewed here (https://raw.githubusercontent.com/mskcc/vcf2maf/v1.6.19/data/known_somatic_sites.bed).
 -   Genome Nexus reports gnomAD AFs by querying the Genome Aggregation Database to determine common variants. An additional filter named common_variant is also appended if allele count across at least one ExAC subpopulation is \>10 (this default cutoff can be changed when running vcf2maf). If any variant has a max gnomAD AF from any subpopulation that is over 0.0005, the variant will be filtered out. This \>10 allele count (AC) cutoff was selected because it tagged no more than 1% of the somatic calls across all MSK-IMPACT samples with patient-matched controls.
     -   So if you're handling somatic variants, the common_variant tag means this is likely a false-positive. It is less likely to be a legit somatic variant at a site that ExAC classifies as germline or artifact.
 -   While the GENIE data available from Sage contains all mutation data, the following mutation types are automatically altered upon import into the cBioPortal: Silent, Intronic, 3' UTR, 3' Flank, 5' UTR, 5' Flank and Intergenic region (IGR).
 -   Seventeen of the nineteen GENIE participating centers performed tumor-only sequencing i.e. without also sequencing a patient-matched control sample like blood, to isolate somatic events. These centers minimized artifacts and germline events using pooled controls from unrelated individuals, or using databases of known artifacts, common germline variants, and recurrent somatic mutations. However, there remains a risk that such centers may inadvertently release germline variants that can theoretically be used for patient re-identication. To minimize this risk, the GENIE consortium developed a stringent germline filtering pipeline, and applied it uniformly to all variants across all centers.
-    -   Hotspots from Chang et al. minus some likely artifacts. (http://dx.doi.org/10.1038/nbt.3391 )
-    -   Somatic mutations associated with clonal hematopoietic expansion from Xie et al. (http://dx.doi.org/10.1038/nm.3733 ) 
+    -   Hotspots from Chang et al. minus some likely artifacts. (http://dx.doi.org/10.1038/nbt.3391)
+    -   Somatic mutations associated with clonal hematopoietic expansion from Xie et al. (http://dx.doi.org/10.1038/nm.3733) 
     -   Somatically mutable germline sites at MSH6:F1088, TP53:R290, TERT:E280, ASXL1:G645_G646.
 
 [MAF in BED]{.underline}
