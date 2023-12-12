@@ -624,7 +624,7 @@ case_lists files
 
 Cancer types are reported using the OncoTree ontology originally developed at Memorial Sloan Kettering Cancer Center. This release uses the OncoTree version `r strsplit(oncotree_link, "=")[[1]][2]`. The centers participating in GENIE applied the OncoTree cancer types to the tested specimens in a variety of methods depending on center-specific workflows. Here is a brief description of how the cancer type assignment process for each center is specified.
 
-* CHOP:
+* CHOP: Diagnosis assigned by Pathologist, and confirmed through genomic diagnostics. Mapped to oncotree by clinical oncologist and medical geneticist.
 * CRUK: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
 * COLU: Original diagnosis from pathologist was mapped to OncoTree diagnosis by medical oncologist and research manager
 * DFCI: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type
