@@ -1,4 +1,4 @@
-ce---
+---
 title: "AACR Project GENIE `r params$release` Data Guide"
 format:
   pdf:
