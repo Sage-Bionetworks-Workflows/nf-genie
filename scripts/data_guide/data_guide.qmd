@@ -1,4 +1,4 @@
----
+ce---
 title: "AACR Project GENIE `r params$release` Data Guide"
 format:
   pdf:
@@ -636,7 +636,7 @@ Cancer types are reported using the OncoTree ontology originally developed at Me
 * NKI: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
 * PROV: Pathology PhD assigns OncoTree code after reviewing patholoy report. Pathologist (MD) adjusts OncoTree code as needed prior to sign out.
 * SCI: Original diagnosis from the pathology report was mapped to OncoTree diagnosis by a research coordinator and molecular pathologist.
-* UCHI:
+* UCHI: The original diagnosis was mapped to OncoTree by molecular pathologists.
 * UCSF: The original diagnosis was mapped to OncoTree by molecular pathologists from the Clinical Cancer Genomics Laboratory.
 * UHN: The original diagnosis was mapped to OncoTree by a medical oncologist and research manager
 * VHIO: Original diagnosis from pathologist or medical oncologist was mapped to OncoTree diagnosis by research data curator
