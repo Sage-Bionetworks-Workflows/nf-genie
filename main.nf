@@ -1,4 +1,6 @@
 process callPython {
+    debug true
+    container 'sagebionetworks/genie:latest'
 
     script:
     """
