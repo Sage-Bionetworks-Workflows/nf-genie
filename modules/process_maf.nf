@@ -1,6 +1,6 @@
 process process_maf {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container 'rxu153/test-nf-genie:latest'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
