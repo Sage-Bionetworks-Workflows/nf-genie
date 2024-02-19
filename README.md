@@ -32,40 +32,44 @@ This workflow takes care of transferring files to and from Synapse. Hence, it re
 
 ### Running the pipeline
 
-The following commands run on the test pipeline. To run on production pipeline, specify a specific value to the `release` parameter, e.g: 13.1-public, 13.1-consortium
+The following commands run on the test pipeline. To run on production pipeline, specify a specific value to the `release` parameter, e.g:
+
+- 13.1-public (for public releases)
+- 13.1-consortium (for consortium releases)
 
 #### Parameters
+
 See `nextflow_schema.json` to see the list of currently available parameters/flags and their default values if you don't specify any.
 
 #### Running with docker
+
 Add `-with-docker <docker_image_name>` to every nextflow command to invoke the specified docker container(s) in your modules. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
 
 #### Commands
-
-* Only validate files on test pipeline
+* **Only validate** files on test pipeline
 
     ```
     nextflow run main.nf --process_type only_validate -with-docker sagebionetworks/genie:latest
     ```
 
-* Processes non-mutation files on test pipeline
+* Processes **non-mutation** files on test pipeline
 
     ```
     nextflow run main.nf --process_type main_process -with-docker sagebionetworks/genie:latest
     ```
 
-* Processes mutation files on test pipeline
+* Processes **mutation** files on test pipeline
 
     ```
     nextflow run main.nf --process_type maf_process --create_new_maf_db -with-docker sagebionetworks/genie:latest
     ```
 
-* Runs processing and consortium release (including data guide creation) on test pipeline
+* Runs **processing** and **consortium** release (including data guide creation) on test pipeline
     ```
     nextflow run main.nf --process_type consortium_release --create_new_maf_db -with-docker sagebionetworks/genie:latest
     ```
 
-* Runs public release (including data guide creation) on test pipeline
+* Runs **public** release (including data guide creation) on test pipeline
 
     ```
     nextflow run main.nf --process_type public_release -with-docker sagebionetworks/genie:latest
@@ -78,4 +82,4 @@ Follow instructions here for running the main GENIE processing directly on Nextf
 1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the genie-bpc-project on [Sage nextflow tower](https://tower.sagebionetworks.org/login).
 1. After you have access, you will want to head to the [launchpad](https://tower.sagebionetworks.org/orgs/Sage-Bionetworks/workspaces/genie-bpc-project/launchpad)
 1. Click on `main_genie`
-1. Fill out the parameters like the image below - Make sure you update the release parameter! ![launch_nf.png](img/launch_nf.png)
+1. Fill out the parameters for launching the specific parts of the pipeline.[launch_image](img/launch_nf.png)
