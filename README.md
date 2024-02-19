@@ -6,11 +6,12 @@ Nextflow workflow for main GENIE processing.  This follows the SOP outlined in t
 
 Follow instructions here for running the main GENIE processing locally. 
 
-It's recommended to use an EC2 instance to run processing and develop locally. Follow instructions using [Service-Catalog-Provisioning](https://help.sc.sageit.org/sc/Service-Catalog-Provisioning.938836322.html) to create an ec2 on service catalog. You will also want to follow the section [SSM with SSH](https://help.sc.sageit.org/sc/Service-Catalog-Provisioning.938836322.html#ServiceCatalogProvisioning-SSMwithSSH) if you want to use VS code to run/develop.
+It's recommended to use an EC2 instance with docker to run processing and develop locally. Follow instructions using [Service-Catalog-Provisioning](https://help.sc.sageit.org/sc/Service-Catalog-Provisioning.938836322.html) to create an ec2 on service catalog. You will also want to follow the section [SSM with SSH](https://help.sc.sageit.org/sc/Service-Catalog-Provisioning.938836322.html#ServiceCatalogProvisioning-SSMwithSSH) if you want to use VS code to run/develop.
 
 ### Dependencies
 
-Install nextflow and any dependencies (e.g: Java) by following instructions here: [Get started — Nextflow](https://www.nextflow.io/docs/latest/getstarted.html#get-started)
+1. Install nextflow and any dependencies (e.g: Java) by following instructions here: [Get started — Nextflow](https://www.nextflow.io/docs/latest/getstarted.html#get-started)
+2. Be sure to pull the latest version of the main GENIE docker image into your environment, see here for more details: [GENIE Dockerhub](https://github.com/Sage-Bionetworks/Genie/blob/develop/CONTRIBUTING.md#dockerhub)
 
 #### Using an EC2
 
@@ -29,32 +30,49 @@ This workflow takes care of transferring files to and from Synapse. Hence, it re
 2. Create a secret called `SYNAPSE_AUTH_TOKEN` containing a Synapse personal access token using the [Nextflow CLI](https://nextflow.io/docs/latest/secrets.html) or [Nextflow Tower](https://help.tower.nf/latest/secrets/overview/).
 3. (Tower only) When launching the workflow, include the `SYNAPSE_AUTH_TOKEN` as a pipeline secret from either your user or workspace secrets.
 
-### Commands
+### Running the pipeline
 
-You can visit [parameters](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/main.nf#L8-L16) to see the list of currently available parameters/flags and their default values if you don't specify any.
+The following commands run on the test pipeline. To run on production pipeline, specify a specific value to the `release` parameter, e.g:
 
-* Execution of test pipeline
+- 13.1-public (for public releases)
+- 13.1-consortium (for consortium releases)
 
-    ```
-    nextflow run main.nf
-    ```
+#### Parameters
 
-* Only validate files (remove the `--production` flag to run the test pipeline)
+See `nextflow_schema.json` to see the list of currently available parameters/flags and their default values if you don't specify any.
 
-    ```
-    nextflow run main.nf --only_validate --production
-    ```
+#### Running with docker
 
-* Consortium release (remove the `--production` flag to run the test pipeline)
+Add `-with-docker <docker_image_name>` to every nextflow command to invoke the specified docker container(s) in your modules. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
 
-    ```
-    nextflow run main.nf --production --release 13.1-consortium --create_new_maf_db
-    ```
-
-* Public release (remove the `--production` flag to run the test pipeline)
+#### Commands
+* **Only validate** files on test pipeline
 
     ```
-    nextflow run main.nf --production --release 13.0-public
+    nextflow run main.nf --process_type only_validate -with-docker sagebionetworks/genie:latest
+    ```
+
+* Processes **non-mutation** files on test pipeline
+
+    ```
+    nextflow run main.nf --process_type main_process -with-docker sagebionetworks/genie:latest
+    ```
+
+* Processes **mutation** files on test pipeline
+
+    ```
+    nextflow run main.nf --process_type maf_process --create_new_maf_db -with-docker sagebionetworks/genie:latest
+    ```
+
+* Runs **processing** and **consortium** release (including data guide creation) on test pipeline
+    ```
+    nextflow run main.nf --process_type consortium_release --create_new_maf_db -with-docker sagebionetworks/genie:latest
+    ```
+
+* Runs **public** release (including data guide creation) on test pipeline
+
+    ```
+    nextflow run main.nf --process_type public_release -with-docker sagebionetworks/genie:latest
     ```
 
 ## Processing on Nextflow Tower
@@ -64,4 +82,4 @@ Follow instructions here for running the main GENIE processing directly on Nextf
 1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the genie-bpc-project on [Sage nextflow tower](https://tower.sagebionetworks.org/login).
 1. After you have access, you will want to head to the [launchpad](https://tower.sagebionetworks.org/orgs/Sage-Bionetworks/workspaces/genie-bpc-project/launchpad)
 1. Click on `main_genie`
-1. Fill out the parameters like the image below - Make sure you update the release parameter! ![launch_nf.png](img/launch_nf.png)
+1. Fill out the parameters for launching the specific parts of the pipeline. ![launch_nf.png](img/launch_nf.png)
