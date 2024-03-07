@@ -5,12 +5,20 @@ process load_to_bpc {
     input:
     val previous
     val release
+    val production
 
     output:
     stdout
 
     script:
-    """
-    python3 /release_utils/consortium_to_bpc.py $release
-    """
+    if (production) {
+        """
+        python3 /release_utils/consortium_to_bpc.py $release
+        """
+    }
+    else {
+        """
+        python3 /release_utils/consortium_to_bpc.py $release --test
+        """
+    }
 }
