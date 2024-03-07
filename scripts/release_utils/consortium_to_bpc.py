@@ -76,10 +76,9 @@ def remove_gene_panels(syn, file_mapping, remove_seqassays, remove_centers):
 
 
 def main(release: str, test: bool) -> None:
-    """Updated BPC project 
-
+    """Updated BPC project
     Args:
-        release (str): name of the release 
+        release (str): name of the release
         test (bool): testing or not
     """
     # if release.endswith("1-consortium"):
@@ -87,7 +86,7 @@ def main(release: str, test: bool) -> None:
 
     syn = synapseclient.login()
 
-    ent_synids = get_genie_folder_synids(test)
+    ent_synids = get_release_synids(test)
 
     # Finds the synid of the release
     release_synid = find_release(

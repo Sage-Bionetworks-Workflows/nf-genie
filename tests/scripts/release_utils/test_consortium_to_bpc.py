@@ -8,8 +8,9 @@ from scripts.release_utils import consortium_to_bpc as to_bpc
 
 
 @pytest.fixture(scope="session")
-def syn():
+def syn() -> synapseclient.Synapse:
     return mock.create_autospec(synapseclient.Synapse)
+
 
 @pytest.mark.parametrize(
     "is_test, expected",
@@ -61,7 +62,7 @@ def test_that_find_release_does_expected_calls_if_test_false(syn):
                 syn, release="TEST", release_table_synid="synZZZZ", test=False
             )
             patch_table_query.assert_called_once_with(
-                "select distinct(parentId) from synZZZZ where " "release = 'TEST'"
+                "select distinct(parentId) from synZZZZ where release = 'TEST'"
             )
             assert release_synid == "synYYYY"
 
