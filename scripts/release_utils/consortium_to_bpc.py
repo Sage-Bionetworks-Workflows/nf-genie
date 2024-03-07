@@ -9,9 +9,9 @@ from synapseclient import Folder
 import synapseutils as synu
 
 
-def get_genie_folder_synids(test: bool = False) -> Dict[str, str]:
+def get_release_synids(test: bool = False) -> Dict[str, str]:
     """Retrieves the set of synapse ids associated with the
-       test or production versions of the entities in the main genie synapse project
+       test or production versions of the entities associated with the release
 
     Args:
         test (bool, optional): Whether this is using the test project or not
@@ -76,7 +76,12 @@ def remove_gene_panels(syn, file_mapping, remove_seqassays, remove_centers):
 
 
 def main(release: str, test: bool) -> None:
-    """Updates BPC project"""
+    """Updated BPC project 
+
+    Args:
+        release (str): name of the release 
+        test (bool): testing or not
+    """
     # if release.endswith("1-consortium"):
     #     raise ValueError("First consortium release are not released")
 
