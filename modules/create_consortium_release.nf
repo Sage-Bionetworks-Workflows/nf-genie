@@ -2,7 +2,7 @@
 // Add consortium or public release flag
 process create_consortium_release {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container 'sagebionetworks/genie:develop'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:

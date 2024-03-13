@@ -1,6 +1,6 @@
 process process_main {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container 'sagebionetworks/genie:develop'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:

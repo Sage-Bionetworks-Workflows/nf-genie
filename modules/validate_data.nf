@@ -1,6 +1,6 @@
 process validate_data {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container 'sagebionetworks/genie:develop'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
