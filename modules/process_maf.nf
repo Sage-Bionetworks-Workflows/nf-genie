@@ -1,6 +1,6 @@
 process process_maf {
     debug true
-    container 'sagebionetworks/genie:develop'
+    container 'rxu153/update_texlive_genie:latest'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
