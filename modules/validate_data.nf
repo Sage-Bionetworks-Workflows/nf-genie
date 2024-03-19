@@ -1,6 +1,6 @@
 process validate_data {
     debug true
-    container 'rxu153/update_texlive_genie:latest'
+    container 'sagebionetworks/genie:latest'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:

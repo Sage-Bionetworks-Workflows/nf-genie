@@ -2,7 +2,7 @@
 // Add consortium or public release flag
 process create_consortium_release {
     debug true
-    container 'rxu153/update_texlive_genie:latest'
+    container 'sagebionetworks/genie:latest'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
