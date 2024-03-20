@@ -75,6 +75,17 @@ Add `-with-docker <docker_image_name>` to every nextflow command to invoke the s
     nextflow run main.nf --process_type public_release -with-docker sagebionetworks/genie:latest
     ```
 
+### Testing
+
+Run unit tests from the root of the repo. These unit tests cover the code in the `scripts/` directory.
+
+```
+python3 -m pytest tests
+```
+
+Unit tests have to be run manually for now. You will need
+`pandas` and `synapseclient` to run them. See [Dockerfile](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/scripts/release_utils/Dockerfile) for the version of `synapseclient` to use.
+
 ## Processing on Nextflow Tower
 
 Follow instructions here for running the main GENIE processing directly on Nextflow tower
