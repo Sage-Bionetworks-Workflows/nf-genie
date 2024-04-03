@@ -1,13 +1,14 @@
 // Create data guide
 process create_data_guide {
     debug true
-    container 'rxu153/update_tinytex_version:latest'
+    container "$create_data_guide_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
     val previous
     val release
     val proj_id
+    val create_data_guide_docker
 
     output:
     stdout

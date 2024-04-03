@@ -2,7 +2,7 @@
 // Add consortium or public release flag
 process create_consortium_release {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container "$main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
@@ -10,6 +10,7 @@ process create_consortium_release {
     val release
     val production
     val seq
+    val main_pipeline_docker
 
     output:
     stdout

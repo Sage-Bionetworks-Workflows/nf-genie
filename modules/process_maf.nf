@@ -1,12 +1,13 @@
 process process_maf {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container "$main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
     val proj_id
     val center
     val create_new_maf_db
+    val main_pipeline_docker
 
     output:
     stdout

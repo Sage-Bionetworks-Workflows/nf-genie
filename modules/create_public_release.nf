@@ -1,12 +1,13 @@
 process create_public_release {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container "$main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
     val release
     val seq
     val production
+    val main_pipeline_docker
 
     output:
     stdout

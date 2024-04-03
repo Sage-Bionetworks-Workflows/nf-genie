@@ -1,12 +1,13 @@
 process process_main {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container "$main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
     val previous
     val proj_id
     val center
+    val main_pipeline_docker
 
     output:
     stdout
