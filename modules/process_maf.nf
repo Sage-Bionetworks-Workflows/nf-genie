@@ -7,7 +7,6 @@ process process_maf {
     val proj_id
     val center
     val create_new_maf_db
-    val main_pipeline_docker
 
     output:
     stdout

@@ -7,7 +7,6 @@ process create_public_release {
     val release
     val seq
     val production
-    val main_pipeline_docker
 
     output:
     stdout

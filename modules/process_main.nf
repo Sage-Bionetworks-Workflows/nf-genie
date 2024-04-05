@@ -7,7 +7,6 @@ process process_main {
     val previous
     val proj_id
     val center
-    val main_pipeline_docker
 
     output:
     stdout

@@ -4,7 +4,6 @@ process check_for_retractions {
 
     input:
     val previous
-    val main_release_utils_docker
 
     output:
     stdout

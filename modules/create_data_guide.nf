@@ -8,7 +8,6 @@ process create_data_guide {
     val previous
     val release
     val proj_id
-    val create_data_guide_docker
 
     output:
     stdout

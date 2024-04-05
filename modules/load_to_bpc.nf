@@ -6,7 +6,6 @@ process load_to_bpc {
     val previous
     val release
     val production
-    val main_release_utils_docker
 
     output:
     stdout

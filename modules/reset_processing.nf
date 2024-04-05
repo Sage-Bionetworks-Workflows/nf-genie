@@ -5,7 +5,6 @@ process reset_processing {
 
     input:
     val center_map_synid
-    val main_pipeline_docker
 
     output:
     stdout

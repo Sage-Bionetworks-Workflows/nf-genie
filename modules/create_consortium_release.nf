@@ -10,7 +10,6 @@ process create_consortium_release {
     val release
     val production
     val seq
-    val main_pipeline_docker
 
     output:
     stdout

@@ -6,7 +6,6 @@ process validate_data {
     input:
     val proj_id
     val center
-    val main_pipeline_docker
 
     output:
     stdout

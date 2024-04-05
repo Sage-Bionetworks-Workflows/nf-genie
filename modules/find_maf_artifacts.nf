@@ -8,8 +8,7 @@ process find_maf_artifacts {
     input:
     val previous
     val release
-    val find_maf_artifacts_docker
-
+    
     output:
     stdout
 
