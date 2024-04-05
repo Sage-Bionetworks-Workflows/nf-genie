@@ -39,11 +39,23 @@ The following commands run on the test pipeline. To run on production pipeline, 
 
 #### Parameters
 
-See `nextflow_schema.json` to see the list of currently available parameters/flags and their default values if you don't specify any.
+You can run the following command to get a list of the current available
+parameters, their defaults and descriptions.
+
+```
+nextflow run main.nf --help
+```
+
+See `nextflow_schema.json` for the same thing.
 
 #### Running with docker
 
-Add `-with-docker <docker_image_name>` to every nextflow command to invoke the specified docker container(s) in your modules. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
+Add `-with-docker <docker_image_name>` to every nextflow command to invoke docker in general to be used. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
+
+Note that all the docker parameters have specified default docker containers. If you want to use a different default, you must:
+
+1. Docker pull the container(s) you want to use in your local / ec2 instance
+2. Specify the parameter(s) in your command call below to be the container(s) you pulled
 
 #### Commands
 * **Only validate** files on test pipeline
@@ -88,7 +100,7 @@ Unit tests have to be run manually for now. You will need
 
 ## Processing on Nextflow Tower
 
-Follow instructions here for running the main GENIE processing directly on Nextflow tower
+Follow instructions here for running the main GENIE processing directly on Nextflow tower:
 
 1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the genie-bpc-project on [Sage nextflow tower](https://tower.sagebionetworks.org/login).
 1. After you have access, you will want to head to the [launchpad](https://tower.sagebionetworks.org/orgs/Sage-Bionetworks/workspaces/genie-bpc-project/launchpad)
