@@ -31,10 +31,10 @@ params.create_new_maf_db = false
 params.release = "TEST.consortium"
 
 // set defaults for docker image parameters
-params.main_pipeline_docker = "sagebionetworks/genie:latest"
-params.main_release_utils_docker = "sagebionetworks/main-genie-release-utils"
-params.find_maf_artifacts_docker = "sagebionetworks/genie-artifact-finder"
-params.create_data_guide_docker = "sagebionetworks/genie-data-guide"
+//params.main_pipeline_docker = "sagebionetworks/genie:latest"
+//params.main_release_utils_docker = "sagebionetworks/main-genie-release-utils"
+//params.find_maf_artifacts_docker = "sagebionetworks/genie-artifact-finder"
+//params.create_data_guide_docker = "sagebionetworks/genie-data-guide"
 
 // Validate input parameters
 WorkflowMain.initialise(workflow, params, log)
@@ -108,36 +108,36 @@ workflow {
   ch_is_prod = Channel.value(is_prod)
 
   // docker images
-  ch_main_pipeline_docker = Channel.value(params.main_pipeline_docker)
-  ch_main_release_utils_docker = Channel.value(params.main_release_utils_docker)
-  ch_find_maf_artifacts_docker = Channel.value(params.find_maf_artifacts_docker)
-  ch_create_data_guide_docker = Channel.value(params.create_data_guide_docker)
+  //ch_main_pipeline_docker = Channel.value(params.main_pipeline_docker)
+  //ch_main_release_utils_docker = Channel.value(params.main_release_utils_docker)
+  //ch_find_maf_artifacts_docker = Channel.value(params.find_maf_artifacts_docker)
+  //ch_create_data_guide_docker = Channel.value(params.create_data_guide_docker)
 
   // if (params.force) {
   //   reset_processing(center_map_synid)
   //   reset_processing.out.view()
   // }
   if (params.process_type == "only_validate") {
-    validate_data(ch_project_id, ch_center, ch_main_pipeline_docker)
+    validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
-    process_maf(ch_project_id, ch_center, params.create_new_maf_db, ch_main_pipeline_docker)
+    process_maf(ch_project_id, ch_center, params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
-    process_main("default", ch_project_id, ch_center, ch_main_pipeline_docker)
+    process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    process_maf(ch_project_id, ch_center, params.create_new_maf_db, ch_main_pipeline_docker)
-    process_main(process_maf.out, ch_project_id, ch_center, ch_main_pipeline_docker)
-    create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_main_pipeline_docker)
-    create_data_guide(create_consortium_release.out, ch_release, ch_project_id, ch_create_data_guide_docker)
-    load_to_bpc(create_data_guide.out, ch_release, ch_is_prod, ch_main_release_utils_docker)
+    process_maf(ch_project_id, ch_center, params.create_new_maf_db)
+    process_main(process_maf.out, ch_project_id, ch_center)
+    create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date)
+    create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
+    load_to_bpc(create_data_guide.out, ch_release, ch_is_prod)
     if (is_prod) {
-      find_maf_artifacts(create_consortium_release.out, ch_release, ch_find_maf_artifacts_docker)
-      check_for_retractions(create_consortium_release.out, ch_main_release_utils_docker)
+      find_maf_artifacts(create_consortium_release.out, ch_release)
+      check_for_retractions(create_consortium_release.out)
     }
   } else if (params.process_type == "public_release") {
-    create_public_release(ch_release, ch_seq_date, ch_is_prod, ch_main_pipeline_docker )
-    create_data_guide(create_public_release.out, ch_release, ch_project_id, ch_create_data_guide_docker)
+    create_public_release(ch_release, ch_seq_date, ch_is_prod)
+    create_data_guide(create_public_release.out, ch_release, ch_project_id)
   } else {
     throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium_release', 'public_release'")
   }

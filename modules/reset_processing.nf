@@ -1,6 +1,6 @@
 process reset_processing {
     debug true
-    container "$main_pipeline_docker"
+    container "$params.main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:

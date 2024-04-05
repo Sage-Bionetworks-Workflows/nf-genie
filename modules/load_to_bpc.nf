@@ -1,5 +1,5 @@
 process load_to_bpc {
-    container "$main_release_utils_docker"
+    container "$params.main_release_utils_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:

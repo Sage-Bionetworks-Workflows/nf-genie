@@ -2,7 +2,7 @@
 // https://github.com/Sage-Bionetworks/GENIE-ArtifactFinder
 // TODO: Need to add staging ability for artifact finder
 process find_maf_artifacts {
-    container "$find_maf_artifacts_docker"
+    container "$params.find_maf_artifacts_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:

@@ -1,5 +1,5 @@
 process check_for_retractions {
-    container "$main_release_utils_docker"
+    container "$params.main_release_utils_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
