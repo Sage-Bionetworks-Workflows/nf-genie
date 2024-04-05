@@ -30,12 +30,6 @@ params.create_new_maf_db = false
 // release name (pass in TEST.public to test the public release scripts)
 params.release = "TEST.consortium"
 
-// set defaults for docker image parameters
-//params.main_pipeline_docker = "sagebionetworks/genie:latest"
-//params.main_release_utils_docker = "sagebionetworks/main-genie-release-utils"
-//params.find_maf_artifacts_docker = "sagebionetworks/genie-artifact-finder"
-//params.create_data_guide_docker = "sagebionetworks/genie-data-guide"
-
 // Validate input parameters
 WorkflowMain.initialise(workflow, params, log)
 
@@ -106,12 +100,6 @@ workflow {
   ch_seq_date = Channel.value(seq_date)
   ch_center = Channel.value(params.center)
   ch_is_prod = Channel.value(is_prod)
-
-  // docker images
-  //ch_main_pipeline_docker = Channel.value(params.main_pipeline_docker)
-  //ch_main_release_utils_docker = Channel.value(params.main_release_utils_docker)
-  //ch_find_maf_artifacts_docker = Channel.value(params.find_maf_artifacts_docker)
-  //ch_create_data_guide_docker = Channel.value(params.create_data_guide_docker)
 
   // if (params.force) {
   //   reset_processing(center_map_synid)
