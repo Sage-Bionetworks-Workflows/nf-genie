@@ -46,13 +46,22 @@ parameters, their defaults and descriptions.
 nextflow run main.nf --help
 ```
 
-See `nextflow_schema.json` for the same thing.
+See [nextflow_schema.json](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/nextflow_schema.json) for the same thing.
 
-#### Running with docker
+#### Profiles
+
+We use two profiles for nf-genie which contains the docker container defaults and resource specifications for running the pipeline:
+
+- **aws_prod** - used for production pipeline runs
+- **aws_test** - used for test pipeline runs
+
+See [nextflow.config](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/nextflow.config) for more details on the profiles' content.
+
+#### Running with docker locally
 
 Add `-with-docker <docker_image_name>` to every nextflow command to invoke docker in general to be used. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
 
-Note that all the docker parameters have specified default docker containers. If you want to use a different default, you must:
+Note that all the docker parameters have specific default docker containers based on the **profile** you specify. If you want to use a different default from what is available in the profiles, you must:
 
 1. Docker pull the container(s) you want to use in your local / ec2 instance
 2. Specify the parameter(s) in your command call below to be the container(s) you pulled
@@ -61,30 +70,30 @@ Note that all the docker parameters have specified default docker containers. If
 * **Only validate** files on test pipeline
 
     ```
-    nextflow run main.nf --process_type only_validate -with-docker sagebionetworks/genie:latest
+    nextflow -profile aws_test run main.nf --process_type only_validate -with-docker sagebionetworks/genie:latest
     ```
 
 * Processes **non-mutation** files on test pipeline
 
     ```
-    nextflow run main.nf --process_type main_process -with-docker sagebionetworks/genie:latest
+    nextflow -profile aws_test run main.nf --process_type main_process -with-docker sagebionetworks/genie:latest
     ```
 
 * Processes **mutation** files on test pipeline
 
     ```
-    nextflow run main.nf --process_type maf_process --create_new_maf_db -with-docker sagebionetworks/genie:latest
+    nextflow -profile aws_test run main.nf --process_type maf_process --create_new_maf_db -with-docker sagebionetworks/genie:latest
     ```
 
 * Runs **processing** and **consortium** release (including data guide creation) on test pipeline
     ```
-    nextflow run main.nf --process_type consortium_release --create_new_maf_db -with-docker sagebionetworks/genie:latest
+    nextflow -profile aws_test run main.nf --process_type consortium_release --create_new_maf_db -with-docker sagebionetworks/genie:latest
     ```
 
 * Runs **public** release (including data guide creation) on test pipeline
 
     ```
-    nextflow run main.nf --process_type public_release -with-docker sagebionetworks/genie:latest
+    nextflow -profile aws_test run main.nf --process_type public_release -with-docker sagebionetworks/genie:latest
     ```
 
 ### Testing
