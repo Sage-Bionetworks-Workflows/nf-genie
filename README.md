@@ -32,7 +32,7 @@ This workflow takes care of transferring files to and from Synapse. Hence, it re
 
 ### Running the pipeline
 
-The following commands run on the test pipeline. To run on production pipeline, specify a specific value to the `release` parameter, e.g:
+The commands under [Commands](#commands) run on the test pipeline. To run on production pipeline, specify a specific value to the `release` parameter, e.g:
 
 - 13.1-public (for public releases)
 - 13.1-consortium (for consortium releases)
@@ -48,25 +48,27 @@ nextflow run main.nf --help
 
 See [nextflow_schema.json](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/nextflow_schema.json) for the same thing.
 
-#### Profiles
+#### Config Profiles
 
-We use two profiles for nf-genie which contains the docker container defaults and resource specifications for running the pipeline:
+We use two profiles for the pipeline which contains the docker container defaults and resource specifications for running the pipeline:
 
 - **aws_prod** - used for production pipeline runs
 - **aws_test** - used for test pipeline runs
 
-See [nextflow.config](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/nextflow.config) for more details on the profiles' content.
+
+See [nextflow.config](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/nextflow.config) for more details on the profiles' content. Read more about config profiles and how to call them here: [Config Profiles](https://www.nextflow.io/docs/latest/config.html#config-profiles)
 
 #### Running with docker locally
 
 Add `-with-docker <docker_image_name>` to every nextflow command to invoke docker in general to be used. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
 
-Note that all the docker parameters have specific default docker containers based on the **profile** you specify. If you want to use a different default from what is available in the profiles, you must:
+Note that all the docker parameters have set default docker containers based on the **profile** you select. If you want to use a different default from what is available in the profiles, you must:
 
 1. Docker pull the container(s) you want to use in your local / ec2 instance
 2. Specify the parameter(s) in your command call below to be the container(s) you pulled
 
 #### Commands
+
 * **Only validate** files on test pipeline
 
     ```
@@ -111,7 +113,12 @@ Unit tests have to be run manually for now. You will need
 
 Follow instructions here for running the main GENIE processing directly on Nextflow tower:
 
-1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the genie-bpc-project on [Sage nextflow tower](https://tower.sagebionetworks.org/login).
+1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the `genie-bpc-project` on [Sage nextflow tower](https://tower.sagebionetworks.org/login).
 1. After you have access, you will want to head to the [launchpad](https://tower.sagebionetworks.org/orgs/Sage-Bionetworks/workspaces/genie-bpc-project/launchpad)
-1. Click on `main_genie`
+1. Click on the `main_genie` pipeline
 1. Fill out the parameters for launching the specific parts of the pipeline. ![launch_nf.png](img/launch_nf.png)
+1. If you need to modify any of the underlying default launch settings like config profiles, click on **Launch settings** on the right. The relevant settings you would need to modify would be the following:
+    - **Config profiles** - profile to launch with, see [Config profiles](#config-profiles) for more details
+    - **Revision number** - branch of `nf-genie` that you're launching the pipeline on
+
+Visit the [Nextflow Tower docs for more info/training](https://docs.seqera.io/platform/)
