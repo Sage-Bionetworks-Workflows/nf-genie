@@ -13,6 +13,7 @@
             "properties": {
                 "process_type": {
                     "type": "string",
+                    "default": "only_validate",
                     "description": "Available processing functions",
                     "enum": [
                         "only_validate",
