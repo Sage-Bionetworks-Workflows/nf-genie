@@ -72,30 +72,30 @@ Note that all the docker parameters have set default docker containers based on 
 * **Only validate** files on test pipeline
 
     ```
-    nextflow -profile aws_test run main.nf --process_type only_validate -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type only_validate -with-docker sagebionetworks/genie:latest
     ```
 
 * Processes **non-mutation** files on test pipeline
 
     ```
-    nextflow -profile aws_test run main.nf --process_type main_process -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type main_process -with-docker sagebionetworks/genie:latest
     ```
 
 * Processes **mutation** files on test pipeline
 
     ```
-    nextflow -profile aws_test run main.nf --process_type maf_process --create_new_maf_db -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type maf_process --create_new_maf_db -with-docker sagebionetworks/genie:latest
     ```
 
 * Runs **processing** and **consortium** release (including data guide creation) on test pipeline
     ```
-    nextflow -profile aws_test run main.nf --process_type consortium_release --create_new_maf_db -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type consortium_release --create_new_maf_db -with-docker sagebionetworks/genie:latest
     ```
 
 * Runs **public** release (including data guide creation) on test pipeline
 
     ```
-    nextflow -profile aws_test run main.nf --process_type public_release -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type public_release -with-docker sagebionetworks/genie:latest
     ```
 
 ### Testing
