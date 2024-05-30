@@ -81,17 +81,21 @@ if (!seq_date) {
   throw new Exception("${major_release} release not supported in map variables in nf code.")
 }
 
-// If major release is not TEST
-// Specify production synapse id to pass into processing
-if (major_release != "TEST") {
-  project_id = "syn3380222"
-  center_map_synid = "syn10061452"
-  is_prod = true
-}
-else {
+// define whether to run TEST, STAGING or PRODUCTION
+if (major_release == "TEST") {
   project_id = "syn7208886"
   center_map_synid = "syn11601248"
   is_prod = false
+} else if (major_release == "STAGING"){
+  project_id = "syn22033066"
+  center_map_synid = "syn22089188"
+  is_prod = false
+}
+else { 
+  // production project
+  project_id = "syn3380222"
+  center_map_synid = "syn10061452"
+  is_prod = true
 }
 
 workflow {
