@@ -36,7 +36,7 @@
                     "type": "string",
                     "description": "Release name (specify TEST.consortium/TEST.public to test consortium and public releases). E.g: 13.1-consortium",
                     "default": "TEST.consortium",
-                    "pattern": "\\d+[.]\\d+-(consortium|public)$|TEST.public|TEST.consortium|STAGING.consortium|STAGING.consortium"
+                    "pattern": "\\d+[.]\\d+-(consortium|public)$|TEST.public|TEST.consortium|STAGING.consortium|STAGING.public"
                 },
                 "main_pipeline_docker":{
                     "type": "string",
