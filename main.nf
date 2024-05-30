@@ -141,9 +141,6 @@ workflow {
     create_public_release(ch_release, ch_seq_date, ch_is_prod)
     create_data_guide(create_public_release.out, ch_release, ch_project_id)
   } else {
-    throw new Exception(
-      "process_type can only be 'only_validate', 'maf_process', 
-      'main_process', 'consortium_release', 'public_release', 
-      'consortium_release_only', 'public_release_only'")
+    throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium_release', 'public_release', 'consortium_release_only', 'public_release_only'")
   }
 }
