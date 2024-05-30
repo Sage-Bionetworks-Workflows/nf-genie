@@ -20,7 +20,9 @@
                         "main_process",
                         "maf_process",
                         "consortium_release",
-                        "public_release"
+                        "public_release",
+                        "consortium_release_only",
+                        "public_release_only"
                     ]
                 },
                 "center": {
@@ -40,7 +42,7 @@
                 },
                 "main_pipeline_docker":{
                     "type": "string",
-                    "description": "Docker used in main processes - validate_data, process_main, process_maf, create_consortium_release, and create_public_release"
+                    "description": "Docker used in main processes - validate_data, process_main, process_maf, create_consortium_release, create_public_release, create_consortium_release_only, and create_public_release_only"
                 },
                 "main_release_utils_docker":{
                     "type": "string",

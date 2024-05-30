@@ -6,10 +6,11 @@ process create_consortium_release {
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
-    val previous
+    val previous = null
     val release
     val production
     val seq
+    val staging
 
     output:
     stdout
@@ -24,8 +25,17 @@ process create_consortium_release {
         /root/cbioportal \
         $release
         """
-    }
-    else {
+    } else if (staging) {
+        """
+        # Fixes renv issue
+        cd /root/Genie
+        python3 bin/database_to_staging.py \
+        $seq \
+        /root/cbioportal \
+        $release \
+        --staging
+        """
+    } else {
         """
         # Fixes renv issue
         cd /root/Genie
