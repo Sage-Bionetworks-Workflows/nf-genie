@@ -45,6 +45,7 @@ release, seq
 */
 def public_map = [
   "TEST": "Jan-2022",
+  "STAGING": "Jan-2022",
   "11": "Jan-2022",
   "12": "Jul-2022",
   "13": "Jan-2023",
@@ -58,6 +59,7 @@ def public_map = [
 ]
 def consortium_map = [
   "TEST": "Jul-2022",
+  "STAGING": "Jul-2022",
   "11": "Jul-2021",
   "12": "Jan-2022",
   "13": "Jul-2022",
