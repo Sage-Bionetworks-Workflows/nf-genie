@@ -7,6 +7,7 @@ process create_public_release {
     val release
     val seq
     val production
+    val staging
 
     output:
     stdout
@@ -21,8 +22,17 @@ process create_public_release {
         /root/cbioportal \
         $release
         """
-    }
-    else {
+    } else if (staging) {
+        """
+        # Fixes renv issue
+        cd /root/Genie
+        python3 bin/consortium_to_public.py \
+        $seq \
+        /root/cbioportal \
+        $release \
+        --staging
+        """
+    } else {
         """
         # Fixes renv issue
         cd /root/Genie

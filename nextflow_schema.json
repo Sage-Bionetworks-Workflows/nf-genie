@@ -21,8 +21,8 @@
                         "maf_process",
                         "consortium_release",
                         "public_release",
-                        "consortium_release_only",
-                        "public_release_only"
+                        "consortium_release_step_only",
+                        "public_release_step_only"
                     ]
                 },
                 "center": {
