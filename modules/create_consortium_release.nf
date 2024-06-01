@@ -6,6 +6,7 @@ process create_consortium_release {
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
+    val previous
     val release
     val production
     val seq
