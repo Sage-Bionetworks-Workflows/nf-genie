@@ -645,11 +645,11 @@ Description on most of the data files can be found in the [cBioPortal file forma
 +===========================+=============================+======================+=======================+
 | data_clinical_patient.txt | data_clinical_sample.txt	  | PATIENT_ID           |  PATIENT_ID           |
 +---------------------------+-----------------------------+----------------------+-----------------------+
-| data_clinical_sample.txt  | data_mutations_extended.txt	| SAMPLE_ID            |  SAMPLE_ID            |
+| data_clinical_sample.txt  | data_mutations_extended.txt	| SAMPLE_ID            |  Tumor_Sample_Barcode |
 +---------------------------+-----------------------------+----------------------+-----------------------+
 | data_clinical_sample.txt  | data_fusions.txt	          | SAMPLE_ID            |  Tumor_Sample_Barcode |
 +---------------------------+-----------------------------+----------------------+-----------------------+
-| data_clinical_sample.txt  | genie_data_cna_hg19.seg	    | SAMPLE_ID	           |  ID                   |
+| data_clinical_sample.txt  | genie_data_cna_hg19.seg	    | SAMPLE_ID            |  ID                   |
 +---------------------------+-----------------------------+----------------------+-----------------------+
 | data_clinical_sample.txt  | genomic_information.txt	    | SEQ_ASSAY_ID         |  SEQ_ASSAY_ID         |
 +---------------------------+-----------------------------+----------------------+-----------------------+
