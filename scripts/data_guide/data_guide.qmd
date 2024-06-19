@@ -134,7 +134,7 @@ AACR Project GENIE data versions follow a numbering scheme derived from [semanti
 
 AACR Project GENIE Data is currently available via two mechanisms:
 
--   Synapse Platform (Sage Bionetworks): https://synapse.org/genie
+-   Synapse Platform (Sage Bionetworks): https://genie.synapse.org/ or https://synapse.org/genie
 
 -   cBioPortal for Cancer Genomics (MSK): https://www.cbioportal.org/genie/
 
@@ -202,7 +202,7 @@ The GENIE dataset is generated from data curated by multiple cancer centers. Eac
 
 Only validated files that adhere to the submission guidelines will be pushed to the release. The files that do not pass these validation checks will not be processed and an email notifying any errors or warnings will be sent to each center to correct. Each accepted file type has its own submission guidelines the centers must follow. Some examples of these validation checks are given below:
 
--   assay information file: `SEQ_ASSAY_ID`s must start with center abbreviation.
+-   assay information file: `SEQ_ASSAY_ID`s must start with the center abbreviation.
 -   BED file: `Start_Position` must only be integers and is the 2nd column.
 -   MAF file: `T_ALT_COUNT` must be an integer.
 
@@ -235,11 +235,11 @@ Any sample with `SAMPLE_CLASS` that is cfDNA is removed from the public release.
 
 [Age information redaction]{.underline}
 
-When `AGE_AT_SEQ_REPORT`, `INT_CONTACT`, or `INT_DOD` is >32485 or <6570, the fields `BIRTH_YEAR`, `YEAR_CONTACT`, `YEAR_DEATH`, `INT_CONTACT`, `INT_DOD`, and `AGE_AT_SEQ_REPORT` are redacted. If the difference between the `BIRTH_YEAR` and `YEAR_CONTACT` or `BIRTH_YEAR` and `YEAR_DEATH` is greater than 89, those values will be redacted.
+When `AGE_AT_SEQ_REPORT`, `INT_CONTACT`, or `INT_DOD` is >32485 or <6570 days, the fields `BIRTH_YEAR`, `YEAR_CONTACT`, `YEAR_DEATH`, `INT_CONTACT`, `INT_DOD`, and `AGE_AT_SEQ_REPORT` are redacted. If the difference between the `BIRTH_YEAR` and `YEAR_CONTACT` or `BIRTH_YEAR` and `YEAR_DEATH` is greater than 89 years, those values will be redacted.
 
 -   Intervals are redacted with ">32485" and "<6570"
 -   Ages are redacted with ">89" and "<18"
--   Years are redacted with "cannotReleaseHIPAA" and "withheld".
+-   Years are marked as "cannotReleaseHIPAA" for individuals over 89 and as "withheld" for individuals under 18
 
 ## Variant Data Filters
 
@@ -324,6 +324,7 @@ After release, each center performs a manual review of their data based on an au
 -   Remove blacklisted variants
 -   Confirm clinical attribute distributions/values are valid
 -   Confirm patients and samples that were marked for retraction
+-   Review failed annotations flagged by Genome-Nexus
 
 # Summary of Sequence Pipeline
 
@@ -433,12 +434,12 @@ Description on most of the data files can be found in the [cBioPortal file forma
 
 data_mutations_extended.txt
 
-* Description: The mutation data file extends the Mutation Annotation Format (MAF) created as part of the Cancer Genome Atlas project, by adding extra annotations to each mutation record.
+* Description: The mutation data file expands the Mutation Annotation Format (MAF) developed by the Cancer Genome Atlas project by including additional annotations for each mutation record.
 * Details: [MAF format](https://docs.cbioportal.org/file-formats/#mutation-data)
 
 data_clinical_patient.txt/data_clinical_sample.txt
 
-* Description: The clinical data is used to capture both clinical attributes and the mapping between patient and sample IDs.
+* Description: The clinical data file is used to capture both clinical attributes and the mapping between patient and sample IDs.
 * Details: [Clinical format](https://docs.cbioportal.org/file-formats/#clinical-data)
 
 data_CNA.txt
@@ -453,7 +454,7 @@ data_sv.txt
 
 genomic_information.txt
 
-* Description: The genomic information file describes genomic coordinates covered by all platforms contributed to GENIE. This is used for the MAF and in BED filter, and generating gene panel files.
+* Description: The genomic information file describes genomic coordinates covered by all platforms contributed to GENIE. This is used in the inBED filter and to generate gene panel files.
   * `Chromosome`, `Start_Position`, `End_Position`: Gene positions
   * `Hugo_Symbol`: Re-mapped gene symbol based on gene positions
   * `ID`: Center submitted gene symbols
@@ -463,20 +464,22 @@ genomic_information.txt
 
 assay_information.txt
 
-* Description: This describes the genomic profile information for each assay and is used to auto write the summary of pipeline section of the data guide.
+* Description: This describes the genomic profile information for each assay and is used to auto write the Summary of Sequence Pipeline section of the data guide.
 * Details: This is not a cBioPortal file format
-  * `is_paired_end`, `library_selection`, `library_strategy`, `platform`, `read_length`, target_capture_kit, instrument_model: defined by [GDC read group](https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=read_group)
-  * `number_of_genes`: Number of genes from which variants are called
+  * `SEQ_ASSAY_ID`: The assay identifier for the genomic testing platform
+  * `is_paired_end`, `library_selection`, `library_strategy`, `platform`, `read_length`, `target_capture_kit`, `instrument_model`: defined by [GDC read group](https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=read_group)
+  * `number_of_genes`: Number of genes from which variants are called.
   * `variant_classifications`: List of types of variants that are reported for this assay.
   * `gene_padding`: Number of base pairs to add to exon endpoints for the inBED filter.
-  * `alteration_types`: List of alteration types. specimen_type: List of specimen types.
-  * `specimen_tumor_cellularity`: Tumor Cellularity Cutoff
+  * `alteration_types`: List of alteration types.
+  * `preservation_technique`: Either FFPE, fresh_frozen, or NA.
+  * `specimen_tumor_cellularity`: Tumor Cellularity Cutoff.
   * `calling_strategy`: Tumor only or tumor normal.
-  * `coverage`: List of coverage
+  * `coverage`: List of coverage types.
 
 data_cna_hg19.seg
 
-* Description: A SEG file (segmented data; .seg or .cbs) is a tab-delimited text file that lists loci and associated numeric values.
+* Description: A SEG file (segmented data; .seg or .cbs) is a tab-delimited text file that lists loci and associated numeric values. The segmented data file format is the output of the Circular Binary Segmentation algorithm (Olshen et al., 2004).
 * Details: [SEG format](https://docs.cbioportal.org/file-formats/#segmented-data)
 
 data_gene_matrix.txt
@@ -486,12 +489,12 @@ data_gene_matrix.txt
 
 data_gene_panel_* files
 
-* Description: Gene panel functionality can specify which genes are assayed on a panel and assign samples and genetic profiles (such as mutation data) to a panel.
+* Description: These files specify which genes are assayed on a panel and assign samples and genetic profiles (such as mutation data) to a panel.
 * Details: [Gene panel format](https://docs.cbioportal.org/file-formats/#gene-panel-data)
 
 release_notes.pdf
 
-* Description: Detailed release notes for the release.
+* Description: Detailed release notes for each release.
 
 meta_* files
 
@@ -507,118 +510,150 @@ case_lists files
 
 <!-- : GENIE Data Files {tbl-colwidths="\[35,35,30\]"} This is the control table col widths-->
 
-# Clinical Data
+# Description of Clinical Data Fields
 
-`AGE_AT_SEQ_REPORT`
-
-* Expected Values: [Integer], <18, >89, Unknown
-* Data Description: The age of the patient at the time that the sequencing results were reported. Age is masked for patients aged 90 years and greater and for patients under 18 years.
-
-`CENTER`
-
-* Expected Values: MSK
-* Data Description: The center submitting the clinical and genomic data
-
-`ETHNICITY`
-
-* Expected Values: Non-Spanish/non-Hispanic, Spanish/Hispanic, Unknown, Not Collected
-* Data Description: Indication of Spanish/Hispanic origin of the patient; this data element maps to the NAACCR v16, Element #190. Institutions not collecting Spanish/Hispanic origin have set this column to Unknown.
-
-`ONCOTREE_CODE`
-
-* Expected Values: Values can be explored here:
-    http://oncotree.mskcc.org/#/home?version=`r strsplit(oncotree_link, "=")[[1]][2]`
-* Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. The version of Oncotree ontology that was used for this release is `r strsplit(oncotree_link, "=")[[1]][2]`.
+[data_clinical_patient.txt]{.underline}
 
 `PATIENT_ID`
 
-* Expected Values: GENIE-JHU-1234
-* Data Description: The unique, anonymized patient identifier for the GENIE project. Conforms to the following the convention: GENIE-CENTER-1234. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized unique identifier for the patient.
-
-`PRIMARY_RACE`
-
-* Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
-* Data Description: The primary race recorded for the patient; this data element maps to the NAACCR v16, Element #160. For institutions collecting more than one race category, this race code is the primary race for the patient. Institutions not collecting race have set this field to Unknown.
-
-`SAMPLE_ID`
-
-* Expected Values: GENIE-JHU-1234-9876
-* Data Description: The unique, anonymized sample identifier for the GENIE project. Conforms to the following the convention: GENIE-CENTER-1234-9876. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized, unique patient identifier. The fourth component is a unique identifier for the sample that will distinguish between two or more specimens from a single patient.
-
-`SAMPLE_TYPE`
-
-* Expected Values: Primary, Metastasis, Unspecified, Not Applicable or Heme, Not Collected
-* Data Description: The specimen's type including primary, metastasis and etc...
-
-`SAMPLE_TYPE_DETAILED`
-
-* Expected Values: Primary tumor, Lymph node metastasis
-* Data Description: The specimen's detailed type based on its location, including primary site, site of local recurrence, distant metastasis or hematologic malignancy.
-
-`SEQ_ASSAY_ID`
-
-* Expected Values: DFCI-ONCOPANEL-1
-* Data Description: The institutional assay identifier for genomic testing platform. Components are separated by hyphens, with the first component corresponding to the Center's abbreviation. All specimens tested by the same platform should have the same identifier.
+* Expected Values: GENIE-[CENTER]-[patient identifier]
+* Data Description: The unique, anonymized patient identifier for the GENIE project. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized unique identifier for the patient.
 
 `SEX`
 
 * Expected Values: Female, Male, Other, Transsexual, Not Collected, Unknown
 * Data Description: The patient's sex code; this data element maps to the NAACCR v16, Element #220.
 
-`CANCER_TYPE`
+`PRIMARY_RACE`
 
-* Expected Values: Non-Small Cell Lung Cancer
-* Data Description: The primary cancer diagnosis "main type", based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to: "Non-Small Cell Lung Cancer". The version of Oncotree ontology that was used for this release is `r strsplit(oncotree_link, "=")[[1]][2]`.
+* Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
+* Data Description: The primary race recorded for the patient; this data element derives from NAACCR v16, Element #160. For institutions collecting more than one race category, this race code is the primary race for the patient. Institutions not collecting race have set this field to Not Collected.
 
-`CANCER_TYPE_DETAILED`
+`SECONDARY_RACE` [Not available for public releases]
 
-* Expected Values: Lung Adenocarcinoma
-* Data Description: The primary cancer diagnosis label, based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to the label: "Lung Adenocarcinoma (LUAD)". The version of Oncotree ontology that was used for this release is `r strsplit(oncotree_link, "=")[[1]][2]`.
+* Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
+* Data Description: The secondary race recorded for the patient; this data element derives from NAACCR v16, Element #161. Institutions not collecting race have set this field to Not Collected.
+
+`TERTIARY_RACE` [Not available for public releases]
+
+* Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
+* Data Description: The tertiary race recorded for the patient; this data element maps to the NAACCR v16, Element #162. Institutions not collecting race have set this field to Not Collected.
+
+`ETHNICITY`
+
+* Expected Values: Non-Spanish/non-Hispanic, Spanish/Hispanic, Unknown, Not Collected
+* Data Description: Indication of Spanish/Hispanic origin of the patient; this data element derives from NAACCR v16, Element #190. Institutions not collecting Spanish/Hispanic origin have set this column to Not Collected.
+
+`BIRTH_YEAR` [Not available for public releases]
+
+* Expected Values: [Integer], Unknown, cannotReleaseHIPAA, withheld
+* Data Description: The four-digit year corresponding to the patient's birth date.
+
+`CENTER`
+
+* Expected Values: The center abbreviation (e.g. MSK, DFCI, UHN)
+* Data Description: The center submitting the clinical and genomic data.
+
+`INT_CONTACT`
+
+* Expected Values: [Integer], <6570, >32485, Not Collected, Not Released, Unknown
+* Data Description: Interval in days from date of birth (DOB) to date of last contact.
+
+`INT_DOD`
+
+* Expected Values: [Integer], <6570, >32485, Not Collected, Not Released, Not Applicable, Unknown
+* Data Description: Interval in days from date of birth (DOB) to date of death (DOD).
 
 `YEAR_CONTACT`
 
 * Expected Values: [Integer], <18, >89, Not Collected, Not Released, Unknown
-* Data Description: Record of the year that the patient is last known to be alive - data to be derived from information including and EHR, tumor registry, or other system.
+* Data Description: Record of the year the patient is last known to be alive, as determined from electronic health records (EHR), tumor registries, or other relevant systems.
 
 `YEAR_DEATH`
 
 * Expected Values: [Integer], <18, >89, Not Collected, Not Released, Not Applicable, Unknown
 * Data Description: Year of death.
 
-`INT_CONTACT`
-
-* Expected Values: [Integer], <6570, >32485, Not Collected, Not Released, Unknown
-* Data Description: Interval in days from DOB to date of last contact.
-
-`INT_DOD`
-
-* Expected Values: [Integer], <6570, >32485, Not Collected, Not Released, Not Applicable, Unknown
-* Data Description: Interval in days from DOB to DOD.
-
 `DEAD`
 
 * Expected Values: TRUE, FALSE, Not Collected, Not Released, Not Applicable, Unknown
-* Data Description: Is this patient known to be deceased?
+* Data Description: The patient's vital status.
 
-`BIRTH_YEAR` [Not available for public releases]
+[data_clinical_sample.txt]{.underline}
 
-* Expected Values: [Integer], Unknown, cannotReleaseHIPAA, withheld
-* Data Description: The four-digit year associated with the patient's date of birth.
+`SAMPLE_ID`
 
-`SAMPLE_CLASS` [Not available for public releases]
+* Expected Values: GENIE-[CENTER]-[patient identifier]-[sample identifer]
+* Data Description: The unique, anonymized sample identifier for the GENIE project. The first component is the string, "GENIE"; the second component is the Center abbreviation. The third component is an anonymized, unique patient identifier. The fourth component is a unique identifier for the sample that will distinguish between two or more specimens from a single patient.
 
-* Expected Values: Tumor, cfDNA
-* Data Description: Annotate samples as Tumor or cfDNA samples.  cfDNA samples are not available for public releases.
+`AGE_AT_SEQ_REPORT`
 
-`SEQ_YEAR` [Not available for public releases]
-
-* Expected Values: [Integer]
-* Data Description: Each record has a year of sequencing.
+* Expected Values: [Integer], <18, >89, Unknown
+* Data Description: The age of the patient at the time that the sequencing results were reported.
 
 `AGE_AT_SEQ_REPORT_DAYS` [Not available for public releases]
 
 * Expected Values: [Integer], >32485, <6570, Unknown
 * Data Description: The interval in days between the patient's date of birth and the date of the sequencing report that is associated with the sample.  The interval is masked for >32485 and <6570.
+
+`ONCOTREE_CODE`
+
+* Expected Values:
+    http://oncotree.mskcc.org/#/home?version=`r strsplit(oncotree_link, "=")[[1]][2]`
+* Data Description: The primary cancer diagnosis, or "main type", classified based on the OncoTree ontology. The version of the OncoTree ontology used for this release is `r strsplit(oncotree_link, "=")[[1]][2]`.
+
+`SAMPLE_TYPE`
+
+* Expected Values: Primary, Metastasis, Unspecified, Not Applicable or Heme, Not Collected
+* Data Description: The specimen's sample type based on its location.
+
+`SAMPLE_TYPE_DETAILED`
+
+* Expected Values: Primary tumor, Metastasis site unspecified, Local recurrence, Lymph node metastasis, Not applicable or hematologic malignancy, Distant organ metastasis, Not Collected, Not otherwise specified
+* Data Description: The specimen's detailed sample type based on its location.
+
+`SEQ_ASSAY_ID`
+
+* Expected Values: [Center]-[Panel]
+* Data Description: The institutional assay identifier for genomic testing platform. Components are separated by hyphens, with the first component corresponding to the Center's abbreviation. All specimens tested by the same platform should have the same identifier.
+
+`CANCER_TYPE`
+
+* Expected Values: Non-Small Cell Lung Cancer (example)
+    http://oncotree.mskcc.org/#/home?version=`r strsplit(oncotree_link, "=")[[1]][2]`
+* Data Description: The primary cancer diagnosis label, or "main type", based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to: “Non-Small Cell Lung Cancer”.
+
+`CANCER_TYPE_DETAILED`
+
+* Expected Values: Lung Adenocarcinoma (example)
+    http://oncotree.mskcc.org/#/home?version=`r strsplit(oncotree_link, "=")[[1]][2]`
+* Data Description: The detailed primary cancer diagnosis label based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to the label: "Lung Adenocarcinoma (LUAD)".
+
+`SAMPLE_CLASS` [Not available for public releases]
+
+* Expected Values: Tumor, cfDNA
+* Data Description: This sample category of either Tumor or circulating cell-free DNA (cfDNA) type. cfDNA samples are filtered out in public releases.
+
+`SEQ_YEAR` [Not available for public releases]
+
+* Expected Values: [Integer]
+* Data Description: The year the sample was sequenced.
+
+### Linking clinical data to genomic data
+
++---------------------------+-----------------------------+----------------------+-----------------------+
+| **File A**                | **File B**                  | **Column in File A** | **Column in File B**  |
++===========================+=============================+======================+=======================+
+| data_clinical_patient.txt | data_clinical_sample.txt	  | PATIENT_ID           |  PATIENT_ID           |
++---------------------------+-----------------------------+----------------------+-----------------------+
+| data_clinical_sample.txt  | data_mutations_extended.txt	| SAMPLE_ID            |  SAMPLE_ID            |
++---------------------------+-----------------------------+----------------------+-----------------------+
+| data_clinical_sample.txt  | data_fusions.txt	          | SAMPLE_ID            |  Tumor_Sample_Barcode |
++---------------------------+-----------------------------+----------------------+-----------------------+
+| data_clinical_sample.txt  | genie_data_cna_hg19.seg	    | SAMPLE_ID	           |  ID                   |
++---------------------------+-----------------------------+----------------------+-----------------------+
+| data_clinical_sample.txt  | genomic_information.txt	    | SEQ_ASSAY_ID         |  SEQ_ASSAY_ID         |
++---------------------------+-----------------------------+----------------------+-----------------------+
 
 ### Center Strategies for OncoTree Assignment
 
@@ -679,4 +714,6 @@ For center abbreviations please see Table 1.
 | SNV              | Single-nucleotide variants                                      |
 +------------------+-----------------------------------------------------------------+
 | VCF              | Variant Call Format                                             |
++------------------+-----------------------------------------------------------------+
+| SV               | Structural variants                                             |
 +------------------+-----------------------------------------------------------------+
