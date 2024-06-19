@@ -230,15 +230,15 @@ Any sample with `SAMPLE_CLASS` that is cfDNA is removed from the public release.
 
 [Patient and sample retractions]{.underline}
 
--   Implicit retraction occurs when any data that is has been withdrawn from new uploads will automatically be removed from the upcoming consortium/public releases.
--   Explicit retractions occurs when centers submit a patient or sample ID in their retraction file. This may occur when a patient decides to retract their consent.
+-   Implicit retraction occurs when data removed from new uploads is automatically excluded from future releases.
+-   Explicit retraction occurs when centers submit a retraction file containing a patient or sample ID, often due to a patient's decision to withdraw their consent.
 
 [Age information redaction]{.underline}
 
-When `AGE_AT_SEQ_REPORT`, `INT_CONTACT`, or `INT_DOD` is >32485 or <6570 days, the fields `BIRTH_YEAR`, `YEAR_CONTACT`, `YEAR_DEATH`, `INT_CONTACT`, `INT_DOD`, and `AGE_AT_SEQ_REPORT` are redacted. If the difference between the `BIRTH_YEAR` and `YEAR_CONTACT` or `BIRTH_YEAR` and `YEAR_DEATH` is greater than 89 years, those values will be redacted.
+When `AGE_AT_SEQ_REPORT`, `INT_CONTACT`, or `INT_DOD` is \>32485 or <6570 days, the fields `BIRTH_YEAR`, `YEAR_CONTACT`, `YEAR_DEATH`, `INT_CONTACT`, `INT_DOD`, and `AGE_AT_SEQ_REPORT` are redacted. If the difference between the `BIRTH_YEAR` and `YEAR_CONTACT` or `BIRTH_YEAR` and `YEAR_DEATH` is greater than 89 years, those values will be redacted.
 
--   Intervals are redacted with ">32485" and "<6570"
--   Ages are redacted with ">89" and "<18"
+-   Intervals are redacted with "\>32485" and "<6570"
+-   Ages are redacted with "\>89" and "<18"
 -   Years are marked as "cannotReleaseHIPAA" for individuals over 89 and as "withheld" for individuals under 18
 
 ## Variant Data Filters
@@ -269,7 +269,7 @@ Samples that have variants that could be merged together will be filtered out. T
 
 [Genome Nexus Annotation Status]{.underline}
 
-Variants that are unable to be annotated by Genome Nexus are removed.
+Mutation data that fail annotation by Genome-Nexus are excluded from the release. For example, this occurs when the allele extracted from the VCF or MAF file does not match the reference allele, or when the VEP tool is unable to annotate the data.
 
 ## Processing Transformations
 
@@ -280,9 +280,9 @@ Variants that are unable to be annotated by Genome Nexus are removed.
 
 [Gene symbol harmonization]{.underline}
 
-All submitted HUGO gene symbols will be harmonized against GRCh37 by checking the coordinates against the annotation. The below diagram illustrates how conflicts between submitted and harmonized symbols will be resolved.
+All submitted HUGO gene symbols will be harmonized against GRCh37 by checking the coordinates against the annotation.
 
--   Every single row of your bed file will be matched against the gene database. If the submitted symbol matches a row in the gene database and there is an overlap from the submitted bed region, the submitted symbol will be returned.
+-   Every single row of the bed file will be matched against the gene database. If the submitted symbol matches a row in the gene database and there is an overlap from the submitted bed region, the submitted symbol will be returned.
 -   If the submitted symbol does not exist in the database or there is not any overlap, an attempt to find any gene that completely encapsulates the submitted bed region is made. If the bed region is contained completely inside one gene, then it is labelled as that gene. If a bed region is enclosed completely in more than one gene, and the submitted symbol doesn't match any of the genes returned, NULL will be returned.
 -   If the submitted region isn't enclosed in any gene, then calculations are made to check if the bed region resides at least 90% in a gene. If there is more than one gene returned while doing 90% boundary calculations, NULL is returned.
 
@@ -297,7 +297,7 @@ On a per site basis, if there are more two rows that are the same gene, the valu
 
 [Clinical Tier Release Scope Filters]{.underline}
 
-Some parts of the clinical data is masked from the public releases. This is based on a clinical tier release scope of release document.
+Some parts of the clinical data is masked from the public releases. This is based on a clinical tier release scope of release document determined by the consortium.
 
 ## Post-Release Quality Checks
 
@@ -317,14 +317,14 @@ The resulting set is annotated with a fisher p-value for the variants that pass 
 
 After release, each center performs a manual review of their data based on an auto-generated dashboard that summarizes some key elements. Some examples of items sites review are given below:
 
--   Confirm sample count
+-   Confirm sample count.
 -   Confirm variant count (flagged mutations). Most of these variants are potential artifacts flagged by manual review of cBioPortal. Suggestions for variants that should be part of this list or any variant shouldn't be part of this list are welcome.
--   Fix BED and assay information discrepancies
--   Confirm top 5 most frequently mutated genes per pipeline for all non-synonymous mutations
--   Remove blacklisted variants
--   Confirm clinical attribute distributions/values are valid
--   Confirm patients and samples that were marked for retraction
--   Review failed annotations flagged by Genome-Nexus
+-   Fix BED and assay information discrepancies.
+-   Confirm top 5 most frequently mutated genes per pipeline for all non-synonymous mutations.
+-   Remove blacklisted variants.
+-   Confirm clinical attribute distributions/values are valid.
+-   Confirm patients and samples that were marked for retraction.
+-   Review failed annotations flagged by Genome-Nexus.
 
 # Summary of Sequence Pipeline
 
@@ -432,27 +432,27 @@ for (center in sort(processed_centers)) {
 
 Description on most of the data files can be found in the [cBioPortal file formats](https://docs.cbioportal.org/file-formats) docs.
 
-data_mutations_extended.txt
+[data_mutations_extended.txt]{.underline}
 
 * Description: The mutation data file expands the Mutation Annotation Format (MAF) developed by the Cancer Genome Atlas project by including additional annotations for each mutation record.
 * Details: [MAF format](https://docs.cbioportal.org/file-formats/#mutation-data)
 
-data_clinical_patient.txt/data_clinical_sample.txt
+[data_clinical_patient.txt/data_clinical_sample.txt]{.underline}
 
 * Description: The clinical data file is used to capture both clinical attributes and the mapping between patient and sample IDs.
 * Details: [Clinical format](https://docs.cbioportal.org/file-formats/#clinical-data)
 
-data_CNA.txt
+[data_CNA.txt]{.underline}
 
 * Description: The copy number data file contain values that would be derived from copy-number analysis algorithms like GISTIC or RAE. GISTIC can be installed or run online using the GISTIC 2.0 module on GenePattern.
 * Details: [CNA format](https://docs.cbioportal.org/file-formats/#discrete-copy-number-data)
 
-data_sv.txt
+[data_sv.txt]{.underline}
 
 * Description: The structural variant file contains information on structural variants. This file format replaces the deprecated data_fusions.txt file format.
 * Details: [Structural Variant format](https://docs.cbioportal.org/file-formats/#structural-variant-data)
 
-genomic_information.txt
+[genomic_information.txt]{.underline}
 
 * Description: The genomic information file describes genomic coordinates covered by all platforms contributed to GENIE. This is used in the inBED filter and to generate gene panel files.
   * `Chromosome`, `Start_Position`, `End_Position`: Gene positions
@@ -462,7 +462,7 @@ genomic_information.txt
   * `includeInPanel`: Used to define gene panel files for cBioPortal.
   * `clinicalReported`: These are the genes that were clinically Reported. Blank means information not provided.
 
-assay_information.txt
+[assay_information.txt]{.underline}
 
 * Description: This describes the genomic profile information for each assay and is used to auto write the Summary of Sequence Pipeline section of the data guide.
 * Details: This is not a cBioPortal file format
@@ -476,37 +476,36 @@ assay_information.txt
   * `specimen_tumor_cellularity`: Tumor Cellularity Cutoff.
   * `calling_strategy`: Tumor only or tumor normal.
   * `coverage`: List of coverage types.
+  * `SEQ_PIPELINE_ID`: For those centers that have multiple panels per assay (multiple `SEQ_ASSAY_ID`s)
 
-data_cna_hg19.seg
+[data_cna_hg19.seg]{.underline}
 
 * Description: A SEG file (segmented data; .seg or .cbs) is a tab-delimited text file that lists loci and associated numeric values. The segmented data file format is the output of the Circular Binary Segmentation algorithm (Olshen et al., 2004).
 * Details: [SEG format](https://docs.cbioportal.org/file-formats/#segmented-data)
 
-data_gene_matrix.txt
+[data_gene_matrix.txt]{.underline}
 
 * Description: This file contains a mapping between `SAMPLE_ID` and `SEQ_ASSAY_ID`. This assumes the type of genomic data extracted for the sample based on the associated SEQ_ASSAY_ID.
 * Details: [Gene Matrix format](https://docs.cbioportal.org/file-formats/#gene-panel-matrix-file)
 
-data_gene_panel_* files
+[data_gene_panel_* files]{.underline}
 
 * Description: These files specify which genes are assayed on a panel and assign samples and genetic profiles (such as mutation data) to a panel.
 * Details: [Gene panel format](https://docs.cbioportal.org/file-formats/#gene-panel-data)
 
-release_notes.pdf
+[release_notes.pdf]{.underline}
 
 * Description: Detailed release notes for each release.
 
-meta_* files
+[meta_* files]{.underline}
 
 * Description: Metadata files required for import into cBioPortal.
 * Details: Each cBioPortal file format has an associated meta file.
 
-case_lists files
+[case_lists files]{.underline}
 
 * Description: Case lists are used to define sample lists that can be selected on the query page. Each case list file has the naming format cases_{type}.txt and is located in the case_lists folder found under each GENIE release.
 * Details: [Case list format](https://docs.cbioportal.org/file-formats/#case-lists)
-
-
 
 <!-- : GENIE Data Files {tbl-colwidths="\[35,35,30\]"} This is the control table col widths-->
 
