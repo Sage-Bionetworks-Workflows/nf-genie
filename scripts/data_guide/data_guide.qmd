@@ -269,11 +269,11 @@ Samples that have variants that could be merged together will be filtered out. T
 
 [Genome Nexus Annotation Status]{.underline}
 
-Mutation data that fail annotation by Genome-Nexus are excluded from the release. For example, this occurs when the allele extracted from the VCF or MAF file does not match the reference allele, or when the VEP tool is unable to annotate the data.
+Mutation data that fails to be annotated by Genome-Nexus is excluded from the release. For example, this occurs when the allele extracted from the VCF or MAF file does not match the reference allele, or when the VEP tool that Genome-Nexus uses is unable to annotate the data.
 
 ## Processing Transformations
 
-[Genome Nexus Annotation Pipeline]{.underline}
+[Genome Nexus Annotation Pipeline]{.underline}: https://genie.genomenexus.org/
 
 -   Contributing GENIE centers provided mutation data in Variant Call Format (VCF) or Mutation Annotation Format (GDC MAF v1.0.0) with additionalfields for read counts supporting variant alleles, reference alleles, and total depth. Some "MAF-like" text files with minimal required columns were also received from the participating centers. These various input formats were converted into a complete tab-separated MAF format, with Genome Nexus.
 -   The GENIE dataset is annotating all variants with Genome Nexus starting from the 9.1-consortium release (instead of vcf2maf).
@@ -521,7 +521,7 @@ Description on most of the data files can be found in the [cBioPortal file forma
 `SEX`
 
 * Expected Values: Female, Male, Other, Transsexual, Not Collected, Unknown
-* Data Description: The patient's sex code; this data element maps to the NAACCR v16, Element #220.
+* Data Description: The patient's sex code; this data element derives from NAACCR v16, Element #220.
 
 `PRIMARY_RACE`
 
@@ -536,7 +536,7 @@ Description on most of the data files can be found in the [cBioPortal file forma
 `TERTIARY_RACE` [Not available for public releases]
 
 * Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
-* Data Description: The tertiary race recorded for the patient; this data element maps to the NAACCR v16, Element #162. Institutions not collecting race have set this field to Not Collected.
+* Data Description: The tertiary race recorded for the patient; this data element derives from NAACCR v16, Element #162. Institutions not collecting race have set this field to Not Collected.
 
 `ETHNICITY`
 
@@ -647,7 +647,7 @@ Description on most of the data files can be found in the [cBioPortal file forma
 +---------------------------+-----------------------------+----------------------+-----------------------+
 | data_clinical_sample.txt  | data_mutations_extended.txt	| SAMPLE_ID            |  Tumor_Sample_Barcode |
 +---------------------------+-----------------------------+----------------------+-----------------------+
-| data_clinical_sample.txt  | data_fusions.txt	          | SAMPLE_ID            |  Tumor_Sample_Barcode |
+| data_clinical_sample.txt  | data_sv.txt	                | SAMPLE_ID            |  Tumor_Sample_Barcode |
 +---------------------------+-----------------------------+----------------------+-----------------------+
 | data_clinical_sample.txt  | genie_data_cna_hg19.seg	    | SAMPLE_ID            |  ID                   |
 +---------------------------+-----------------------------+----------------------+-----------------------+
