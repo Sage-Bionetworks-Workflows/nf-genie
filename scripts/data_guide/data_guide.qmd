@@ -638,21 +638,19 @@ Description on most of the data files can be found in the [cBioPortal file forma
 * Expected Values: [Integer]
 * Data Description: The year the sample was sequenced.
 
+
 ### Linking clinical data to genomic data
 
-+---------------------------+-----------------------------+----------------------+-----------------------+
-| **File A**                | **File B**                  | **Column in File A** | **Column in File B**  |
-+===========================+=============================+======================+=======================+
-| data_clinical_patient.txt | data_clinical_sample.txt	  | PATIENT_ID           |  PATIENT_ID           |
-+---------------------------+-----------------------------+----------------------+-----------------------+
-| data_clinical_sample.txt  | data_mutations_extended.txt	| SAMPLE_ID            |  Tumor_Sample_Barcode |
-+---------------------------+-----------------------------+----------------------+-----------------------+
-| data_clinical_sample.txt  | data_sv.txt	                | SAMPLE_ID            |  Tumor_Sample_Barcode |
-+---------------------------+-----------------------------+----------------------+-----------------------+
-| data_clinical_sample.txt  | genie_data_cna_hg19.seg	    | SAMPLE_ID            |  ID                   |
-+---------------------------+-----------------------------+----------------------+-----------------------+
-| data_clinical_sample.txt  | genomic_information.txt	    | SEQ_ASSAY_ID         |  SEQ_ASSAY_ID         |
-+---------------------------+-----------------------------+----------------------+-----------------------+
+These are the foreign keys
+
+| File A                    | File B                      | Column in File A     | Column in File B       |
+|---------------------------|-----------------------------|----------------------|------------------------|
+| data_clinical_patient.txt | data_clinical_sample.txt    | PATIENT_ID           | PATIENT_ID             |
+| data_clinical_sample.txt  | data_mutations_extended.txt | SAMPLE_ID            | Tumor_Sample_Barcode   |
+| data_clinical_sample.txt  | data_sv.txt                 | SAMPLE_ID            | Tumor_Sample_Barcode   |
+| data_clinical_sample.txt  | genie_data_cna_hg19.seg     | SAMPLE_ID            | ID                     |
+| data_clinical_sample.txt  | genomic_information.txt     | SEQ_ASSAY_ID         | SEQ_ASSAY_ID           |
+
 
 ### Center Strategies for OncoTree Assignment
 
