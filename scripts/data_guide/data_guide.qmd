@@ -218,7 +218,7 @@ Samples from every major release and its associated consortium releases are vett
 
 [No BED file]{.underline}
 
-Samples that have a `SEQ_ASSAY_ID` that don't have a bed file associated with them will be removed.
+Samples that have a `SEQ_ASSAY_ID`, but don't have a bed file associated with them will be removed.
 
 [Oncotree]{.underline}
 
