@@ -144,7 +144,7 @@ All users of the AACR Project GENIE data must agree to the following terms of us
 
 -   Users will not attempt to identify or contact individual participants from whom these data were collected by any means.
 
--   Users will not redistribute the data without express written permission from the AACR Project GENIE Coordinating Center (send email to: info\@aacrgenie.org).
+-   Users will not redistribute the data without express written permission from the AACR Project GENIE Coordinating Center (send email to: genieinfo\@aacr.org).
 
 When publishing or presenting work using or referencing the AACR Project GENIE dataset please include the following attributions:
 
@@ -641,15 +641,25 @@ Description on most of the data files can be found in the [cBioPortal file forma
 
 ### Linking clinical data to genomic data
 
-These are the foreign keys
+* Link between `data_clinical_patient.txt` and `data_clinical_sample.txt`:
+  * Column in `data_clinical_patient.txt`: PATIENT_ID
+  * Column in `data_clinical_sample.txt`: PATIENT_ID
 
-| File A                    | File B                      | Column in File A     | Column in File B       |
-|---------------------------|-----------------------------|----------------------|------------------------|
-| data_clinical_patient.txt | data_clinical_sample.txt    | PATIENT_ID           | PATIENT_ID             |
-| data_clinical_sample.txt  | data_mutations_extended.txt | SAMPLE_ID            | Tumor_Sample_Barcode   |
-| data_clinical_sample.txt  | data_sv.txt                 | SAMPLE_ID            | Tumor_Sample_Barcode   |
-| data_clinical_sample.txt  | genie_data_cna_hg19.seg     | SAMPLE_ID            | ID                     |
-| data_clinical_sample.txt  | genomic_information.txt     | SEQ_ASSAY_ID         | SEQ_ASSAY_ID           |
+* Link between `data_clinical_sample.txt` and `data_mutations_extended.txt`:
+  * Column in `data_clinical_sample.txt`: SAMPLE_ID
+  * Column in `data_mutations_extended.txt`: Tumor_Sample_Barcode
+
+* Link between `data_clinical_sample.txt` and `data_sv.txt`:
+  * Column in `data_clinical_sample.txt`: SAMPLE_ID
+  * Column in `data_sv.txt`: Tumor_Sample_Barcode
+
+* Link between `data_clinical_sample.txt` and `genie_data_cna_hg19.seg`:
+  * Column in `data_clinical_sample.txt`: SAMPLE_ID
+  * Column in `genie_data_cna_hg19.seg`: ID
+
+* Link between `data_clinical_sample.txt` and `genomic_information.txt`:
+  * Column in `data_clinical_sample.txt`: SEQ_ASSAY_ID
+  * Column in `genomic_information.txt`: SEQ_ASSAY_ID
 
 
 ### Center Strategies for OncoTree Assignment
