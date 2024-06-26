@@ -3,7 +3,7 @@ FROM r-base:4.3.1
 # These will allow for the renv install
 ENV RENV_VERSION 1.0.7
 ENV RENV_PATHS_LIBRARY renv/library
-ENV QUARTO_VERSION 1.3.450
+ENV QUARTO_VERSION 1.4.555
 
 RUN apt-get update && apt-get -y install \
       libpng-dev \
