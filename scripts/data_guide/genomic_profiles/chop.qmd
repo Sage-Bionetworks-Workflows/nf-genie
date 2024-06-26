@@ -1,4 +1,4 @@
-### [Chilrden's Hospital of Philadelphia](https://www.chop.edu/) (CHOP)
+### [Children's Hospital of Philadelphia](https://www.chop.edu/) (CHOP)
 
 The CHOP Comprehensive Solid Tumor Panel and Comprehensive Hematologic Cancer Pane include sequence and copy number analyses of 238 and 117 cancer genes, respectively, genotyping of two genes associated with cancer pharmacogenomics, and a Fusion Panel targeting over 700 exons of 117 cancer genes. 
 
