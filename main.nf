@@ -128,7 +128,9 @@ workflow {
     process_main(process_maf.out, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
-    load_to_bpc(create_data_guide.out, ch_release, ch_is_prod)
+    if (!is_staging) {
+      load_to_bpc(create_data_guide.out, ch_release, ch_is_prod)
+    }
     if (is_prod) {
       find_maf_artifacts(create_consortium_release.out, ch_release)
       check_for_retractions(create_consortium_release.out)
