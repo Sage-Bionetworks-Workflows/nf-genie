@@ -95,7 +95,7 @@ if (major_release == "TEST") {
   is_prod = false
   is_staging = true
 }
-else { 
+else {
   // production project
   project_id = "syn3380222"
   center_map_synid = "syn10061452"

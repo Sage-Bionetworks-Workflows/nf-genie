@@ -4,7 +4,7 @@ Nextflow workflow for main GENIE processing.  This follows the SOP outlined in t
 
 ## Process and developing locally
 
-Follow instructions here for running the main GENIE processing locally. 
+Follow instructions here for running the main GENIE processing locally.
 
 It's recommended to use an EC2 instance with docker to run processing and develop locally. Follow instructions using [Service-Catalog-Provisioning](https://help.sc.sageit.org/sc/Service-Catalog-Provisioning.938836322.html) to create an ec2 on service catalog. You will also want to follow the section [SSM with SSH](https://help.sc.sageit.org/sc/Service-Catalog-Provisioning.938836322.html#ServiceCatalogProvisioning-SSMwithSSH) if you want to use VS code to run/develop.
 
