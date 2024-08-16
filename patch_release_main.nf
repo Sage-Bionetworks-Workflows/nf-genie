@@ -4,6 +4,7 @@ nextflow.enable.dsl = 2
 
 // IMPORT MODULES
 include { patch_release } from './modules/patch_release'
+include { create_data_guide } from './modules/create_data_guide'
 include { create_dashboard_html } from './modules/create_dashboard_html'
 
 params.release_synid = "syn53170398"  // 15.4-consortium
