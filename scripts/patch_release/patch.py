@@ -62,28 +62,6 @@ def store_file(
     syn.store(new_ent)
 
 
-def generate_dashboard_html(genie_version, staging=False):
-    """Generates dashboard html writeout that gets uploaded to the
-    release folder
-
-    Args:
-        genie_version: GENIE release
-        staging: Use staging files. Default is False
-
-    """
-    markdown_render_cmd = [
-        "Rscript",
-        "/root/Genie/R/dashboard_markdown_generator.R",
-        genie_version,
-        "--template_path",
-        "/root/Genie/templates/dashboardTemplate.Rmd",
-    ]
-
-    if staging:
-        markdown_render_cmd.append("--staging")
-    subprocess.check_call(markdown_render_cmd)
-
-
 def patch_release_workflow(
     release_synid: str, new_release_synid: str, retracted_sample_synid: str, production: bool = False
 ):
@@ -93,6 +71,8 @@ def patch_release_workflow(
     variables need to be changed to reflect different Synapse ids per release.
     """
     syn = synapseclient.login()
+    # Update dashboard tables
+    # Data base mapping synid
 
     # remove_centers = []
     # remove_seqassays = []
@@ -199,21 +179,21 @@ def patch_release_workflow(
     )
     store_file(syn, sample_path, new_release_synid, new_release)
     store_file(syn, patient_path, new_release_synid, new_release)
-    # # Patch CNA file
-    # cna_ent = syn.get(cna_synid, followLink=True)
-    # cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
-    # cna_cols = ["Hugo_Symbol"]
-    # cna_cols.extend(keep_samples.tolist())
-    # cna_cols_idx = cnadf.columns.isin(cna_cols)
-    # if not cna_cols_idx.all():
-    #     cnadf = cnadf[cnadf.columns[cna_cols_idx]]
-    #     cnatext = process_functions.removePandasDfFloat(cnadf)
-    #     cna_path = os.path.join(
-    #         tempdir, os.path.basename(cna_ent.path).replace(old_release, new_release)
-    #     )
-    #     with open(cna_path, "w") as cna_file:
-    #         cna_file.write(cnatext)
-    #     store_file(syn, cna_path, new_release_synid, new_release)
+    # Patch CNA file
+    cna_ent = syn.get(cna_synid, followLink=True)
+    cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
+    cna_cols = ["Hugo_Symbol"]
+    cna_cols.extend(keep_samples.tolist())
+    cna_cols_idx = cnadf.columns.isin(cna_cols)
+    if not cna_cols_idx.all():
+        cnadf = cnadf[cnadf.columns[cna_cols_idx]]
+        cnatext = process_functions.removePandasDfFloat(cnadf)
+        cna_path = os.path.join(
+            tempdir, os.path.basename(cna_ent.path).replace(old_release, new_release)
+        )
+        with open(cna_path, "w") as cna_file:
+            cna_file.write(cnatext)
+        store_file(syn, cna_path, new_release_synid, new_release)
     # Patch Fusion file
     fusion_ent = syn.get(fusion_synid, followLink=True)
     fusiondf = pd.read_csv(fusion_ent.path, sep="\t", comment="#")
@@ -340,7 +320,7 @@ def patch_release_workflow(
     database_mapping = syn.tableQuery(f"select * from {database_mapping_synid}")
     database_mappingdf = database_mapping.asDataFrame()
     # You may have to execute this twice in case the file view isn't updated
-    dashboard_table_updater.run_dashboard(syn, database_mappingdf, new_release)
+    dashboard_table_updater.run_dashboard(syn, database_mappingdf, new_release, staging=not production)
 
 
 def main():
