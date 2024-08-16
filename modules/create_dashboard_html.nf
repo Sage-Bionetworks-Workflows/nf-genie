@@ -16,11 +16,13 @@ process create_dashboard_html {
     script:
     if (production) {
         """
+        cd /root/Genie
         Rscript ./R/dashboard_markdown_generator.R $release \
             --template_path ./templates/dashboardTemplate.Rmd
         """
     } else {
         """
+        cd /root/Genie
         Rscript ./R/dashboard_markdown_generator.R $release \
             --template_path ./templates/dashboardTemplate.Rmd \
             --staging
