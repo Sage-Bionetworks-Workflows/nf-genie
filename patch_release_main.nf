@@ -16,7 +16,12 @@ params.project_id = "syn22033066" // staging project
 params.production = false // production is false
 
 workflow {
-    patch_release(params.release_synid, params.new_release_synid, params.retracted_sample_synid)
-    create_dashboard_html(patch_release.out, params.release, params.production)
-    create_data_guide(patch_release.out, params.release, params.project_id)
+    ch_release_synid = Channel.value(params.release_synid)
+    ch_new_release_synid = Channel.value(params.new_release_synid)
+    ch_retracted_sample_synid = Channel.value(params.retracted_sample_synid)
+    ch_release = Channel.value(params.release)
+    ch_project_id = Channel.value(params.project_id)
+    patch_release(ch_release_synid, ch_new_release_synid, ch_retracted_sample_synid)
+    create_dashboard_html(patch_release.out, ch_release, params.production)
+    create_data_guide(patch_release.out, ch_release, ch_project_id)
 }
