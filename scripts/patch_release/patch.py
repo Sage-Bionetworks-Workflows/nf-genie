@@ -10,15 +10,17 @@ subsequent release series.
 import argparse
 import os
 import shutil
+import subprocess
 import tempfile
 
 import pandas as pd
 import synapseclient
 
-from genie import process_functions
-from genie import create_case_lists
-from genie import dashboard_table_updater
-
+from genie import (
+    create_case_lists,
+    dashboard_table_updater,
+    process_functions
+)
 
 # Run time functions
 def revise_meta_file(meta_file_path: str, old_version: str, new_version: str) -> None:
@@ -60,8 +62,30 @@ def store_file(
     syn.store(new_ent)
 
 
+def generate_dashboard_html(genie_version, staging=False):
+    """Generates dashboard html writeout that gets uploaded to the
+    release folder
+
+    Args:
+        genie_version: GENIE release
+        staging: Use staging files. Default is False
+
+    """
+    markdown_render_cmd = [
+        "Rscript",
+        "/root/Genie/R/dashboard_markdown_generator.R",
+        genie_version,
+        "--template_path",
+        "/root/Genie/templates/dashboardTemplate.Rmd",
+    ]
+
+    if staging:
+        markdown_render_cmd.append("--staging")
+    subprocess.check_call(markdown_render_cmd)
+
+
 def patch_release_workflow(
-    release_synid: str, new_release_synid: str, retracted_sample_synid: str
+    release_synid: str, new_release_synid: str, retracted_sample_synid: str, production: bool = False
 ):
     """
     These need to be modified per retraction.
@@ -70,21 +94,11 @@ def patch_release_workflow(
     """
     syn = synapseclient.login()
 
-    remove_centers = []
-    remove_seqassays = []
-    # 11 release series
-    release_synid = ""  # Fill in synapse id here
+    # remove_centers = []
+    # remove_seqassays = []
+    # release_synid = ""  # Fill in synapse id here
     old_release = syn.get(release_synid).name
-    # The new release folder MUST be created on synapse first.
-    new_release_synid = ""  # Fill in synapse id here
     new_release = syn.get(new_release_synid).name
-    # samples to retract. Example: syn27734047 (12.3 consortium)
-    # If you are creating the 11.1-public patch, you will be using the
-    # 12.3-consortium samples to retract file
-    # Synapse id configurations
-    retracted_sample_synid = ""
-    # Data base mapping synid
-    database_mapping_synid = "syn10967259"
 
     retracted_samples_ent = syn.get(retracted_sample_synid)
     retracted_samplesdf = pd.read_csv(retracted_samples_ent.path)
@@ -102,15 +116,13 @@ def patch_release_workflow(
     sample_synid = file_mapping["data_clinical_sample.txt"]
     patient_synid = file_mapping["data_clinical_patient.txt"]
     cna_synid = file_mapping["data_CNA.txt"]
-    fusion_synid = file_mapping["data_fusions.txt"]
+    fusion_synid = file_mapping["data_sv.txt"]
     gene_synid = file_mapping["data_gene_matrix.txt"]
     maf_synid = file_mapping["data_mutations_extended.txt"]
     genomic_info_synid = file_mapping.get("genie_combined.bed")
     if genomic_info_synid is None:
         genomic_info_synid = file_mapping["genomic_information.txt"]
-    seg_synid = file_mapping.get("genie_public_data_cna_hg19.seg")
-    if seg_synid is None:
-        seg_synid = file_mapping["genie_private_data_cna_hg19.seg"]
+    seg_synid = file_mapping.get("data_cna_hg19.seg")
     assay_info_synid = file_mapping["assay_information.txt"]
 
     # Sample and patient column to cBioPortal mappings
@@ -128,26 +140,26 @@ def patch_release_workflow(
     centers = [patient.split("-")[1] for patient in sampledf.PATIENT_ID]
     sampledf["CENTER"] = centers
     # Retract samples from SEQ_ASSAY_ID, CENTER and retract samples list
-    to_remove_seqassay_rows = sampledf["SEQ_ASSAY_ID"].isin(remove_seqassays)
-    sampledf = sampledf[~to_remove_seqassay_rows]
-    to_remove_center_rows = sampledf["CENTER"].isin(remove_centers)
-    sampledf = sampledf[~to_remove_center_rows]
+    # to_remove_seqassay_rows = sampledf["SEQ_ASSAY_ID"].isin(remove_seqassays)
+    # sampledf = sampledf[~to_remove_seqassay_rows]
+    # to_remove_center_rows = sampledf["CENTER"].isin(remove_centers)
+    # sampledf = sampledf[~to_remove_center_rows]
     to_remove_samples = sampledf["SAMPLE_ID"].isin(retracted_samplesdf.SAMPLE_ID)
     final_sampledf = sampledf[~to_remove_samples]
     # Check number of seq assay ids is the same after removal of samples
     # Must add to removal of seq assay list for gene panel removal
-    seq_assay_after = final_sampledf["SEQ_ASSAY_ID"].unique()
-    seq_assay_before = sampledf["SEQ_ASSAY_ID"].unique()
-    if len(seq_assay_after) != len(seq_assay_before):
-        remove_seqassays.extend(
-            seq_assay_before[~seq_assay_before.isin(seq_assay_after)].tolist()
-        )
+    # seq_assay_after = final_sampledf["SEQ_ASSAY_ID"].unique()
+    # seq_assay_before = sampledf["SEQ_ASSAY_ID"].unique()
+    # if len(seq_assay_after) != len(seq_assay_before):
+    #     remove_seqassays.extend(
+    #         seq_assay_before[~seq_assay_before.isin(seq_assay_after)].tolist()
+    #     )
     # Check number of centers is the same after removal of samples
     # Must add to removal of seq assay list for gene panel removal
-    center_after = final_sampledf["CENTER"].unique()
-    center_before = sampledf["CENTER"].unique()
-    if len(center_after) != len(center_before):
-        remove_centers.extend(center_before[~center_before.isin(center_after)].tolist())
+    # center_after = final_sampledf["CENTER"].unique()
+    # center_before = sampledf["CENTER"].unique()
+    # if len(center_after) != len(center_before):
+    #     remove_centers.extend(center_before[~center_before.isin(center_after)].tolist())
 
     del final_sampledf["CENTER"]
 
@@ -187,26 +199,27 @@ def patch_release_workflow(
     )
     store_file(syn, sample_path, new_release_synid, new_release)
     store_file(syn, patient_path, new_release_synid, new_release)
-    # Patch CNA file
-    cna_ent = syn.get(cna_synid, followLink=True)
-    cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
-    cna_cols = ["Hugo_Symbol"]
-    cna_cols.extend(keep_samples.tolist())
-    cna_cols_idx = cnadf.columns.isin(cna_cols)
-    if not cna_cols_idx.all():
-        cnadf = cnadf[cnadf.columns[cna_cols_idx]]
-        cnatext = process_functions.removePandasDfFloat(cnadf)
-        cna_path = os.path.join(
-            tempdir, os.path.basename(cna_ent.path).replace(old_release, new_release)
-        )
-        with open(cna_path, "w") as cna_file:
-            cna_file.write(cnatext)
-        store_file(syn, cna_path, new_release_synid, new_release)
+    # # Patch CNA file
+    # cna_ent = syn.get(cna_synid, followLink=True)
+    # cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
+    # cna_cols = ["Hugo_Symbol"]
+    # cna_cols.extend(keep_samples.tolist())
+    # cna_cols_idx = cnadf.columns.isin(cna_cols)
+    # if not cna_cols_idx.all():
+    #     cnadf = cnadf[cnadf.columns[cna_cols_idx]]
+    #     cnatext = process_functions.removePandasDfFloat(cnadf)
+    #     cna_path = os.path.join(
+    #         tempdir, os.path.basename(cna_ent.path).replace(old_release, new_release)
+    #     )
+    #     with open(cna_path, "w") as cna_file:
+    #         cna_file.write(cnatext)
+    #     store_file(syn, cna_path, new_release_synid, new_release)
     # Patch Fusion file
     fusion_ent = syn.get(fusion_synid, followLink=True)
     fusiondf = pd.read_csv(fusion_ent.path, sep="\t", comment="#")
     # if not fusiondf.Tumor_Sample_Barcode.isin(keep_samples).all():
-    fusiondf = fusiondf[fusiondf.Tumor_Sample_Barcode.isin(keep_samples)]
+    # fusiondf = fusiondf[fusiondf.Tumor_Sample_Barcode.isin(keep_samples)]
+    fusiondf = fusiondf[fusiondf['Sample_Id'].isin(keep_samples)]
     fusiontext = process_functions.removePandasDfFloat(fusiondf)
     fusion_path = os.path.join(
         tempdir, os.path.basename(fusion_ent.path).replace(old_release, new_release)
@@ -218,7 +231,7 @@ def patch_release_workflow(
     seg_ent = syn.get(seg_synid, followLink=True)
     segdf = pd.read_csv(seg_ent.path, sep="\t", comment="#")
     # if not segdf.ID.isin(keep_samples).all():
-    segdf = segdf[segdf.ID.isin(keep_samples)]
+    segdf = segdf[segdf['ID'].isin(keep_samples)]
     segtext = process_functions.removePandasDfFloat(segdf)
     seg_path = os.path.join(
         tempdir, os.path.basename(seg_ent.path).replace(old_release, new_release)
@@ -230,7 +243,7 @@ def patch_release_workflow(
     # Patch gene matrix file
     gene_ent = syn.get(gene_synid, followLink=True)
     genedf = pd.read_csv(gene_ent.path, sep="\t", comment="#")
-    genedf = genedf[genedf.SAMPLE_ID.isin(keep_samples)]
+    genedf = genedf[genedf['SAMPLE_ID'].isin(keep_samples)]
     genedf[genedf.isnull()] = "NA"
     gene_path = os.path.join(
         tempdir, os.path.basename(gene_ent.path).replace(old_release, new_release)
@@ -253,11 +266,11 @@ def patch_release_workflow(
     # Patch genomic information file
     genome_info_ent = syn.get(genomic_info_synid, followLink=True)
     genome_info_df = pd.read_csv(genome_info_ent.path, sep="\t", comment="#")
-    keep_rows = [
-        seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
-        for seq in genome_info_df["SEQ_ASSAY_ID"]
-    ]
-    genome_info_df = genome_info_df[keep_rows]
+    # keep_rows = [
+    #     seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
+    #     for seq in genome_info_df["SEQ_ASSAY_ID"]
+    # ]
+    # genome_info_df = genome_info_df[keep_rows]
 
     # Write genomic file
     genome_info_text = process_functions.removePandasDfFloat(genome_info_df)
@@ -272,17 +285,17 @@ def patch_release_workflow(
     # Create cBioPortal gene panel and meta files
     for name in file_mapping:
         if name.startswith("data_gene_panel"):
-            seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
-            if seq_name not in remove_seqassays:
-                gene_panel_ent = syn.get(file_mapping[name], followLink=True)
-                new_panel_path = os.path.join(
-                    tempdir,
-                    os.path.basename(gene_panel_ent.path).replace(
-                        old_release, new_release
-                    ),
-                )
-                shutil.copyfile(gene_panel_ent.path, new_panel_path)
-                store_file(syn, new_panel_path, new_release_synid, new_release)
+            # seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
+            # if seq_name not in remove_seqassays:
+            gene_panel_ent = syn.get(file_mapping[name], followLink=True)
+            new_panel_path = os.path.join(
+                tempdir,
+                os.path.basename(gene_panel_ent.path).replace(
+                    old_release, new_release
+                ),
+            )
+            shutil.copyfile(gene_panel_ent.path, new_panel_path)
+            store_file(syn, new_panel_path, new_release_synid, new_release)
         elif name.startswith("meta") or "_meta_" in name:
             meta_ent = syn.get(file_mapping[name], followLink=True)
             new_meta_path = os.path.join(tempdir, os.path.basename(meta_ent.path))
@@ -292,11 +305,11 @@ def patch_release_workflow(
     # Patch assay information file
     assay_ent = syn.get(assay_info_synid, followLink=True)
     assaydf = pd.read_csv(assay_ent.path, sep="\t", comment="#")
-    keep_rows = [
-        seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
-        for seq in assaydf["SEQ_ASSAY_ID"]
-    ]
-    assaydf = assaydf[keep_rows]
+    # keep_rows = [
+    #     seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
+    #     for seq in assaydf["SEQ_ASSAY_ID"]
+    # ]
+    # assaydf = assaydf[keep_rows]
     assay_text = process_functions.removePandasDfFloat(assaydf)
     assay_path = os.path.join(
         tempdir, os.path.basename(assay_ent.path).replace(old_release, new_release)
@@ -319,10 +332,14 @@ def patch_release_workflow(
 
     tempdir_o.cleanup()
     # Update dashboard tables
-    # You may have to execute this twice in case the file view isn't updated
-    database_mapping = syn.tableQuery(f"select * from {database_mapping_synid} limit 1")
+    # Data base mapping synid
+    if production:
+        database_mapping_synid = "syn10967259"
+    else:
+        database_mapping_synid = "syn12094210"
     database_mapping = syn.tableQuery(f"select * from {database_mapping_synid}")
     database_mappingdf = database_mapping.asDataFrame()
+    # You may have to execute this twice in case the file view isn't updated
     dashboard_table_updater.run_dashboard(syn, database_mappingdf, new_release)
 
 
