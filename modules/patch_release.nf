@@ -14,7 +14,7 @@ process patch_release {
     script:
     """
     python3 /patch_release/patch.py \
-        --release_synid $release_syn_id \
+        --release_synid $release_synid \
         --new_release_synid $new_release_synid \
         --retracted-sample_synid $retracted_sample_synid
     """
