@@ -16,12 +16,12 @@ process create_dashboard_html {
     script:
     if (production) {
         """
-        Rscript ./R/dashboard_markdown_generator.R" $release \
+        Rscript ./R/dashboard_markdown_generator.R $release \
             --template_path ./templates/dashboardTemplate.Rmd
         """
     } else {
         """
-        Rscript ./R/dashboard_markdown_generator.R" $release \
+        Rscript ./R/dashboard_markdown_generator.R $release \
             --template_path ./templates/dashboardTemplate.Rmd \
             --staging
         """
