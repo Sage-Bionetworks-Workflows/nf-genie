@@ -6,8 +6,6 @@ nextflow.enable.dsl = 2
 include { patch_release } from './modules/patch_release'
 include { create_dashboard_html } from './modules/create_dashboard_html'
 
-
-
 params.release_synid = "syn53170398"  // 15.4-consortium
 params.new_release_synid = "syn62069187" // 15.6-consortium (in staging)
 params.retracted_sample_synid = "syn54082015"  // 16.3-consortium samples_to_retract.csv
