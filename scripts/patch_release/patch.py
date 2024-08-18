@@ -40,9 +40,27 @@ def revise_meta_file(meta_file_path: str, old_version: str, new_version: str) ->
         meta_text = meta_text.replace(old_version, new_version)
         meta.write(meta_text)
 
+def _filter_tsv(filepath: str, keep_values: pd.Series, column: str) -> pd.DataFrame: 
+    """
+    Patches a tsv in Synapse by filtering out rows based on the provided keep values.
 
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        synid (str): The Synapse ID of the entity to be patched.
+        keep_values (pd.Series): The values to keep in the dataframe.
+        column (str): The column name to filter on.
+
+    Returns:
+        pd.DataFrame: The patched dataframe.
+    """
+    df = pd.read_csv(filepath, sep="\t", comment="#")
+    # if not segdf.ID.isin(keep_samples).all():
+    df = df[df[column].isin(keep_values)]
+    return df
+
+# TODO remove new_release parameter soon
 def store_file(
-    syn: synapseclient.Synapse, new_path: str, new_release_synid: str, release_name: str
+    syn: synapseclient.Synapse, new_path: str, new_release_synid: str, new_release: str = None
 ) -> None:
     """
     Stores a file into Synapse.
@@ -51,15 +69,44 @@ def store_file(
         syn (synapseclient.Synapse): The Synapse client object.
         new_path (str): The path to the file to be stored.
         new_release_synid (str): The Synapse ID of the release folder where the file will be stored.
-        release_name (str): The name of the release.
 
     Returns:
         None
     """
-    ent_name = os.path.basename(new_path.replace(f"_{release_name}", ""))
-    new_ent = synapseclient.File(new_path, name=ent_name, parentId=new_release_synid)
+    new_ent = synapseclient.File(new_path, parentId=new_release_synid)
     syn.store(new_ent)
 
+
+def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release_synid: str, keep_values: pd.Series, column: str) -> str:
+    """
+    Patches a file in Synapse by filtering out rows based on the provided keep values.
+
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        synid (str): The Synapse ID of the entity to be patched.
+        tempdir (str): The temporary directory to store the patched file.
+        new_release_synid (str): The Synapse ID of the release folder where the patched file will be stored.
+        keep_values (pd.Series): The values to keep in the dataframe.
+        column (str): The column name to filter on.
+
+    Returns:
+        None
+    """
+    entity = syn.get(synid, followLink=True)
+    df = _filter_tsv(path=entity.path, keep_values=keep_values, column=column)
+    # Specific filtering fro the data gene matrix file because the string NA must
+    # replace the blank values
+    if entity.name == "data_gene_matrix.txt":
+        df[df.isnull()] = "NA"
+    # df = pd.read_csv(entity.path, sep="\t", comment="#")
+    # df = df[df[column].isin(keep_values)]
+    dftext = process_functions.removePandasDfFloat(df)
+    new_path = os.path.join(tempdir, os.path.basename(entity.path))
+    with open(new_path, "w") as o_file:
+        o_file.write(dftext)
+    store_file(syn, new_path, new_release_synid)
+    # TODO: return a named tuple so its not just returning the path
+    return new_path
 
 def patch_release_workflow(
     release_synid: str, new_release_synid: str, retracted_sample_synid: str, production: bool = False
@@ -144,6 +191,7 @@ def patch_release_workflow(
 
     keep_samples = final_sampledf["SAMPLE_ID"].drop_duplicates()
     keep_patients = final_sampledf["PATIENT_ID"].drop_duplicates()
+    keep_seq_assay_id = final_sampledf["SEQ_ASSAY_ID"].drop_duplicates()
 
     patient_ent = syn.get(patient_synid, followLink=True)
     patientdf = pd.read_csv(patient_ent.path, sep="\t", comment="#")
@@ -161,12 +209,8 @@ def patch_release_workflow(
     full_clin_df.to_csv(clinical_path, sep="\t", index=False)
     store_file(syn, clinical_path, new_release_synid, new_release)
 
-    sample_path = os.path.join(
-        tempdir, os.path.basename(sample_ent.path).replace(old_release, new_release)
-    )
-    patient_path = os.path.join(
-        tempdir, os.path.basename(patient_ent.path).replace(old_release, new_release)
-    )
+    sample_path = os.path.join(tempdir, os.path.basename(sample_ent.path))
+    patient_path = os.path.join(tempdir, os.path.basename(patient_ent.path))
 
     process_functions.addClinicalHeaders(
         clinicaldf,
@@ -187,92 +231,90 @@ def patch_release_workflow(
     if not cna_cols_idx.all():
         cnadf = cnadf[cnadf.columns[cna_cols_idx]]
         cnatext = process_functions.removePandasDfFloat(cnadf)
-        cna_path = os.path.join(
-            tempdir, os.path.basename(cna_ent.path).replace(old_release, new_release)
-        )
+        cna_path = os.path.join(tempdir, os.path.basename(cna_ent.path))
         with open(cna_path, "w") as cna_file:
             cna_file.write(cnatext)
         store_file(syn, cna_path, new_release_synid, new_release)
     # Patch Fusion file
-    fusion_ent = syn.get(fusion_synid, followLink=True)
-    fusiondf = pd.read_csv(fusion_ent.path, sep="\t", comment="#")
-    # if not fusiondf.Tumor_Sample_Barcode.isin(keep_samples).all():
-    # fusiondf = fusiondf[fusiondf.Tumor_Sample_Barcode.isin(keep_samples)]
-    fusiondf = fusiondf[fusiondf['Sample_Id'].isin(keep_samples)]
-    fusiontext = process_functions.removePandasDfFloat(fusiondf)
-    fusion_path = os.path.join(
-        tempdir, os.path.basename(fusion_ent.path).replace(old_release, new_release)
-    )
-    with open(fusion_path, "w") as fusion_file:
-        fusion_file.write(fusiontext)
-    store_file(syn, fusion_path, new_release_synid, new_release)
+    patch_file(syn, fusion_synid, tempdir, new_release_synid, keep_samples, "Sample_Id")
+    # fusion_ent = syn.get(fusion_synid, followLink=True)
+    # fusiondf = pd.read_csv(fusion_ent.path, sep="\t", comment="#")
+    # # if not fusiondf.Tumor_Sample_Barcode.isin(keep_samples).all():
+    # # fusiondf = fusiondf[fusiondf.Tumor_Sample_Barcode.isin(keep_samples)]
+    # fusiondf = fusiondf[fusiondf['Sample_Id'].isin(keep_samples)]
+    # fusiontext = process_functions.removePandasDfFloat(fusiondf)
+    # fusion_path = os.path.join(
+    #     tempdir, os.path.basename(fusion_ent.path).replace(old_release, new_release)
+    # )
+    # with open(fusion_path, "w") as fusion_file:
+    #     fusion_file.write(fusiontext)
+    # store_file(syn, fusion_path, new_release_synid, new_release)
     # Patch SEG file
-    seg_ent = syn.get(seg_synid, followLink=True)
-    segdf = pd.read_csv(seg_ent.path, sep="\t", comment="#")
-    # if not segdf.ID.isin(keep_samples).all():
-    segdf = segdf[segdf['ID'].isin(keep_samples)]
-    segtext = process_functions.removePandasDfFloat(segdf)
-    seg_path = os.path.join(
-        tempdir, os.path.basename(seg_ent.path).replace(old_release, new_release)
-    )
-    with open(seg_path, "w") as seg_file:
-        seg_file.write(segtext)
-    store_file(syn, seg_path, new_release_synid, new_release)
+    patch_file(syn, seg_synid, tempdir, new_release_synid, keep_samples, "ID")
+    # seg_ent = syn.get(seg_synid, followLink=True)
+    # segdf = pd.read_csv(seg_ent.path, sep="\t", comment="#")
+    # # if not segdf.ID.isin(keep_samples).all():
+    # segdf = segdf[segdf['ID'].isin(keep_samples)]
+    # segtext = process_functions.removePandasDfFloat(segdf)
+    # seg_path = os.path.join(
+    #     tempdir, os.path.basename(seg_ent.path).replace(old_release, new_release)
+    # )
+    # with open(seg_path, "w") as seg_file:
+    #     seg_file.write(segtext)
+    # store_file(syn, seg_path, new_release_synid, new_release)
 
     # Patch gene matrix file
-    gene_ent = syn.get(gene_synid, followLink=True)
-    genedf = pd.read_csv(gene_ent.path, sep="\t", comment="#")
-    genedf = genedf[genedf['SAMPLE_ID'].isin(keep_samples)]
-    genedf[genedf.isnull()] = "NA"
-    gene_path = os.path.join(
-        tempdir, os.path.basename(gene_ent.path).replace(old_release, new_release)
-    )
-    genedf.to_csv(gene_path, sep="\t", index=False)
-    store_file(syn, gene_path, new_release_synid, new_release)
+    patch_file(syn, gene_synid, tempdir, new_release_synid, keep_samples, "SAMPLE_ID")
+    # gene_ent = syn.get(gene_synid, followLink=True)
+    # genedf = pd.read_csv(gene_ent.path, sep="\t", comment="#")
+    # genedf = genedf[genedf['SAMPLE_ID'].isin(keep_samples)]
+    # genedf[genedf.isnull()] = "NA"
+    # gene_path = os.path.join(tempdir, os.path.basename(gene_ent.path))
+    # genedf.to_csv(gene_path, sep="\t", index=False)
+    # store_file(syn, gene_path, new_release_synid, new_release)
     # Patch maf file
-    maf_ent = syn.get(maf_synid, followLink=True)
-    mafdf = pd.read_csv(maf_ent.path, sep="\t", comment="#")
-    mafdf = mafdf[mafdf["Tumor_Sample_Barcode"].isin(keep_samples)]
-    maftext = process_functions.removePandasDfFloat(mafdf)
-    maf_path = os.path.join(
-        tempdir, os.path.basename(maf_ent.path).replace(old_release, new_release)
-    )
-    with open(maf_path, "w") as maf_file:
-        maf_file.write(maftext)
-    store_file(syn, maf_path, new_release_synid, new_release)
+    patch_file(syn, maf_synid, tempdir, new_release_synid, keep_samples, "Tumor_Sample_Barcode")
+    # maf_ent = syn.get(maf_synid, followLink=True)
+    # mafdf = pd.read_csv(maf_ent.path, sep="\t", comment="#")
+    # mafdf = mafdf[mafdf["Tumor_Sample_Barcode"].isin(keep_samples)]
+    # maftext = process_functions.removePandasDfFloat(mafdf)
+    # maf_path = os.path.join(
+    #     tempdir, os.path.basename(maf_ent.path).replace(old_release, new_release)
+    # )
+    # with open(maf_path, "w") as maf_file:
+    #     maf_file.write(maftext)
+    # store_file(syn, maf_path, new_release_synid, new_release)
     # Patch genomic information file
     # clinicalReported column needs to be added
     # Patch genomic information file
-    genome_info_ent = syn.get(genomic_info_synid, followLink=True)
-    genome_info_df = pd.read_csv(genome_info_ent.path, sep="\t", comment="#")
-    # keep_rows = [
-    #     seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
-    #     for seq in genome_info_df["SEQ_ASSAY_ID"]
-    # ]
-    # genome_info_df = genome_info_df[keep_rows]
 
-    # Write genomic file
-    genome_info_text = process_functions.removePandasDfFloat(genome_info_df)
-    genome_info_path = os.path.join(
-        tempdir,
-        os.path.basename(genome_info_ent.path).replace(old_release, new_release),
-    )
+    patch_file(syn, genomic_info_synid, tempdir, new_release_synid, keep_seq_assay_id, "SEQ_ASSAY_ID")
+    # genome_info_ent = syn.get(genomic_info_synid, followLink=True)
+    # genome_info_df = pd.read_csv(genome_info_ent.path, sep="\t", comment="#")
+    # # keep_rows = [
+    # #     seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
+    # #     for seq in genome_info_df["SEQ_ASSAY_ID"]
+    # # ]
+    # # genome_info_df = genome_info_df[keep_rows]
 
-    with open(genome_info_path, "w") as bed_file:
-        bed_file.write(genome_info_text)
-    store_file(syn, genome_info_path, new_release_synid, new_release)
+    # # Write genomic file
+    # genome_info_text = process_functions.removePandasDfFloat(genome_info_df)
+    # genome_info_path = os.path.join(
+    #     tempdir,
+    #     os.path.basename(genome_info_ent.path).replace(old_release, new_release),
+    # )
+
+    # with open(genome_info_path, "w") as bed_file:
+    #     bed_file.write(genome_info_text)
+    # store_file(syn, genome_info_path, new_release_synid, new_release)
     # Create cBioPortal gene panel and meta files
     for name in file_mapping:
         if name.startswith("data_gene_panel"):
-            # seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
-            # if seq_name not in remove_seqassays:
+            seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
+            if seq_name not in keep_seq_assay_id:
+                continue
             gene_panel_ent = syn.get(file_mapping[name], followLink=True)
-            new_panel_path = os.path.join(
-                tempdir,
-                os.path.basename(gene_panel_ent.path).replace(
-                    old_release, new_release
-                ),
-            )
+            new_panel_path = os.path.join(tempdir, os.path.basename(gene_panel_ent.path))
             shutil.copyfile(gene_panel_ent.path, new_panel_path)
             store_file(syn, new_panel_path, new_release_synid, new_release)
         elif name.startswith("meta") or "_meta_" in name:
@@ -282,20 +324,21 @@ def patch_release_workflow(
             revise_meta_file(new_meta_path, old_release, new_release)
             store_file(syn, new_meta_path, new_release_synid, new_release)
     # Patch assay information file
-    assay_ent = syn.get(assay_info_synid, followLink=True)
-    assaydf = pd.read_csv(assay_ent.path, sep="\t", comment="#")
-    # keep_rows = [
-    #     seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
-    #     for seq in assaydf["SEQ_ASSAY_ID"]
-    # ]
-    # assaydf = assaydf[keep_rows]
-    assay_text = process_functions.removePandasDfFloat(assaydf)
-    assay_path = os.path.join(
-        tempdir, os.path.basename(assay_ent.path).replace(old_release, new_release)
-    )
-    with open(assay_path, "w") as assay_file:
-        assay_file.write(assay_text)
-    store_file(syn, assay_path, new_release_synid, new_release)
+    assay_path = patch_file(syn, assay_info_synid, tempdir, new_release_synid, keep_seq_assay_id, "SEQ_ASSAY_ID")
+    # assay_ent = syn.get(assay_info_synid, followLink=True)
+    # assaydf = pd.read_csv(assay_ent.path, sep="\t", comment="#")
+    # # keep_rows = [
+    # #     seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
+    # #     for seq in assaydf["SEQ_ASSAY_ID"]
+    # # ]
+    # # assaydf = assaydf[keep_rows]
+    # assay_text = process_functions.removePandasDfFloat(assaydf)
+    # assay_path = os.path.join(
+    #     tempdir, os.path.basename(assay_ent.path).replace(old_release, new_release)
+    # )
+    # with open(assay_path, "w") as assay_file:
+    #     assay_file.write(assay_text)
+    # store_file(syn, assay_path, new_release_synid, new_release)
     # Create cBioPortal case lists
     case_list_path = os.path.join(tempdir, "case_lists")
     if not os.path.exists(case_list_path):

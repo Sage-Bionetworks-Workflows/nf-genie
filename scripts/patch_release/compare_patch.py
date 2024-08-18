@@ -2,8 +2,11 @@
 The command ran: 
 python patch.py syn53170398 syn62069187 syn54082015
 In leu of lack of unit or integration tests, the above command replicates the 
- this is to test 15.5-consortium (syn55146141) and 15.6-consortium (Staging)
+this is to test 15.5-consortium (syn55146141) and 15.6-consortium (Staging)
 
+python compare_patch.py
+
+TODO: Add argparse
 """
 import synapseclient
 import synapseutils as synu
