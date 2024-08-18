@@ -60,7 +60,7 @@ def _filter_tsv(filepath: str, keep_values: pd.Series, column: str) -> pd.DataFr
 
 # TODO remove new_release parameter soon
 def store_file(
-    syn: synapseclient.Synapse, new_path: str, new_release_synid: str, new_release: str = None
+    syn: synapseclient.Synapse, new_path: str, new_release_synid: str
 ) -> None:
     """
     Stores a file into Synapse.
@@ -93,7 +93,7 @@ def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release
         None
     """
     entity = syn.get(synid, followLink=True)
-    df = _filter_tsv(path=entity.path, keep_values=keep_values, column=column)
+    df = _filter_tsv(filepath=entity.path, keep_values=keep_values, column=column)
     # Specific filtering fro the data gene matrix file because the string NA must
     # replace the blank values
     if entity.name == "data_gene_matrix.txt":
@@ -205,7 +205,7 @@ def patch_release_workflow(
     # public release code rely on the merged clinical file.
     full_clin_df = full_clin_df[full_clin_df["SAMPLE_ID"].isin(keep_samples)]
     full_clin_df.to_csv(clinical_path, sep="\t", index=False)
-    store_file(syn, clinical_path, new_release_synid, new_release)
+    store_file(syn, clinical_path, new_release_synid)
 
     sample_path = os.path.join(tempdir, os.path.basename(sample_ent.path))
     patient_path = os.path.join(tempdir, os.path.basename(patient_ent.path))
