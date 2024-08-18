@@ -13,7 +13,13 @@ params.retracted_sample_synid = "syn54082015"  // 16.3-consortium samples_to_ret
 params.release = "15.6-consortium"
 // project_id = "syn7208886"
 params.project_id = "syn22033066" // staging project
-params.production = false // production is false
+if (params.project_id == "syn22033066") {
+    is_production = false
+} else if (params.project_id == "syn3380222") {
+    is_production = true
+} else {
+    exit 1, "project_id must be syn22033066 or syn3380222"
+}
 
 workflow {
     ch_release_synid = Channel.value(params.release_synid)
@@ -21,7 +27,7 @@ workflow {
     ch_retracted_sample_synid = Channel.value(params.retracted_sample_synid)
     ch_release = Channel.value(params.release)
     ch_project_id = Channel.value(params.project_id)
-    patch_release(ch_release_synid, ch_new_release_synid, ch_retracted_sample_synid, params.production)
-    create_dashboard_html(patch_release.out, ch_release, params.production)
+    patch_release(ch_release_synid, ch_new_release_synid, ch_retracted_sample_synid, is_production)
+    create_dashboard_html(patch_release.out, ch_release, is_production)
     create_data_guide(patch_release.out, ch_release, ch_project_id)
 }
