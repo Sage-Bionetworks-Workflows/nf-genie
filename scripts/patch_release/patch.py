@@ -117,12 +117,10 @@ def patch_release_workflow(
     variables need to be changed to reflect different Synapse ids per release.
     """
     syn = synapseclient.login()
-    # Update dashboard tables
-    # Data base mapping synid
 
+    # TODO: Add ability to provide list of centers / seq assay ids to remove
     # remove_centers = []
     # remove_seqassays = []
-    # release_synid = ""  # Fill in synapse id here
     old_release = syn.get(release_synid).name
     new_release = syn.get(new_release_synid).name
 
@@ -265,7 +263,7 @@ def patch_release_workflow(
     for case_filename in case_list_files:
         # if case_filename in case_file_synids:
         case_path = os.path.join(case_list_path, case_filename)
-        store_file(syn, case_path, case_list_folder_synid, new_release)
+        store_file(syn, case_path, case_list_folder_synid)
 
     # Create cBioPortal gene panel and meta files
     for name in file_mapping:
@@ -276,13 +274,13 @@ def patch_release_workflow(
             gene_panel_ent = syn.get(file_mapping[name], followLink=True)
             new_panel_path = os.path.join(tempdir, os.path.basename(gene_panel_ent.path))
             shutil.copyfile(gene_panel_ent.path, new_panel_path)
-            store_file(syn, new_panel_path, new_release_synid, new_release)
+            store_file(syn, new_panel_path, new_release_synid)
         elif name.startswith("meta") or "_meta_" in name:
             meta_ent = syn.get(file_mapping[name], followLink=True)
             new_meta_path = os.path.join(tempdir, os.path.basename(meta_ent.path))
             shutil.copyfile(meta_ent.path, new_meta_path)
             revise_meta_file(new_meta_path, old_release, new_release)
-            store_file(syn, new_meta_path, new_release_synid, new_release)
+            store_file(syn, new_meta_path, new_release_synid)
 
     tempdir_o.cleanup()
     # Update dashboard tables
