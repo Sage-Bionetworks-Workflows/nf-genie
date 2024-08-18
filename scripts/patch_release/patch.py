@@ -10,7 +10,6 @@ subsequent release series.
 import argparse
 import os
 import shutil
-import subprocess
 import tempfile
 
 import pandas as pd
