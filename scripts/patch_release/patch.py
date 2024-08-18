@@ -108,6 +108,35 @@ def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release
     # TODO: return a named tuple so its not just returning the path
     return new_path
 
+
+def patch_cna_file(syn: synapseclient.Synapse, cna_synid: str, tempdir: str, new_release_synid: str, keep_samples: pd.Series) -> None:
+    """
+    Patches the CNA file in Synapse by filtering out columns based on the provided keep samples.
+
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        cna_synid (str): The Synapse ID of the CNA file to be patched.
+        tempdir (str): The temporary directory to store the patched file.
+        new_release_synid (str): The Synapse ID of the release folder where the patched file will be stored.
+        keep_samples (pd.Series): The samples to keep in the CNA file.
+
+    Returns:
+        None
+    """
+    cna_ent = syn.get(cna_synid, followLink=True)
+    cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
+    cna_cols = ["Hugo_Symbol"]
+    cna_cols.extend(keep_samples.tolist())
+    cna_cols_idx = cnadf.columns.isin(cna_cols)
+    if not cna_cols_idx.all():
+        cnadf = cnadf[cnadf.columns[cna_cols_idx]]
+        cnatext = process_functions.removePandasDfFloat(cnadf)
+        cna_path = os.path.join(tempdir, os.path.basename(cna_ent.path))
+        with open(cna_path, "w") as cna_file:
+            cna_file.write(cnatext)
+        store_file(syn, cna_path, new_release_synid)
+
+
 def patch_release_workflow(
     release_synid: str, new_release_synid: str, retracted_sample_synid: str, production: bool = False
 ):
@@ -221,18 +250,7 @@ def patch_release_workflow(
     store_file(syn, sample_path, new_release_synid)
     store_file(syn, patient_path, new_release_synid)
     # Patch CNA file
-    cna_ent = syn.get(cna_synid, followLink=True)
-    cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
-    cna_cols = ["Hugo_Symbol"]
-    cna_cols.extend(keep_samples.tolist())
-    cna_cols_idx = cnadf.columns.isin(cna_cols)
-    if not cna_cols_idx.all():
-        cnadf = cnadf[cnadf.columns[cna_cols_idx]]
-        cnatext = process_functions.removePandasDfFloat(cnadf)
-        cna_path = os.path.join(tempdir, os.path.basename(cna_ent.path))
-        with open(cna_path, "w") as cna_file:
-            cna_file.write(cnatext)
-        store_file(syn, cna_path, new_release_synid)
+    patch_cna_file(syn, cna_synid, tempdir, new_release_synid, keep_samples)
 
     # Patch Fusion file
     patch_file(syn, fusion_synid, tempdir, new_release_synid, keep_samples, "Sample_Id")
