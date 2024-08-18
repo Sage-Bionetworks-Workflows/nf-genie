@@ -341,13 +341,19 @@ def main():
         type=str,
         help="The Synapse Id of the samples_to_retract.csv file generated in the current 3rd consortium release.",
     )
-
+    # this parameter is mainly for the dashboard upload step
+    parser.add_argument(
+        "--production",
+        action="store_true",
+        help="Run production workload or it will default to the staging workload"
+    )
     args = parser.parse_args()
 
     patch_release_workflow(
         release_synid=args.release_synid,
         new_release_synid=args.new_release_synid,
         retracted_sample_synid=args.retracted_sample_synid,
+        production=arg.production
     )
 
 

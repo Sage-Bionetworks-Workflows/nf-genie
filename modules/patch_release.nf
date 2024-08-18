@@ -7,15 +7,27 @@ process patch_release {
     val release_synid
     val new_release_synid
     val retracted_sample_synid
+    val production
 
     output:
     stdout
 
     script:
-    """
-    python3 /patch_release/patch.py \
-        $release_synid \
-        $new_release_synid \
-        $retracted_sample_synid
-    """
+    if (production) {
+        """
+        python3 /patch_release/patch.py \
+            $release_synid \
+            $new_release_synid \
+            $retracted_sample_synid \
+            --production
+        """
+    }
+    else {
+        """
+        python3 /patch_release/patch.py \
+            $release_synid \
+            $new_release_synid \
+            $retracted_sample_synid \
+        """
+    }
 }

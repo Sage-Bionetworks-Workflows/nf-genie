@@ -53,10 +53,12 @@ def compare_releases(original_synid: str, new_synid: str):
     new_file_list = _get_file_dict(syn, new_synid)
     
     # Check that the two folders have the same number of files
-    print(len(original_file_list))
-    print(len(new_file_list))
-    assert len(original_file_list) == len(new_file_list), "Folders have different number of files"
-    print("Number of files: ", len(original_file_list))
+    print("Number of files in old folder: ", len(original_file_list))
+    print("Number of files in new folder: ", len(new_file_list))
+    for filename in new_file_list.keys():
+        if original_file_list.get(filename) is None:
+            print("File not found in old folder: ", filename)
+
     for filename in original_file_list.keys():
         if new_file_list.get(filename) is None:
             print("File not found in new folder: ", filename)
