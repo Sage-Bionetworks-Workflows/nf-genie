@@ -353,7 +353,7 @@ def main():
         release_synid=args.release_synid,
         new_release_synid=args.new_release_synid,
         retracted_sample_synid=args.retracted_sample_synid,
-        production=arg.production
+        production=args.production
     )
 
 
