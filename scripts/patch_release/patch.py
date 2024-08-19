@@ -74,7 +74,8 @@ def store_file(
         None
     """
     new_ent = synapseclient.File(new_path, parentId=new_release_synid)
-    syn.store(new_ent)
+    new_ent = syn.store(new_ent)
+    return new_ent
 
 
 def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release_synid: str, keep_values: pd.Series, column: str) -> str:
@@ -161,11 +162,6 @@ def patch_release_workflow(
     file_mapping = {
         release_file["name"]: release_file["id"] for release_file in release_files
     }
-    # case_list_folder_synid = file_mapping['case_lists']
-    case_list_folder_synid = syn.store(
-        synapseclient.Folder("case_lists", parentId=new_release_synid)
-    ).id
-
     sample_synid = file_mapping["data_clinical_sample.txt"]
     patient_synid = file_mapping["data_clinical_patient.txt"]
     cna_synid = file_mapping["data_CNA.txt"]
@@ -234,7 +230,10 @@ def patch_release_workflow(
     # public release code rely on the merged clinical file.
     full_clin_df = full_clin_df[full_clin_df["SAMPLE_ID"].isin(keep_samples)]
     full_clin_df.to_csv(clinical_path, sep="\t", index=False)
-    store_file(syn, clinical_path, new_release_synid)
+    full_clinical_entity = store_file(syn, clinical_path, new_release_synid)
+    # Revoke access to general GENIE consortium on data_clinical.txt file
+    # Because it has more data than the consortium should see.
+    syn.setPermissions(full_clinical_entity, principalId=3326313, accessType=[])
 
     sample_path = os.path.join(tempdir, os.path.basename(sample_ent.path))
     patient_path = os.path.join(tempdir, os.path.basename(patient_ent.path))
@@ -277,7 +276,9 @@ def patch_release_workflow(
     create_case_lists.main(clinical_path, assay_path, case_list_path, "genie_private")
 
     case_list_files = os.listdir(case_list_path)
-
+    case_list_folder_synid = syn.store(
+        synapseclient.Folder("case_lists", parentId=new_release_synid)
+    ).id
     for case_filename in case_list_files:
         # if case_filename in case_file_synids:
         case_path = os.path.join(case_list_path, case_filename)
