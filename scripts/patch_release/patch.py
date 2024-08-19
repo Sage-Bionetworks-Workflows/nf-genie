@@ -247,27 +247,10 @@ def patch_release_workflow(
     sampledf = pd.read_csv(sample_ent.path, sep="\t", comment="#")
     centers = [patient.split("-")[1] for patient in sampledf.PATIENT_ID]
     sampledf["CENTER"] = centers
-    # Retract samples from SEQ_ASSAY_ID, CENTER and retract samples list
-    # to_remove_seqassay_rows = sampledf["SEQ_ASSAY_ID"].isin(remove_seqassays)
-    # sampledf = sampledf[~to_remove_seqassay_rows]
-    # to_remove_center_rows = sampledf["CENTER"].isin(remove_centers)
-    # sampledf = sampledf[~to_remove_center_rows]
+    # Retract samples from retract samples list
+    # TODO: Add code here to support redaction for entire center or seq assays
     to_remove_samples = sampledf["SAMPLE_ID"].isin(retracted_samplesdf.SAMPLE_ID)
     final_sampledf = sampledf[~to_remove_samples]
-    # Check number of seq assay ids is the same after removal of samples
-    # Must add to removal of seq assay list for gene panel removal
-    # seq_assay_after = final_sampledf["SEQ_ASSAY_ID"].unique()
-    # seq_assay_before = sampledf["SEQ_ASSAY_ID"].unique()
-    # if len(seq_assay_after) != len(seq_assay_before):
-    #     remove_seqassays.extend(
-    #         seq_assay_before[~seq_assay_before.isin(seq_assay_after)].tolist()
-    #     )
-    # Check number of centers is the same after removal of samples
-    # Must add to removal of seq assay list for gene panel removal
-    # center_after = final_sampledf["CENTER"].unique()
-    # center_before = sampledf["CENTER"].unique()
-    # if len(center_after) != len(center_before):
-    #     remove_centers.extend(center_before[~center_before.isin(center_after)].tolist())
 
     del final_sampledf["CENTER"]
 
@@ -307,6 +290,7 @@ def patch_release_workflow(
     )
     store_file(syn=syn, new_path=sample_path, new_release_synid=new_release_synid)
     store_file(syn=syn, new_path=patient_path, new_release_synid=new_release_synid)
+
     # Patch CNA file
     patch_cna_file(syn=syn, cna_synid=cna_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_samples=keep_samples)
 
@@ -330,23 +314,10 @@ def patch_release_workflow(
 
     # Create cBioPortal case lists
     patch_case_list_files(syn=syn, new_release_synid=new_release_synid, tempdir=tempdir, clinical_path=clinical_path, assay_path=assay_path)
+
     # Create cBioPortal gene panel and meta files
-    # for name in file_mapping:
-    #     if name.startswith("data_gene_panel"):
-    #         seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
-    #         if seq_name not in keep_seq_assay_id:
-    #             continue
-    #         gene_panel_ent = syn.get(file_mapping[name], followLink=True)
-    #         new_panel_path = os.path.join(tempdir, os.path.basename(gene_panel_ent.path))
-    #         shutil.copyfile(gene_panel_ent.path, new_panel_path)
-    #         store_file(syn, new_panel_path, new_release_synid)
-    #     elif name.startswith("meta") or "_meta_" in name:
-    #         meta_ent = syn.get(file_mapping[name], followLink=True)
-    #         new_meta_path = os.path.join(tempdir, os.path.basename(meta_ent.path))
-    #         shutil.copyfile(meta_ent.path, new_meta_path)
-    #         revise_meta_file(new_meta_path, old_release, new_release)
-    #         store_file(syn, new_meta_path, new_release_synid)
     patch_gene_panel_and_meta_files(syn=syn, file_mapping=file_mapping, tempdir=tempdir, new_release_synid=new_release_synid, keep_seq_assay_id=keep_seq_assay_id, old_release=old_release, new_release=new_release)
+
     tempdir_o.cleanup()
     # Update dashboard tables
     # Data base mapping synid
