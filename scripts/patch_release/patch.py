@@ -89,9 +89,6 @@ def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release
         new_release_synid (str): The Synapse ID of the release folder where the patched file will be stored.
         keep_values (pd.Series): The values to keep in the dataframe.
         column (str): The column name to filter on.
-
-    Returns:
-        None
     """
     entity = syn.get(synid, followLink=True)
     df = _filter_tsv(filepath=entity.path, keep_values=keep_values, column=column)
@@ -120,9 +117,6 @@ def patch_cna_file(syn: synapseclient.Synapse, cna_synid: str, tempdir: str, new
         tempdir (str): The temporary directory to store the patched file.
         new_release_synid (str): The Synapse ID of the release folder where the patched file will be stored.
         keep_samples (pd.Series): The samples to keep in the CNA file.
-
-    Returns:
-        None
     """
     cna_ent = syn.get(cna_synid, followLink=True)
     cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
@@ -138,16 +132,81 @@ def patch_cna_file(syn: synapseclient.Synapse, cna_synid: str, tempdir: str, new
         store_file(syn, cna_path, new_release_synid)
 
 
+def patch_case_list_files(syn: synapseclient.Synapse, new_release_synid: str, tempdir: str, clinical_path: str, assay_path: str) -> None:
+    """
+    Creates a folder for case lists in Synapse and populates it with case list files.
+    The reason why case list files cannot be copied because samples and patients are retracted
+    so `create_case_lists.main` must be called to regenerated case lists from the new
+    sample list.
+
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        new_release_synid (str): The Synapse ID of the release folder where the case lists will be stored.
+        tempdir (str): The temporary directory to store the case list files.
+        clinical_path (str): The path to the clinical data.
+        assay_path (str): The path to the assay data.
+    """
+    case_list_path = os.path.join(tempdir, "case_lists")
+    if not os.path.exists(case_list_path):
+        os.mkdir(case_list_path)
+    create_case_lists.main(clinical_path, assay_path, case_list_path, "genie_private")
+
+    case_list_files = os.listdir(case_list_path)
+    case_list_folder_synid = syn.store(
+        synapseclient.Folder("case_lists", parentId=new_release_synid)
+    ).id
+    for case_filename in case_list_files:
+        case_path = os.path.join(case_list_path, case_filename)
+        store_file(syn, case_path, case_list_folder_synid)
+
+
+def patch_gene_panel_and_meta_files(syn: synapseclient.Synapse, file_mapping: dict, tempdir: str, new_release_synid: str, keep_seq_assay_id: pd.Series, old_release: str, new_release: str) -> None:
+    """
+    Creates cBioPortal gene panel and meta files.
+
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        file_mapping (dict): A dictionary mapping file names to their Synapse IDs.
+        tempdir (str): The temporary directory to store the files.
+        new_release_synid (str): The Synapse ID of the new release folder.
+        keep_seq_assay_id (pd.Series): The series of SEQ_ASSAY_IDs to keep.
+        old_release (str): The version name of the orignal consortium release linking to the public release.
+        new_release (str): The version name of the new consortium release linking to the patch release.
+    """
+    for name in file_mapping:
+        if name.startswith("data_gene_panel"):
+            seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
+            if seq_name not in keep_seq_assay_id:
+                continue
+            gene_panel_ent = syn.get(file_mapping[name], followLink=True)
+            new_panel_path = os.path.join(tempdir, os.path.basename(gene_panel_ent.path))
+            shutil.copyfile(gene_panel_ent.path, new_panel_path)
+            store_file(syn, new_panel_path, new_release_synid)
+        elif name.startswith("meta") or "_meta_" in name:
+            meta_ent = syn.get(file_mapping[name], followLink=True)
+            new_meta_path = os.path.join(tempdir, os.path.basename(meta_ent.path))
+            shutil.copyfile(meta_ent.path, new_meta_path)
+            revise_meta_file(new_meta_path, old_release, new_release)
+            store_file(syn, new_meta_path, new_release_synid)
+
+
 def patch_release_workflow(
     release_synid: str, new_release_synid: str, retracted_sample_synid: str, production: bool = False
 ):
     """
-    These need to be modified per retraction.
-    The release_synid, new_release_synid, and retracted_sample_synid
-    variables need to be changed to reflect different Synapse ids per release.
-    """
-    syn = synapseclient.login()
+    Patches a release by removing retracted samples from the clinical, sample, and patient files.
+    Also patches CNA, fusion, SEG, gene matrix, MAF, genomic information, and assay information files.
+    Creates cBioPortal case lists and gene panel and meta files.
+    Updates the dashboard tables.
 
+    Args:
+        release_synid (str): The Synapse ID of the release to be patched.
+        new_release_synid (str): The Synapse ID of the new release.
+        retracted_sample_synid (str): The Synapse ID of the file containing the retracted samples.
+        production (bool, optional): Whether the patch release is for production. Defaults to False.
+    """
+
+    syn = synapseclient.login()
     # TODO: Add ability to provide list of centers / seq assay ids to remove
     # remove_centers = []
     # remove_seqassays = []
@@ -246,61 +305,48 @@ def patch_release_workflow(
         sample_path,
         patient_path,
     )
-    store_file(syn, sample_path, new_release_synid)
-    store_file(syn, patient_path, new_release_synid)
+    store_file(syn=syn, new_path=sample_path, new_release_synid=new_release_synid)
+    store_file(syn=syn, new_path=patient_path, new_release_synid=new_release_synid)
     # Patch CNA file
-    patch_cna_file(syn, cna_synid, tempdir, new_release_synid, keep_samples)
+    patch_cna_file(syn=syn, cna_synid=cna_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_samples=keep_samples)
 
     # Patch Fusion file
-    patch_file(syn, fusion_synid, tempdir, new_release_synid, keep_samples, "Sample_Id")
+    patch_file(syn=syn, synid=fusion_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="Sample_Id")
 
     # Patch SEG file
-    patch_file(syn, seg_synid, tempdir, new_release_synid, keep_samples, "ID")
+    patch_file(syn=syn, synid=seg_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="ID")
 
     # Patch gene matrix file
-    patch_file(syn, gene_synid, tempdir, new_release_synid, keep_samples, "SAMPLE_ID")
+    patch_file(syn=syn, synid=gene_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="SAMPLE_ID")
 
     # Patch maf file
-    patch_file(syn, maf_synid, tempdir, new_release_synid, keep_samples, "Tumor_Sample_Barcode")
+    patch_file(syn=syn, synid=maf_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="Tumor_Sample_Barcode")
 
     # Patch genomic information file
-    patch_file(syn, genomic_info_synid, tempdir, new_release_synid, keep_seq_assay_id, "SEQ_ASSAY_ID")
+    patch_file(syn=syn, synid=genomic_info_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_seq_assay_id, column="SEQ_ASSAY_ID")
 
     # Patch assay information file
-    assay_path = patch_file(syn, assay_info_synid, tempdir, new_release_synid, keep_seq_assay_id, "SEQ_ASSAY_ID")
+    assay_path = patch_file(syn=syn, synid=assay_info_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_seq_assay_id, column="SEQ_ASSAY_ID")
 
     # Create cBioPortal case lists
-    case_list_path = os.path.join(tempdir, "case_lists")
-    if not os.path.exists(case_list_path):
-        os.mkdir(case_list_path)
-    create_case_lists.main(clinical_path, assay_path, case_list_path, "genie_private")
-
-    case_list_files = os.listdir(case_list_path)
-    case_list_folder_synid = syn.store(
-        synapseclient.Folder("case_lists", parentId=new_release_synid)
-    ).id
-    for case_filename in case_list_files:
-        # if case_filename in case_file_synids:
-        case_path = os.path.join(case_list_path, case_filename)
-        store_file(syn, case_path, case_list_folder_synid)
-
+    patch_case_list_files(syn=syn, new_release_synid=new_release_synid, tempdir=tempdir, clinical_path=clinical_path, assay_path=assay_path)
     # Create cBioPortal gene panel and meta files
-    for name in file_mapping:
-        if name.startswith("data_gene_panel"):
-            seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
-            if seq_name not in keep_seq_assay_id:
-                continue
-            gene_panel_ent = syn.get(file_mapping[name], followLink=True)
-            new_panel_path = os.path.join(tempdir, os.path.basename(gene_panel_ent.path))
-            shutil.copyfile(gene_panel_ent.path, new_panel_path)
-            store_file(syn, new_panel_path, new_release_synid)
-        elif name.startswith("meta") or "_meta_" in name:
-            meta_ent = syn.get(file_mapping[name], followLink=True)
-            new_meta_path = os.path.join(tempdir, os.path.basename(meta_ent.path))
-            shutil.copyfile(meta_ent.path, new_meta_path)
-            revise_meta_file(new_meta_path, old_release, new_release)
-            store_file(syn, new_meta_path, new_release_synid)
-
+    # for name in file_mapping:
+    #     if name.startswith("data_gene_panel"):
+    #         seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
+    #         if seq_name not in keep_seq_assay_id:
+    #             continue
+    #         gene_panel_ent = syn.get(file_mapping[name], followLink=True)
+    #         new_panel_path = os.path.join(tempdir, os.path.basename(gene_panel_ent.path))
+    #         shutil.copyfile(gene_panel_ent.path, new_panel_path)
+    #         store_file(syn, new_panel_path, new_release_synid)
+    #     elif name.startswith("meta") or "_meta_" in name:
+    #         meta_ent = syn.get(file_mapping[name], followLink=True)
+    #         new_meta_path = os.path.join(tempdir, os.path.basename(meta_ent.path))
+    #         shutil.copyfile(meta_ent.path, new_meta_path)
+    #         revise_meta_file(new_meta_path, old_release, new_release)
+    #         store_file(syn, new_meta_path, new_release_synid)
+    patch_gene_panel_and_meta_files(syn=syn, file_mapping=file_mapping, tempdir=tempdir, new_release_synid=new_release_synid, keep_seq_assay_id=keep_seq_assay_id, old_release=old_release, new_release=new_release)
     tempdir_o.cleanup()
     # Update dashboard tables
     # Data base mapping synid
