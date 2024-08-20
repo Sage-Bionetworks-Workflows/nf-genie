@@ -92,7 +92,7 @@ def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release
     """
     entity = syn.get(synid, followLink=True)
     df = _filter_tsv(filepath=entity.path, keep_values=keep_values, column=column)
-    # Specific filtering fro the data gene matrix file because the string NA must
+    # Specific filtering for the data gene matrix file because the string NA must
     # replace the blank values
     if entity.name == "data_gene_matrix.txt":
         df[df.isnull()] = "NA"
