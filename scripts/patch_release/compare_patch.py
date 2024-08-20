@@ -11,6 +11,7 @@ TODO: Add argparse
 import synapseclient
 import synapseutils as synu
 
+
 def _get_file_dict(syn: synapseclient.Synapse, synid: str) -> dict[str, str]:
     """
     This function generates a dictionary of files from a Synapse ID.
@@ -54,7 +55,7 @@ def compare_releases(original_synid: str, new_synid: str):
     # new_ent = syn.get(new_synid)
     # new_files = synu.walk(new_synid)
     new_file_list = _get_file_dict(syn, new_synid)
-    
+
     # Check that the two folders have the same number of files
     print("Number of files in old folder: ", len(original_file_list))
     print("Number of files in new folder: ", len(new_file_list))
@@ -68,7 +69,6 @@ def compare_releases(original_synid: str, new_synid: str):
         else:
             if original_file_list[filename].md5 != new_file_list[filename].md5:
                 print("Files are different: ", filename)
-    
 
 
 if __name__ == "__main__":

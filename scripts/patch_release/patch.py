@@ -15,11 +15,8 @@ import tempfile
 import pandas as pd
 import synapseclient
 
-from genie import (
-    create_case_lists,
-    dashboard_table_updater,
-    process_functions
-)
+from genie import create_case_lists, dashboard_table_updater, process_functions
+
 
 # Run time functions
 def revise_meta_file(meta_file_path: str, old_version: str, new_version: str) -> None:
@@ -40,7 +37,8 @@ def revise_meta_file(meta_file_path: str, old_version: str, new_version: str) ->
         meta_text = meta_text.replace(old_version, new_version)
         meta.write(meta_text)
 
-def _filter_tsv(filepath: str, keep_values: pd.Series, column: str) -> pd.DataFrame: 
+
+def _filter_tsv(filepath: str, keep_values: pd.Series, column: str) -> pd.DataFrame:
     """
     Patches a tsv in Synapse by filtering out rows based on the provided keep values.
 
@@ -57,6 +55,7 @@ def _filter_tsv(filepath: str, keep_values: pd.Series, column: str) -> pd.DataFr
     # if not segdf.ID.isin(keep_samples).all():
     df = df[df[column].isin(keep_values)]
     return df
+
 
 # TODO remove new_release parameter soon
 def store_file(
@@ -78,7 +77,14 @@ def store_file(
     return new_ent
 
 
-def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release_synid: str, keep_values: pd.Series, column: str) -> str:
+def patch_file(
+    syn: synapseclient.Synapse,
+    synid: str,
+    tempdir: str,
+    new_release_synid: str,
+    keep_values: pd.Series,
+    column: str,
+) -> str:
     """
     Patches a file in Synapse by filtering out rows based on the provided keep values.
 
@@ -110,7 +116,13 @@ def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release
     return new_path
 
 
-def patch_cna_file(syn: synapseclient.Synapse, cna_synid: str, tempdir: str, new_release_synid: str, keep_samples: pd.Series) -> None:
+def patch_cna_file(
+    syn: synapseclient.Synapse,
+    cna_synid: str,
+    tempdir: str,
+    new_release_synid: str,
+    keep_samples: pd.Series,
+) -> None:
     """
     Patches the CNA file in Synapse by filtering out columns based on the provided keep samples.
 
@@ -135,7 +147,13 @@ def patch_cna_file(syn: synapseclient.Synapse, cna_synid: str, tempdir: str, new
         store_file(syn, cna_path, new_release_synid)
 
 
-def patch_case_list_files(syn: synapseclient.Synapse, new_release_synid: str, tempdir: str, clinical_path: str, assay_path: str) -> None:
+def patch_case_list_files(
+    syn: synapseclient.Synapse,
+    new_release_synid: str,
+    tempdir: str,
+    clinical_path: str,
+    assay_path: str,
+) -> None:
     """
     Creates a folder for case lists in Synapse and populates it with case list files.
     The reason why case list files cannot be copied because samples and patients are retracted
@@ -163,7 +181,15 @@ def patch_case_list_files(syn: synapseclient.Synapse, new_release_synid: str, te
         store_file(syn, case_path, case_list_folder_synid)
 
 
-def patch_gene_panel_and_meta_files(syn: synapseclient.Synapse, file_mapping: dict, tempdir: str, new_release_synid: str, keep_seq_assay_id: pd.Series, old_release: str, new_release: str) -> None:
+def patch_gene_panel_and_meta_files(
+    syn: synapseclient.Synapse,
+    file_mapping: dict,
+    tempdir: str,
+    new_release_synid: str,
+    keep_seq_assay_id: pd.Series,
+    old_release: str,
+    new_release: str,
+) -> None:
     """
     Creates cBioPortal gene panel and meta files.
 
@@ -182,7 +208,9 @@ def patch_gene_panel_and_meta_files(syn: synapseclient.Synapse, file_mapping: di
             if seq_name not in keep_seq_assay_id:
                 continue
             gene_panel_ent = syn.get(file_mapping[name], followLink=True)
-            new_panel_path = os.path.join(tempdir, os.path.basename(gene_panel_ent.path))
+            new_panel_path = os.path.join(
+                tempdir, os.path.basename(gene_panel_ent.path)
+            )
             shutil.copyfile(gene_panel_ent.path, new_panel_path)
             store_file(syn, new_panel_path, new_release_synid)
         elif name.startswith("meta") or "_meta_" in name:
@@ -194,7 +222,10 @@ def patch_gene_panel_and_meta_files(syn: synapseclient.Synapse, file_mapping: di
 
 
 def patch_release_workflow(
-    release_synid: str, new_release_synid: str, retracted_sample_synid: str, production: bool = False
+    release_synid: str,
+    new_release_synid: str,
+    retracted_sample_synid: str,
+    production: bool = False,
 ):
     """
     Patches a release by removing retracted samples from the clinical, sample, and patient files.
@@ -295,31 +326,93 @@ def patch_release_workflow(
     store_file(syn=syn, new_path=patient_path, new_release_synid=new_release_synid)
 
     # Patch CNA file
-    patch_cna_file(syn=syn, cna_synid=cna_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_samples=keep_samples)
+    patch_cna_file(
+        syn=syn,
+        cna_synid=cna_synid,
+        tempdir=tempdir,
+        new_release_synid=new_release_synid,
+        keep_samples=keep_samples,
+    )
 
     # Patch Fusion file
-    patch_file(syn=syn, synid=fusion_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="Sample_Id")
+    patch_file(
+        syn=syn,
+        synid=fusion_synid,
+        tempdir=tempdir,
+        new_release_synid=new_release_synid,
+        keep_values=keep_samples,
+        column="Sample_Id",
+    )
 
     # Patch SEG file
-    patch_file(syn=syn, synid=seg_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="ID")
+    patch_file(
+        syn=syn,
+        synid=seg_synid,
+        tempdir=tempdir,
+        new_release_synid=new_release_synid,
+        keep_values=keep_samples,
+        column="ID",
+    )
 
     # Patch gene matrix file
-    patch_file(syn=syn, synid=gene_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="SAMPLE_ID")
+    patch_file(
+        syn=syn,
+        synid=gene_synid,
+        tempdir=tempdir,
+        new_release_synid=new_release_synid,
+        keep_values=keep_samples,
+        column="SAMPLE_ID",
+    )
 
     # Patch maf file
-    patch_file(syn=syn, synid=maf_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="Tumor_Sample_Barcode")
+    patch_file(
+        syn=syn,
+        synid=maf_synid,
+        tempdir=tempdir,
+        new_release_synid=new_release_synid,
+        keep_values=keep_samples,
+        column="Tumor_Sample_Barcode",
+    )
 
     # Patch genomic information file
-    patch_file(syn=syn, synid=genomic_info_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_seq_assay_id, column="SEQ_ASSAY_ID")
+    patch_file(
+        syn=syn,
+        synid=genomic_info_synid,
+        tempdir=tempdir,
+        new_release_synid=new_release_synid,
+        keep_values=keep_seq_assay_id,
+        column="SEQ_ASSAY_ID",
+    )
 
     # Patch assay information file
-    assay_path = patch_file(syn=syn, synid=assay_info_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_seq_assay_id, column="SEQ_ASSAY_ID")
+    assay_path = patch_file(
+        syn=syn,
+        synid=assay_info_synid,
+        tempdir=tempdir,
+        new_release_synid=new_release_synid,
+        keep_values=keep_seq_assay_id,
+        column="SEQ_ASSAY_ID",
+    )
 
     # Create cBioPortal case lists
-    patch_case_list_files(syn=syn, new_release_synid=new_release_synid, tempdir=tempdir, clinical_path=clinical_path, assay_path=assay_path)
+    patch_case_list_files(
+        syn=syn,
+        new_release_synid=new_release_synid,
+        tempdir=tempdir,
+        clinical_path=clinical_path,
+        assay_path=assay_path,
+    )
 
     # Create cBioPortal gene panel and meta files
-    patch_gene_panel_and_meta_files(syn=syn, file_mapping=file_mapping, tempdir=tempdir, new_release_synid=new_release_synid, keep_seq_assay_id=keep_seq_assay_id, old_release=old_release, new_release=new_release)
+    patch_gene_panel_and_meta_files(
+        syn=syn,
+        file_mapping=file_mapping,
+        tempdir=tempdir,
+        new_release_synid=new_release_synid,
+        keep_seq_assay_id=keep_seq_assay_id,
+        old_release=old_release,
+        new_release=new_release,
+    )
 
     tempdir_o.cleanup()
     # Update dashboard tables
@@ -331,7 +424,9 @@ def patch_release_workflow(
     database_mapping = syn.tableQuery(f"select * from {database_mapping_synid}")
     database_mappingdf = database_mapping.asDataFrame()
     # You may have to execute this twice in case the file view isn't updated
-    dashboard_table_updater.run_dashboard(syn, database_mappingdf, new_release, staging=not production)
+    dashboard_table_updater.run_dashboard(
+        syn, database_mappingdf, new_release, staging=not production
+    )
 
 
 def main():
@@ -356,7 +451,7 @@ def main():
     parser.add_argument(
         "--production",
         action="store_true",
-        help="Run production workload or it will default to the staging workload"
+        help="Run production workload or it will default to the staging workload",
     )
     args = parser.parse_args()
 
@@ -364,7 +459,7 @@ def main():
         release_synid=args.release_synid,
         new_release_synid=args.new_release_synid,
         retracted_sample_synid=args.retracted_sample_synid,
-        production=args.production
+        production=args.production,
     )
 
 
