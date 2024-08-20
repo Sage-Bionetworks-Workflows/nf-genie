@@ -89,6 +89,9 @@ def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release
         new_release_synid (str): The Synapse ID of the release folder where the patched file will be stored.
         keep_values (pd.Series): The values to keep in the dataframe.
         column (str): The column name to filter on.
+
+    Returns:
+        str: The file path to the patched file
     """
     entity = syn.get(synid, followLink=True)
     df = _filter_tsv(filepath=entity.path, keep_values=keep_values, column=column)
@@ -103,7 +106,7 @@ def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release
     with open(new_path, "w") as o_file:
         o_file.write(dftext)
     store_file(syn, new_path, new_release_synid)
-    # TODO: return a named tuple so its not just returning the path
+    # TODO: return a named tuple if needed (YAGNI for now)
     return new_path
 
 
