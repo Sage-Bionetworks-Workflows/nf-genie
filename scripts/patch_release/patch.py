@@ -40,9 +40,27 @@ def revise_meta_file(meta_file_path: str, old_version: str, new_version: str) ->
         meta_text = meta_text.replace(old_version, new_version)
         meta.write(meta_text)
 
+def _filter_tsv(filepath: str, keep_values: pd.Series, column: str) -> pd.DataFrame: 
+    """
+    Patches a tsv in Synapse by filtering out rows based on the provided keep values.
 
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        synid (str): The Synapse ID of the entity to be patched.
+        keep_values (pd.Series): The values to keep in the dataframe.
+        column (str): The column name to filter on.
+
+    Returns:
+        pd.DataFrame: The patched dataframe.
+    """
+    df = pd.read_csv(filepath, sep="\t", comment="#")
+    # if not segdf.ID.isin(keep_samples).all():
+    df = df[df[column].isin(keep_values)]
+    return df
+
+# TODO remove new_release parameter soon
 def store_file(
-    syn: synapseclient.Synapse, new_path: str, new_release_synid: str, release_name: str
+    syn: synapseclient.Synapse, new_path: str, new_release_synid: str
 ) -> None:
     """
     Stores a file into Synapse.
@@ -51,31 +69,150 @@ def store_file(
         syn (synapseclient.Synapse): The Synapse client object.
         new_path (str): The path to the file to be stored.
         new_release_synid (str): The Synapse ID of the release folder where the file will be stored.
-        release_name (str): The name of the release.
 
     Returns:
         None
     """
-    ent_name = os.path.basename(new_path.replace(f"_{release_name}", ""))
-    new_ent = synapseclient.File(new_path, name=ent_name, parentId=new_release_synid)
-    syn.store(new_ent)
+    new_ent = synapseclient.File(new_path, parentId=new_release_synid)
+    new_ent = syn.store(new_ent)
+    return new_ent
+
+
+def patch_file(syn: synapseclient.Synapse, synid: str, tempdir: str, new_release_synid: str, keep_values: pd.Series, column: str) -> str:
+    """
+    Patches a file in Synapse by filtering out rows based on the provided keep values.
+
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        synid (str): The Synapse ID of the entity to be patched.
+        tempdir (str): The temporary directory to store the patched file.
+        new_release_synid (str): The Synapse ID of the release folder where the patched file will be stored.
+        keep_values (pd.Series): The values to keep in the dataframe.
+        column (str): The column name to filter on.
+
+    Returns:
+        str: The file path to the patched file
+    """
+    entity = syn.get(synid, followLink=True)
+    df = _filter_tsv(filepath=entity.path, keep_values=keep_values, column=column)
+    # Specific filtering for the data gene matrix file because the string NA must
+    # replace the blank values
+    if entity.name == "data_gene_matrix.txt":
+        df[df.isnull()] = "NA"
+    # df = pd.read_csv(entity.path, sep="\t", comment="#")
+    # df = df[df[column].isin(keep_values)]
+    dftext = process_functions.removePandasDfFloat(df)
+    new_path = os.path.join(tempdir, os.path.basename(entity.path))
+    with open(new_path, "w") as o_file:
+        o_file.write(dftext)
+    store_file(syn, new_path, new_release_synid)
+    # TODO: return a named tuple if needed (YAGNI for now)
+    return new_path
+
+
+def patch_cna_file(syn: synapseclient.Synapse, cna_synid: str, tempdir: str, new_release_synid: str, keep_samples: pd.Series) -> None:
+    """
+    Patches the CNA file in Synapse by filtering out columns based on the provided keep samples.
+
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        cna_synid (str): The Synapse ID of the CNA file to be patched.
+        tempdir (str): The temporary directory to store the patched file.
+        new_release_synid (str): The Synapse ID of the release folder where the patched file will be stored.
+        keep_samples (pd.Series): The samples to keep in the CNA file.
+    """
+    cna_ent = syn.get(cna_synid, followLink=True)
+    cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
+    cna_cols = ["Hugo_Symbol"]
+    cna_cols.extend(keep_samples.tolist())
+    cna_cols_idx = cnadf.columns.isin(cna_cols)
+    if not cna_cols_idx.all():
+        cnadf = cnadf[cnadf.columns[cna_cols_idx]]
+        cnatext = process_functions.removePandasDfFloat(cnadf)
+        cna_path = os.path.join(tempdir, os.path.basename(cna_ent.path))
+        with open(cna_path, "w") as cna_file:
+            cna_file.write(cnatext)
+        store_file(syn, cna_path, new_release_synid)
+
+
+def patch_case_list_files(syn: synapseclient.Synapse, new_release_synid: str, tempdir: str, clinical_path: str, assay_path: str) -> None:
+    """
+    Creates a folder for case lists in Synapse and populates it with case list files.
+    The reason why case list files cannot be copied because samples and patients are retracted
+    so `create_case_lists.main` must be called to regenerated case lists from the new
+    sample list.
+
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        new_release_synid (str): The Synapse ID of the release folder where the case lists will be stored.
+        tempdir (str): The temporary directory to store the case list files.
+        clinical_path (str): The path to the clinical data.
+        assay_path (str): The path to the assay data.
+    """
+    case_list_path = os.path.join(tempdir, "case_lists")
+    if not os.path.exists(case_list_path):
+        os.mkdir(case_list_path)
+    create_case_lists.main(clinical_path, assay_path, case_list_path, "genie_private")
+
+    case_list_files = os.listdir(case_list_path)
+    case_list_folder_synid = syn.store(
+        synapseclient.Folder("case_lists", parentId=new_release_synid)
+    ).id
+    for case_filename in case_list_files:
+        case_path = os.path.join(case_list_path, case_filename)
+        store_file(syn, case_path, case_list_folder_synid)
+
+
+def patch_gene_panel_and_meta_files(syn: synapseclient.Synapse, file_mapping: dict, tempdir: str, new_release_synid: str, keep_seq_assay_id: pd.Series, old_release: str, new_release: str) -> None:
+    """
+    Creates cBioPortal gene panel and meta files.
+
+    Args:
+        syn (synapseclient.Synapse): The Synapse client object.
+        file_mapping (dict): A dictionary mapping file names to their Synapse IDs.
+        tempdir (str): The temporary directory to store the files.
+        new_release_synid (str): The Synapse ID of the new release folder.
+        keep_seq_assay_id (pd.Series): The series of SEQ_ASSAY_IDs to keep.
+        old_release (str): The version name of the orignal consortium release linking to the public release.
+        new_release (str): The version name of the new consortium release linking to the patch release.
+    """
+    for name in file_mapping:
+        if name.startswith("data_gene_panel"):
+            seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
+            if seq_name not in keep_seq_assay_id:
+                continue
+            gene_panel_ent = syn.get(file_mapping[name], followLink=True)
+            new_panel_path = os.path.join(tempdir, os.path.basename(gene_panel_ent.path))
+            shutil.copyfile(gene_panel_ent.path, new_panel_path)
+            store_file(syn, new_panel_path, new_release_synid)
+        elif name.startswith("meta") or "_meta_" in name:
+            meta_ent = syn.get(file_mapping[name], followLink=True)
+            new_meta_path = os.path.join(tempdir, os.path.basename(meta_ent.path))
+            shutil.copyfile(meta_ent.path, new_meta_path)
+            revise_meta_file(new_meta_path, old_release, new_release)
+            store_file(syn, new_meta_path, new_release_synid)
 
 
 def patch_release_workflow(
     release_synid: str, new_release_synid: str, retracted_sample_synid: str, production: bool = False
 ):
     """
-    These need to be modified per retraction.
-    The release_synid, new_release_synid, and retracted_sample_synid
-    variables need to be changed to reflect different Synapse ids per release.
-    """
-    syn = synapseclient.login()
-    # Update dashboard tables
-    # Data base mapping synid
+    Patches a release by removing retracted samples from the clinical, sample, and patient files.
+    Also patches CNA, fusion, SEG, gene matrix, MAF, genomic information, and assay information files.
+    Creates cBioPortal case lists and gene panel and meta files.
+    Updates the dashboard tables.
 
+    Args:
+        release_synid (str): The Synapse ID of the release to be patched.
+        new_release_synid (str): The Synapse ID of the new release.
+        retracted_sample_synid (str): The Synapse ID of the file containing the retracted samples.
+        production (bool, optional): Whether the patch release is for production. Defaults to False.
+    """
+
+    syn = synapseclient.login()
+    # TODO: Add ability to provide list of centers / seq assay ids to remove
     # remove_centers = []
     # remove_seqassays = []
-    # release_synid = ""  # Fill in synapse id here
     old_release = syn.get(release_synid).name
     new_release = syn.get(new_release_synid).name
 
@@ -87,11 +224,6 @@ def patch_release_workflow(
     file_mapping = {
         release_file["name"]: release_file["id"] for release_file in release_files
     }
-    # case_list_folder_synid = file_mapping['case_lists']
-    case_list_folder_synid = syn.store(
-        synapseclient.Folder("case_lists", parentId=new_release_synid)
-    ).id
-
     sample_synid = file_mapping["data_clinical_sample.txt"]
     patient_synid = file_mapping["data_clinical_patient.txt"]
     cna_synid = file_mapping["data_CNA.txt"]
@@ -118,32 +250,16 @@ def patch_release_workflow(
     sampledf = pd.read_csv(sample_ent.path, sep="\t", comment="#")
     centers = [patient.split("-")[1] for patient in sampledf.PATIENT_ID]
     sampledf["CENTER"] = centers
-    # Retract samples from SEQ_ASSAY_ID, CENTER and retract samples list
-    # to_remove_seqassay_rows = sampledf["SEQ_ASSAY_ID"].isin(remove_seqassays)
-    # sampledf = sampledf[~to_remove_seqassay_rows]
-    # to_remove_center_rows = sampledf["CENTER"].isin(remove_centers)
-    # sampledf = sampledf[~to_remove_center_rows]
+    # Retract samples from retract samples list
+    # TODO: Add code here to support redaction for entire center or seq assays
     to_remove_samples = sampledf["SAMPLE_ID"].isin(retracted_samplesdf.SAMPLE_ID)
     final_sampledf = sampledf[~to_remove_samples]
-    # Check number of seq assay ids is the same after removal of samples
-    # Must add to removal of seq assay list for gene panel removal
-    # seq_assay_after = final_sampledf["SEQ_ASSAY_ID"].unique()
-    # seq_assay_before = sampledf["SEQ_ASSAY_ID"].unique()
-    # if len(seq_assay_after) != len(seq_assay_before):
-    #     remove_seqassays.extend(
-    #         seq_assay_before[~seq_assay_before.isin(seq_assay_after)].tolist()
-    #     )
-    # Check number of centers is the same after removal of samples
-    # Must add to removal of seq assay list for gene panel removal
-    # center_after = final_sampledf["CENTER"].unique()
-    # center_before = sampledf["CENTER"].unique()
-    # if len(center_after) != len(center_before):
-    #     remove_centers.extend(center_before[~center_before.isin(center_after)].tolist())
 
     del final_sampledf["CENTER"]
 
     keep_samples = final_sampledf["SAMPLE_ID"].drop_duplicates()
     keep_patients = final_sampledf["PATIENT_ID"].drop_duplicates()
+    keep_seq_assay_id = final_sampledf["SEQ_ASSAY_ID"].drop_duplicates()
 
     patient_ent = syn.get(patient_synid, followLink=True)
     patientdf = pd.read_csv(patient_ent.path, sep="\t", comment="#")
@@ -159,14 +275,13 @@ def patch_release_workflow(
     # public release code rely on the merged clinical file.
     full_clin_df = full_clin_df[full_clin_df["SAMPLE_ID"].isin(keep_samples)]
     full_clin_df.to_csv(clinical_path, sep="\t", index=False)
-    store_file(syn, clinical_path, new_release_synid, new_release)
+    full_clinical_entity = store_file(syn, clinical_path, new_release_synid)
+    # Revoke access to general GENIE consortium on data_clinical.txt file
+    # Because it has more data than the consortium should see.
+    syn.setPermissions(full_clinical_entity, principalId=3326313, accessType=[])
 
-    sample_path = os.path.join(
-        tempdir, os.path.basename(sample_ent.path).replace(old_release, new_release)
-    )
-    patient_path = os.path.join(
-        tempdir, os.path.basename(patient_ent.path).replace(old_release, new_release)
-    )
+    sample_path = os.path.join(tempdir, os.path.basename(sample_ent.path))
+    patient_path = os.path.join(tempdir, os.path.basename(patient_ent.path))
 
     process_functions.addClinicalHeaders(
         clinicaldf,
@@ -176,138 +291,35 @@ def patch_release_workflow(
         sample_path,
         patient_path,
     )
-    store_file(syn, sample_path, new_release_synid, new_release)
-    store_file(syn, patient_path, new_release_synid, new_release)
+    store_file(syn=syn, new_path=sample_path, new_release_synid=new_release_synid)
+    store_file(syn=syn, new_path=patient_path, new_release_synid=new_release_synid)
+
     # Patch CNA file
-    cna_ent = syn.get(cna_synid, followLink=True)
-    cnadf = pd.read_csv(cna_ent.path, sep="\t", comment="#")
-    cna_cols = ["Hugo_Symbol"]
-    cna_cols.extend(keep_samples.tolist())
-    cna_cols_idx = cnadf.columns.isin(cna_cols)
-    if not cna_cols_idx.all():
-        cnadf = cnadf[cnadf.columns[cna_cols_idx]]
-        cnatext = process_functions.removePandasDfFloat(cnadf)
-        cna_path = os.path.join(
-            tempdir, os.path.basename(cna_ent.path).replace(old_release, new_release)
-        )
-        with open(cna_path, "w") as cna_file:
-            cna_file.write(cnatext)
-        store_file(syn, cna_path, new_release_synid, new_release)
+    patch_cna_file(syn=syn, cna_synid=cna_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_samples=keep_samples)
+
     # Patch Fusion file
-    fusion_ent = syn.get(fusion_synid, followLink=True)
-    fusiondf = pd.read_csv(fusion_ent.path, sep="\t", comment="#")
-    # if not fusiondf.Tumor_Sample_Barcode.isin(keep_samples).all():
-    # fusiondf = fusiondf[fusiondf.Tumor_Sample_Barcode.isin(keep_samples)]
-    fusiondf = fusiondf[fusiondf['Sample_Id'].isin(keep_samples)]
-    fusiontext = process_functions.removePandasDfFloat(fusiondf)
-    fusion_path = os.path.join(
-        tempdir, os.path.basename(fusion_ent.path).replace(old_release, new_release)
-    )
-    with open(fusion_path, "w") as fusion_file:
-        fusion_file.write(fusiontext)
-    store_file(syn, fusion_path, new_release_synid, new_release)
+    patch_file(syn=syn, synid=fusion_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="Sample_Id")
+
     # Patch SEG file
-    seg_ent = syn.get(seg_synid, followLink=True)
-    segdf = pd.read_csv(seg_ent.path, sep="\t", comment="#")
-    # if not segdf.ID.isin(keep_samples).all():
-    segdf = segdf[segdf['ID'].isin(keep_samples)]
-    segtext = process_functions.removePandasDfFloat(segdf)
-    seg_path = os.path.join(
-        tempdir, os.path.basename(seg_ent.path).replace(old_release, new_release)
-    )
-    with open(seg_path, "w") as seg_file:
-        seg_file.write(segtext)
-    store_file(syn, seg_path, new_release_synid, new_release)
+    patch_file(syn=syn, synid=seg_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="ID")
 
     # Patch gene matrix file
-    gene_ent = syn.get(gene_synid, followLink=True)
-    genedf = pd.read_csv(gene_ent.path, sep="\t", comment="#")
-    genedf = genedf[genedf['SAMPLE_ID'].isin(keep_samples)]
-    genedf[genedf.isnull()] = "NA"
-    gene_path = os.path.join(
-        tempdir, os.path.basename(gene_ent.path).replace(old_release, new_release)
-    )
-    genedf.to_csv(gene_path, sep="\t", index=False)
-    store_file(syn, gene_path, new_release_synid, new_release)
+    patch_file(syn=syn, synid=gene_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="SAMPLE_ID")
+
     # Patch maf file
-    maf_ent = syn.get(maf_synid, followLink=True)
-    mafdf = pd.read_csv(maf_ent.path, sep="\t", comment="#")
-    mafdf = mafdf[mafdf["Tumor_Sample_Barcode"].isin(keep_samples)]
-    maftext = process_functions.removePandasDfFloat(mafdf)
-    maf_path = os.path.join(
-        tempdir, os.path.basename(maf_ent.path).replace(old_release, new_release)
-    )
-    with open(maf_path, "w") as maf_file:
-        maf_file.write(maftext)
-    store_file(syn, maf_path, new_release_synid, new_release)
-    # Patch genomic information file
-    # clinicalReported column needs to be added
-    # Patch genomic information file
-    genome_info_ent = syn.get(genomic_info_synid, followLink=True)
-    genome_info_df = pd.read_csv(genome_info_ent.path, sep="\t", comment="#")
-    # keep_rows = [
-    #     seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
-    #     for seq in genome_info_df["SEQ_ASSAY_ID"]
-    # ]
-    # genome_info_df = genome_info_df[keep_rows]
+    patch_file(syn=syn, synid=maf_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_samples, column="Tumor_Sample_Barcode")
 
-    # Write genomic file
-    genome_info_text = process_functions.removePandasDfFloat(genome_info_df)
-    genome_info_path = os.path.join(
-        tempdir,
-        os.path.basename(genome_info_ent.path).replace(old_release, new_release),
-    )
+    # Patch genomic information file
+    patch_file(syn=syn, synid=genomic_info_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_seq_assay_id, column="SEQ_ASSAY_ID")
 
-    with open(genome_info_path, "w") as bed_file:
-        bed_file.write(genome_info_text)
-    store_file(syn, genome_info_path, new_release_synid, new_release)
-    # Create cBioPortal gene panel and meta files
-    for name in file_mapping:
-        if name.startswith("data_gene_panel"):
-            # seq_name = name.replace("data_gene_panel_", "").replace(".txt", "")
-            # if seq_name not in remove_seqassays:
-            gene_panel_ent = syn.get(file_mapping[name], followLink=True)
-            new_panel_path = os.path.join(
-                tempdir,
-                os.path.basename(gene_panel_ent.path).replace(
-                    old_release, new_release
-                ),
-            )
-            shutil.copyfile(gene_panel_ent.path, new_panel_path)
-            store_file(syn, new_panel_path, new_release_synid, new_release)
-        elif name.startswith("meta") or "_meta_" in name:
-            meta_ent = syn.get(file_mapping[name], followLink=True)
-            new_meta_path = os.path.join(tempdir, os.path.basename(meta_ent.path))
-            shutil.copyfile(meta_ent.path, new_meta_path)
-            revise_meta_file(new_meta_path, old_release, new_release)
-            store_file(syn, new_meta_path, new_release_synid, new_release)
     # Patch assay information file
-    assay_ent = syn.get(assay_info_synid, followLink=True)
-    assaydf = pd.read_csv(assay_ent.path, sep="\t", comment="#")
-    # keep_rows = [
-    #     seq not in remove_seqassays and not seq.startswith(tuple(remove_centers))
-    #     for seq in assaydf["SEQ_ASSAY_ID"]
-    # ]
-    # assaydf = assaydf[keep_rows]
-    assay_text = process_functions.removePandasDfFloat(assaydf)
-    assay_path = os.path.join(
-        tempdir, os.path.basename(assay_ent.path).replace(old_release, new_release)
-    )
-    with open(assay_path, "w") as assay_file:
-        assay_file.write(assay_text)
-    store_file(syn, assay_path, new_release_synid, new_release)
+    assay_path = patch_file(syn=syn, synid=assay_info_synid, tempdir=tempdir, new_release_synid=new_release_synid, keep_values=keep_seq_assay_id, column="SEQ_ASSAY_ID")
+
     # Create cBioPortal case lists
-    case_list_path = os.path.join(tempdir, "case_lists")
-    if not os.path.exists(case_list_path):
-        os.mkdir(case_list_path)
-    create_case_lists.main(clinical_path, assay_path, case_list_path, "genie_private")
+    patch_case_list_files(syn=syn, new_release_synid=new_release_synid, tempdir=tempdir, clinical_path=clinical_path, assay_path=assay_path)
 
-    case_list_files = os.listdir(case_list_path)
-
-    for case_filename in case_list_files:
-        # if case_filename in case_file_synids:
-        case_path = os.path.join(case_list_path, case_filename)
-        store_file(syn, case_path, case_list_folder_synid, new_release)
+    # Create cBioPortal gene panel and meta files
+    patch_gene_panel_and_meta_files(syn=syn, file_mapping=file_mapping, tempdir=tempdir, new_release_synid=new_release_synid, keep_seq_assay_id=keep_seq_assay_id, old_release=old_release, new_release=new_release)
 
     tempdir_o.cleanup()
     # Update dashboard tables
