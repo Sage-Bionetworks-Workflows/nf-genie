@@ -4,7 +4,7 @@ Nextflow workflow for main GENIE processing.  This follows the SOP outlined in t
 
 ## Process and developing locally
 
-Follow instructions here for running the main GENIE processing locally. 
+Follow instructions here for running the main GENIE processing locally.
 
 It's recommended to use an EC2 instance with docker to run processing and develop locally. Follow instructions using [Service-Catalog-Provisioning](https://help.sc.sageit.org/sc/Service-Catalog-Provisioning.938836322.html) to create an ec2 on service catalog. You will also want to follow the section [SSM with SSH](https://help.sc.sageit.org/sc/Service-Catalog-Provisioning.938836322.html#ServiceCatalogProvisioning-SSMwithSSH) if you want to use VS code to run/develop.
 
@@ -72,30 +72,30 @@ Note that all the docker parameters have set default docker containers based on 
 * **Only validate** files on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type only_validate -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type only_validate -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
 
 * Processes **non-mutation** files on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type main_process -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type main_process -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
 
 * Processes **mutation** files on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --create_new_maf_db -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type maf_process --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
 
 * Runs **processing** and **consortium** release (including data guide creation) on test pipeline
     ```
-    nextflow run main.nf -profile aws_test --process_type consortium_release --create_new_maf_db -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type consortium_release --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
 
 * Runs **public** release (including data guide creation) on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type public_release -with-docker sagebionetworks/genie:latest
+    nextflow run main.nf -profile aws_test --process_type public_release -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
 
 ### Testing

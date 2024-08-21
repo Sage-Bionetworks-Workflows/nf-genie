@@ -20,7 +20,9 @@
                         "main_process",
                         "maf_process",
                         "consortium_release",
-                        "public_release"
+                        "public_release",
+                        "consortium_release_step_only",
+                        "public_release_step_only"
                     ]
                 },
                 "center": {
@@ -36,11 +38,11 @@
                     "type": "string",
                     "description": "Release name (specify TEST.consortium/TEST.public to test consortium and public releases). E.g: 13.1-consortium",
                     "default": "TEST.consortium",
-                    "pattern": "\\d+[.]\\d+-(consortium|public)$|TEST.public|TEST.consortium"
+                    "pattern": "\\d+[.]\\d+-(consortium|public)$|TEST.public|TEST.consortium|STAGING.consortium|STAGING.public"
                 },
                 "main_pipeline_docker":{
                     "type": "string",
-                    "description": "Docker used in main processes - validate_data, process_main, process_maf, create_consortium_release, and create_public_release"
+                    "description": "Docker used in main processes - validate_data, process_main, process_maf, create_consortium_release, create_public_release, create_consortium_release_only, and create_public_release_only"
                 },
                 "main_release_utils_docker":{
                     "type": "string",

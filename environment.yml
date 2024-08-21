@@ -9,4 +9,3 @@ dependencies:
   ## bioconda packages, see above
   - synapseclient=2.5.1
   - aacrgenie
-  
