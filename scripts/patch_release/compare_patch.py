@@ -2,12 +2,12 @@
 The command ran: 
 python patch.py syn53170398 syn62069187 syn54082015
 In leu of lack of unit or integration tests, the above command replicates the 
-this is to test 15.5-consortium (syn55146141) and 15.6-consortium (Staging)
+this is to test 15.5-consortium (syn55146141) and 15.6-consortium (Staging syn62069187)
 
-python compare_patch.py
-
-TODO: Add argparse
+python compare_patch.py --original_synid syn55146141 --new_synid syn62069187
 """
+import argparse
+
 import synapseclient
 import synapseutils as synu
 
@@ -70,8 +70,14 @@ def compare_releases(original_synid: str, new_synid: str):
             if original_file_list[filename].md5 != new_file_list[filename].md5:
                 print("Files are different: ", filename)
 
+def main():
+    parser = argparse.ArgumentParser(description='Compare two Synapse releases.')
+    parser.add_argument('--original_synid', type=str, help='The Synapse ID of the original release')
+    parser.add_argument('--new_synid', type=str, help='The Synapse ID of the new release')
+
+    args = parser.parse_args()
+
+    compare_releases(args.original_synid, args.new_synid)
 
 if __name__ == "__main__":
-    original_synid = "syn55146141"
-    new_synid = "syn62069187"
-    compare_releases(original_synid, new_synid)
+    main()
