@@ -35,7 +35,7 @@ workflow {
     // definitely be different from ch_new_release_synid because that is the patch.
     // TODO: we will want to implement a different comparison report to look at diffs
     // This current comparison looks at similarities and it good for staging pipeline.
-    if (not is_production) {
+    if (!is_production) {
         compare_releases(create_data_guide.out, "syn55146141", ch_new_release_synid)
     }
 }
