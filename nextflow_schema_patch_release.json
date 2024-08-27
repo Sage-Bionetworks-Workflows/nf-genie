@@ -28,6 +28,10 @@
                     "description": "Release name. E.g: 13.1-consortium",
                     "default": "TEST.consortium",
                     "pattern": "\\d+[.]\\d+-(consortium)$"
+                },
+                "project_id": {
+                    "type": "string",
+                    "description": "Synapse GENIE internal projects."
                 }
             }
         }

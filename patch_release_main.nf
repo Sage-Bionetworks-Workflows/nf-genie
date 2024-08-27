@@ -31,5 +31,11 @@ workflow {
     patch_release(ch_release_synid, ch_new_release_synid, ch_retracted_sample_synid, is_production)
     create_dashboard_html(patch_release.out, ch_release, is_production)
     create_data_guide(patch_release.out, ch_release, ch_project_id)
-    compare_releases(create_data_guide.out, ch_release_synid, ch_new_release_synid)
+    // This syn55146141 is hard coded because the ch_release used will certainly
+    // definitely be different from ch_new_release_synid because that is the patch.
+    // TODO: we will want to implement a different comparison report to look at diffs
+    // This current comparison looks at similarities and it good for staging pipeline.
+    if (not is_production) {
+        compare_releases(create_data_guide.out, "syn55146141", ch_new_release_synid)
+    }
 }
