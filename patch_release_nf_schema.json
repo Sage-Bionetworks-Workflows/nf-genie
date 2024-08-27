@@ -1,0 +1,34 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/Sage-Bionetworks-Workflows/nf-genie/master/nextflow_schema.json",
+    "title": "Sage-Bionetworks-Workflows/nf-genie pipeline parameters",
+    "description": "Nextflow pipeline for main GENIE processing",
+    "type": "object",
+    "definitions": {
+        "patch_release": {
+            "title": "patch_release",
+            "type": "object",
+            "description": "Patch release configurations",
+            "default": "",
+            "properties": {
+                "release_synid": {
+                    "type": "string",
+                    "description": "Existing consortium release synapse folder id"
+                },
+                "new_release_synid": {
+                    "type": "string",
+                    "description": "New consoritum release synapse folder id"
+                },
+                "retracted_sample_synid": {
+                    "type": "string",
+                    "description": "samples_to_retract.csv of 3rd consortium release"
+                }
+            }
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/definitions/patch_release"
+        }
+    ]
+}
