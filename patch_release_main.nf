@@ -6,6 +6,7 @@ nextflow.enable.dsl = 2
 include { patch_release } from './modules/patch_release'
 include { create_data_guide } from './modules/create_data_guide'
 include { create_dashboard_html } from './modules/create_dashboard_html'
+include { compare_releases } from './modules/compare_releases'
 
 params.release_synid = "syn53170398"  // 15.4-consortium
 params.new_release_synid = "syn62069187" // 15.6-consortium (in staging)
@@ -30,4 +31,5 @@ workflow {
     patch_release(ch_release_synid, ch_new_release_synid, ch_retracted_sample_synid, is_production)
     create_dashboard_html(patch_release.out, ch_release, is_production)
     create_data_guide(patch_release.out, ch_release, ch_project_id)
+    compare_releases(create_data_guide.out, ch_release_synid, ch_new_release_synid)
 }
