@@ -22,6 +22,12 @@
                 "retracted_sample_synid": {
                     "type": "string",
                     "description": "samples_to_retract.csv of 3rd consortium release"
+                },
+                "release": {
+                    "type": "string",
+                    "description": "Release name. E.g: 13.1-consortium",
+                    "default": "TEST.consortium",
+                    "pattern": "\\d+[.]\\d+-(consortium)$"
                 }
             }
         }
