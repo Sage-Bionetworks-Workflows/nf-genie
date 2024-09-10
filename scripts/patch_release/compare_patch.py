@@ -13,7 +13,7 @@ import synapseclient
 import synapseutils as synu
 
 
-def _get_file_dict(syn: synapseclient.Synapse, synid: str) -> dict[str, str]:
+def _get_file_dict(syn: synapseclient.Synapse, synid: str):
     """
     This function generates a dictionary of files from a Synapse ID.
 
