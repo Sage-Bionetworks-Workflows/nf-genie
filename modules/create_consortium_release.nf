@@ -2,7 +2,7 @@
 // Add consortium or public release flag
 process create_consortium_release {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container "$params.main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
@@ -10,6 +10,7 @@ process create_consortium_release {
     val release
     val production
     val seq
+    val staging
 
     output:
     stdout
@@ -24,8 +25,17 @@ process create_consortium_release {
         /root/cbioportal \
         $release
         """
-    }
-    else {
+    } else if (staging) {
+        """
+        # Fixes renv issue
+        cd /root/Genie
+        python3 bin/database_to_staging.py \
+        $seq \
+        /root/cbioportal \
+        $release \
+        --staging
+        """
+    } else {
         """
         # Fixes renv issue
         cd /root/Genie

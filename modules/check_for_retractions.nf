@@ -1,5 +1,5 @@
 process check_for_retractions {
-    container 'sagebionetworks/main-genie-release-utils'
+    container "$params.main_release_utils_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:

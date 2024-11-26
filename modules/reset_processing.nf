@@ -1,6 +1,6 @@
 process reset_processing {
     debug true
-    container 'sagebionetworks/genie:latest'
+    container "$params.main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:

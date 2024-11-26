@@ -45,6 +45,7 @@ release, seq
 */
 def public_map = [
   "TEST": "Jan-2022",
+  "STAGING": "Jul-2024",
   "11": "Jan-2022",
   "12": "Jul-2022",
   "13": "Jan-2023",
@@ -58,6 +59,7 @@ def public_map = [
 ]
 def consortium_map = [
   "TEST": "Jul-2022",
+  "STAGING": "Jul-2024",
   "11": "Jul-2021",
   "12": "Jan-2022",
   "13": "Jul-2022",
@@ -81,17 +83,24 @@ if (!seq_date) {
   throw new Exception("${major_release} release not supported in map variables in nf code.")
 }
 
-// If major release is not TEST
-// Specify production synapse id to pass into processing
-if (major_release != "TEST") {
-  project_id = "syn3380222"
-  center_map_synid = "syn10061452"
-  is_prod = true
-}
-else {
+// define whether to run TEST, STAGING or PRODUCTION
+if (major_release == "TEST") {
   project_id = "syn7208886"
   center_map_synid = "syn11601248"
   is_prod = false
+  is_staging = false
+} else if (major_release == "STAGING"){
+  project_id = "syn22033066"
+  center_map_synid = "syn22089188"
+  is_prod = false
+  is_staging = true
+}
+else {
+  // production project
+  project_id = "syn3380222"
+  center_map_synid = "syn10061452"
+  is_prod = true
+  is_staging = false
 }
 
 workflow {
@@ -100,6 +109,7 @@ workflow {
   ch_seq_date = Channel.value(seq_date)
   ch_center = Channel.value(params.center)
   ch_is_prod = Channel.value(is_prod)
+  ch_is_staging = Channel.value(is_staging)
 
   // if (params.force) {
   //   reset_processing(center_map_synid)
@@ -116,17 +126,23 @@ workflow {
   } else if (params.process_type == "consortium_release") {
     process_maf(ch_project_id, ch_center, params.create_new_maf_db)
     process_main(process_maf.out, ch_project_id, ch_center)
-    create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date)
+    create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
+    if (!is_staging) {
+      load_to_bpc(create_data_guide.out, ch_release, ch_is_prod)
+    }
     if (is_prod) {
       find_maf_artifacts(create_consortium_release.out, ch_release)
-      load_to_bpc(create_consortium_release.out, ch_release)
       check_for_retractions(create_consortium_release.out)
     }
+  } else if (params.process_type == "consortium_release_step_only") {
+    create_consortium_release("default", ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
+  } else if (params.process_type == "public_release_step_only") {
+    create_public_release(ch_release, ch_seq_date, ch_is_prod, ch_is_staging)
   } else if (params.process_type == "public_release") {
-    create_public_release(ch_release, ch_seq_date, ch_is_prod)
+    create_public_release(ch_release, ch_seq_date, ch_is_prod, ch_is_staging)
     create_data_guide(create_public_release.out, ch_release, ch_project_id)
   } else {
-    throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium_release', 'public_release'")
+    throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium_release', 'public_release', 'consortium_release_step_only', 'public_release_step_only'")
   }
 }
