@@ -224,10 +224,6 @@ Samples that have a `SEQ_ASSAY_ID` that don't have a bed file associated with th
 
 Samples with deprecated codes (as defined by the oncotree source version used in the release) will be removed.
 
-[cfDNA]{.underline}
-
-Any sample with `SAMPLE_CLASS` that is cfDNA is removed from the public release.
-
 [Patient and sample retractions]{.underline}
 
 -   Implicit retraction occurs when any data that is has been withdrawn from new uploads will automatically be removed from the upcoming consortium/public releases.
@@ -608,7 +604,7 @@ case_lists files
 `SAMPLE_CLASS` [Not available for public releases]
 
 * Expected Values: Tumor, cfDNA
-* Data Description: Annotate samples as Tumor or cfDNA samples.  cfDNA samples are not available for public releases.
+* Data Description: Annotate samples as Tumor or cfDNA samples. cfDNA samples are publicly available starting from the 17.0-public release and onward.
 
 `SEQ_YEAR` [Not available for public releases]
 
