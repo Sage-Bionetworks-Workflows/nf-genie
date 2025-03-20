@@ -39,6 +39,8 @@ wget -qO quarto.deb https://quarto.org/download/latest/quarto-linux-amd64.deb
 Rscript generate_data_guide_cli.R <consortium_release> <project_id>
 ```
 
+8. [Optional] Sometimes depending on the rendering, you may have the front page genie banner be cut off/too big like the below example ![alt text](/img/cut_off_genie_banner.png) To resolve, you will need to adjust [this width in the data_guide.qmd file](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/df3796dce8431fc2a86e297a7350058241c1321c/scripts/data_guide/data_guide.qmd#L11) (e.g: used `15cm` instead of `20cm` for the example below)
+
 ### Example command
 
 This will generate the data_guide for TEST.consortium in the [TEST release folder](https://www.synapse.org/Synapse:syn21895009)
