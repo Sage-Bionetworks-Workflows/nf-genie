@@ -677,6 +677,7 @@ Cancer types are reported using the OncoTree ontology originally developed at Me
 * UCHI: The original diagnosis was mapped to OncoTree by molecular pathologists.
 * UCSF: The original diagnosis was mapped to OncoTree by molecular pathologists from the Clinical Cancer Genomics Laboratory.
 * UHN: The original diagnosis was mapped to OncoTree by a medical oncologist and research manager
+* UMIAMI: The original diagnosis and diagnosis site was programmatically mapped to OncoTree, then validated by a medical oncologist.
 * VHIO: Original diagnosis from pathologist or medical oncologist was mapped to OncoTree diagnosis by research data curator
 * VICC: OncoTree cancer types were mapped from ICD-O codes. If no ICD-O code was available, a research manager mapped the diagnosis to an OncoTree cancer type.
 * WAKE: Diagnoses from Foundation Medicine and Caris Diagnostics to ICD-O-3, then mapped from ICD-O-3 to Oncotree.
