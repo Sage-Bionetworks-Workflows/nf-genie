@@ -137,6 +137,7 @@ workflow {
     }
   } else if (params.process_type == "consortium_release_step_only") {
     create_consortium_release("default", ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
+    //create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
     if (!is_staging) {
       load_to_bpc(create_consortium_release.out, ch_release, ch_is_prod)
     }
