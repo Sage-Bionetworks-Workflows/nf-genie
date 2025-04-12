@@ -1,7 +1,13 @@
-from jinja2 import Template
+"""
+This script generates a data guide for a given release and project ID.
+
+Usage: python generate_data_guide.py <release> <project_id>
+"""
 import sys
 import os
 import subprocess
+
+from jinja2 import Template
 import pandas as pd
 from synapseclient import Synapse, File
 
