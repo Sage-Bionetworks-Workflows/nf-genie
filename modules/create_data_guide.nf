@@ -17,7 +17,6 @@ process create_data_guide {
     """
     cd /data_guide
     # This is the quarto cli
-    # quarto render data_guide.qmd -P release:$release -P project_id:$proj_id --to pdf
-    Rscript generate_data_guide_cli.R $release $proj_id
+    python generate_data_guide.py $release $proj_id
     """
 }
