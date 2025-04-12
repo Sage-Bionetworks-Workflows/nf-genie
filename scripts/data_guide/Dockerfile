@@ -1,11 +1,11 @@
-FROM r-base:4.3.1
+FROM rocker/r-ver:4.3.3
 
 # These will allow for the renv install
 ENV RENV_VERSION 1.0.7
 ENV RENV_PATHS_LIBRARY renv/library
 ENV QUARTO_VERSION 1.4.555
 
-RUN apt-get update && apt-get -y install \
+RUN apt-get clean && apt-get update && apt-get -y install \
       libpng-dev \
       python3 \
       python3-dev \
@@ -37,7 +37,8 @@ RUN R -e "renv::restore()"
 
 # Must install quarto cli
 WORKDIR /opt
-RUN wget "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.tar.gz"
+# RUN wget "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.tar.gz"
+RUN curl -L -o quarto-${QUARTO_VERSION}-linux-amd64.tar.gz "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.tar.gz"
 RUN tar -C /opt -xvzf quarto-${QUARTO_VERSION}-linux-amd64.tar.gz
 
 # Set quarto path
