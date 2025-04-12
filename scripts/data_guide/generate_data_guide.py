@@ -14,7 +14,21 @@ release = sys.argv[1]
 project_id = sys.argv[2]
 
 # Function to get the release folder Synapse ID
-def get_release_folder_synid(database_synid_mappingid, release):
+def get_release_folder_synid(database_synid_mappingid: str, release: str) -> str:
+    """
+    Given a Synapse ID mapping database and a release name, returns the Synapse ID of the release folder.
+
+    Args:
+        database_synid_mappingid: The Synapse ID of the database mapping Synapse IDs to database names
+        release: The name of the release to retrieve the Synapse ID for
+
+    Returns:
+        The Synapse ID of the release folder
+
+    Raises:
+        ValueError: If the given release name is not found in the database
+    """
+
     mapping_df = syn.tableQuery(f"SELECT * FROM {database_synid_mappingid}").asDataFrame()
     release_folder_id = mapping_df[mapping_df["Database"] == "releaseFolder"]["Id"].values[0]
 
@@ -65,4 +79,3 @@ print(release_folder_synid)
 # Upload the generated PDF back to Synapse
 pdf_file = File("data_guide.pdf", parent=release_folder_synid)
 syn.store(pdf_file, executed="https://github.com/Sage-Bionetworks-Workflows/nf-genie")
-
