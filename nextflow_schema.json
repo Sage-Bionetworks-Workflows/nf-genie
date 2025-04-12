@@ -22,7 +22,8 @@
                         "consortium_release",
                         "public_release",
                         "consortium_release_step_only",
-                        "public_release_step_only"
+                        "public_release_step_only",
+                        "data_guide_only"
                     ]
                 },
                 "center": {
