@@ -49,12 +49,12 @@ with open("data_guide.qmd.j2") as f:
 filled_qmd = template.render(release=release, project_id=project_id)
 
 # Save output
-with open("genie_output.qmd", "w") as f:
+with open("data_guide.qmd", "w") as f:
     f.write(filled_qmd)
 
 # Render the Quarto PDF with execute parameters
 subprocess.run([
-    "quarto", "render", "genie_output.qmd"
+    "quarto", "render", "data_guide.qmd"
 ], check=True)
 
 # Get the release folder Synapse ID
@@ -63,6 +63,6 @@ database_synid_mappingid = project_ent.annotations["dbMapping"][0]
 release_folder_synid = get_release_folder_synid(database_synid_mappingid, release)
 print(release_folder_synid)
 # Upload the generated PDF back to Synapse
-pdf_file = File("genie_output.pdf", parent=release_folder_synid)
+pdf_file = File("data_guide.pdf", parent=release_folder_synid)
 syn.store(pdf_file, executed="https://github.com/Sage-Bionetworks-Workflows/nf-genie")
 
