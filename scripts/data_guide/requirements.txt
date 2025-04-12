@@ -1,0 +1,9 @@
+nbclient
+nbformat
+matplotlib
+synapseclient[pandas]
+pyyaml
+notebook
+jupyterlab
+seaborn
+jinja2
