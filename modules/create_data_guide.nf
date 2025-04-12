@@ -1,7 +1,7 @@
 // Create data guide
 process create_data_guide {
     debug true
-    container 'sagebionetworks/genie-data-guide:latest'
+    container 'sagebionetworks/genie-data-guide:dev'
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
