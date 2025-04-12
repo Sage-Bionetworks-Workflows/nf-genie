@@ -517,6 +517,8 @@ display(Latex(latex_table))
 # Genomic Profiling at Each Center
 
 ```{python}
+#| echo: false
+
 from IPython.display import Markdown
 
 for center in sorted(processed_centers):
@@ -525,20 +527,6 @@ for center in sorted(processed_centers):
         display(Markdown(content))
 ```
 
-<!--
-```{r}
-#| eval: true
-#| echo: false
-#| results: asis
-
-for (center in sort(processed_centers)) {
-  center = tolower(center)
-  a <- knitr::knit_child(glue::glue('genomic_profiles/{center}.qmd'), quiet=T)
-  cat(a, sep="\n")
-}
-
-```
--->
 
 # Description of Data Files
 
