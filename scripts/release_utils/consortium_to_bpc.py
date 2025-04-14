@@ -63,18 +63,6 @@ def find_release(
         return releasedf.iloc[0, 0]
 
 
-def remove_gene_panels(syn, file_mapping, remove_seqassays, remove_centers):
-    """NOTE: Is this still needed?
-    Removes gene panels that shouldn't be there
-    """
-    for name in file_mapping:
-        gene_name = name.replace("data_gene_panel_", "").replace(".txt", "")
-        if gene_name in remove_seqassays or gene_name.startswith(tuple(remove_centers)):
-            print(name)
-            print(file_mapping[name])
-            syn.delete(file_mapping[name])
-
-
 def _copyRecursive(
     syn: synapseclient.Synapse,
     entity: str,
