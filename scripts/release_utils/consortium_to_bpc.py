@@ -246,7 +246,6 @@ def main(release: str, test: bool) -> None:
                 syn,
                 ent,
                 genepanel_folder_ent.id,
-                setProvnance=None,
                 updateExisting=True,
                 skipCopyAnnotations=True,
             )
@@ -265,7 +264,6 @@ def main(release: str, test: bool) -> None:
             syn,
             ent,
             caselist_folder_ent.id,
-            setProvnance=None,
             updateExisting=True,
             skipCopyAnnotations=True,
         )
@@ -286,7 +284,6 @@ def main(release: str, test: bool) -> None:
                 syn,
                 ent,
                 bpc_folder_ent.id,
-                setProvnance=None,
                 updateExisting=True,
                 skipCopyAnnotations=True,
             )
