@@ -235,26 +235,21 @@ def main(release: str, test: bool) -> None:
     release_files = syn.getChildren(release_synid)
     synid_map = {release["name"]: release["id"] for release in release_files}
 
+    #HACK: Copy functions from synapseutils won't work because files have access restrictions
+    synu.copy_functions._copyRecursive = _copyRecursive
+
     # Copy gene panel files
     for name in synid_map:
         if name.startswith("data_gene_panel_"):
             ent = syn.get(synid_map[name], followLink=True, downloadFile=False)
-            _copyRecursive(
+            synu.copy(
                 syn,
                 ent,
                 genepanel_folder_ent.id,
-                skipCopyAnnotations=True,
-                setProvenance=None,
+                setProvnance=None,
                 updateExisting=True,
+                skipCopyAnnotations=True,
             )
-            # synu.copy(
-            #     syn,
-            #     ent,
-            #     genepanel_folder_ent.id,
-            #     setProvnance=None,
-            #     updateExisting=True,
-            #     skipCopyAnnotations=True,
-            # )
     # Remove gene panels
     for name in genepanel_map:
         if name not in synid_map:
@@ -266,21 +261,13 @@ def main(release: str, test: bool) -> None:
     # Copy case lists
     for name in new_caselist_map:
         ent = syn.get(new_caselist_map[name], followLink=True, downloadFile=False)
-        # synu.copy(
-        #     syn,
-        #     ent,
-        #     caselist_folder_ent.id,
-        #     setProvnance=None,
-        #     updateExisting=True,
-        #     skipCopyAnnotations=True,
-        # )
-        _copyRecursive(
+        synu.copy(
             syn,
             ent,
             caselist_folder_ent.id,
-            skipCopyAnnotations=True,
-            setProvenance=None,
+            setProvnance=None,
             updateExisting=True,
+            skipCopyAnnotations=True,
         )
     # Remove case lists
     for name in caselist_map:
@@ -295,21 +282,13 @@ def main(release: str, test: bool) -> None:
         #                            "case_lists")) or name.endswith(".html")
         if not name.startswith(("data_gene_panel_", "data_clinical.txt", "case_lists")):
             ent = syn.get(synid_map[name], followLink=True, downloadFile=False)
-            # synu.copy(
-            #     syn,
-            #     ent,
-            #     bpc_folder_ent.id,
-            #     setProvnance=None,
-            #     updateExisting=True,
-            #     skipCopyAnnotations=True,
-            # )
-            _copyRecursive(
+            synu.copy(
                 syn,
                 ent,
                 bpc_folder_ent.id,
-                skipCopyAnnotations=True,
-                setProvenance=None,
+                setProvnance=None,
                 updateExisting=True,
+                skipCopyAnnotations=True,
             )
 
 
