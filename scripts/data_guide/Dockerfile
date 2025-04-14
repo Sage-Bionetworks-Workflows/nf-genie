@@ -10,10 +10,10 @@ RUN tar -C /opt -xvzf quarto-${QUARTO_VERSION}-linux-amd64.tar.gz
 # Set quarto path
 ENV PATH="${PATH}:/opt/quarto-${QUARTO_VERSION}/bin/"
 
-RUN quarto install tinytex
-
 WORKDIR /data_guide
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 COPY . .
+
+RUN quarto install tinytex
