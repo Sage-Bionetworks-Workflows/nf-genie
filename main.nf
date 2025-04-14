@@ -137,6 +137,14 @@ workflow {
     }
   } else if (params.process_type == "consortium_release_step_only") {
     create_consortium_release("default", ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
+    create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
+    if (!is_staging) {
+      load_to_bpc(create_data_guide.out, ch_release, ch_is_prod)
+    }
+    if (is_prod) {
+      find_maf_artifacts(create_consortium_release.out, ch_release)
+      check_for_retractions(create_consortium_release.out)
+    }
   } else if (params.process_type == "public_release_step_only") {
     create_public_release(ch_release, ch_seq_date, ch_is_prod, ch_is_staging)
   } else if (params.process_type == "data_guide_only") {
