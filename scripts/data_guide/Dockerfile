@@ -15,5 +15,6 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 COPY . .
-
+# This is placed after so that the installation always occurs when there is a change
+# because of GEN-1833
 RUN quarto install tinytex
