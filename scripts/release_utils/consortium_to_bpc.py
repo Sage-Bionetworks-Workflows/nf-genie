@@ -121,6 +121,9 @@ def _copyRecursive(
         )
         return mapping
 
+    # HACK: These lines of code were removed to allow for data with access requirements to be copied
+    # https://github.com/Sage-Bionetworks/synapsePythonClient/blob/2909fa778e814f62f6fe6ce2d951ce58c0080a4e/synapseutils/copy_functions.py#L464-L470
+
     copiedId = None
 
     if isinstance(ent, Project):
