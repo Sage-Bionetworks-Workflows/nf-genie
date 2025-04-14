@@ -10,7 +10,7 @@ Sometimes the nextflow step for the `create_data_guide.nf` will fail due to an i
 
 ### Instructions
 
-1. Create instance under EC2 with Notebook Software and wait for creation. Open up your Notebook via the `NotebookConnectionURI` under `Outputs` tab
+1. Create instance under Linux Docker and wait for creation. Open up your Notebook via the `ConnectionURI` under `Outputs` tab
 2. In the terminal, clone [nf-genie](https://github.com/Sage-Bionetworks-Workflows/nf-genie) and checkout `main` branch
 
     ```git
