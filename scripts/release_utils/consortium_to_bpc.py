@@ -72,6 +72,9 @@ def _copyRecursive(
     **kwargs,
 ) -> Dict[str, str]:
     """
+    NOTE: This is a copy of the function found here: https://github.com/Sage-Bionetworks/synapsePythonClient/blob/develop/synapseutils/copy_functions.py#L409
+    This was copied because there is a restriction that doesn't allow for copying entities with access requirements
+
     Recursively copies synapse entites, but does not copy the wikis
 
     Arguments:
