@@ -4,7 +4,7 @@ Add or update your information for your site into the dedicated field and then s
 
 
 ## Running via Service Catalog
-Sometimes the nextflow step for the `create_data_guide.nf` will fail due to an issue with the docker image. Since troubleshooting for the docker image can easily take over a few days to resolve, try the manual approach to generate the data guide:
+Sometimes the nextflow step for the `create_data_guide.nf` will fail due to an issue with the docker image. Here are a list of [known issues and resolutions](https://sagebionetworks.jira.com/wiki/spaces/APGD/pages/2856943651/GENIE+Pipeline+Troubleshooting) (only accessible by Sage employees).  Since troubleshooting for the docker image can easily take over a few days to resolve, try the manual approach to generate the data guide:
 
 [Follow instructions here](https://sagebionetworks.jira.com/wiki/spaces/APGD/pages/2590244872/Service+Catalog+Instance+Setup#Starting-EC2-instance-from-the-Service-Catalog) for using the Service catalog
 
