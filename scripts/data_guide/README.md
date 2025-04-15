@@ -3,41 +3,39 @@
 Add or update your information for your site into the dedicated field and then submit a pull request.
 
 
-
 ## Running via Service Catalog
-Sometimes the nextflow step for the `create_data_guide.nf` will fail due to an issue with the docker image. Since troubleshooting for the docker image can easily take over a few days to resolve, try the manual approach to generate the data guide:
+Sometimes the nextflow step for the `create_data_guide.nf` will fail due to an issue with the docker image. Here are a list of [known issues and resolutions](https://sagebionetworks.jira.com/wiki/spaces/APGD/pages/2856943651/GENIE+Pipeline+Troubleshooting) (only accessible by Sage employees).  Since troubleshooting for the docker image can easily take over a few days to resolve, try the manual approach to generate the data guide:
 
 [Follow instructions here](https://sagebionetworks.jira.com/wiki/spaces/APGD/pages/2590244872/Service+Catalog+Instance+Setup#Starting-EC2-instance-from-the-Service-Catalog) for using the Service catalog
 
 ### Instructions
 
-1. Create instance under EC2 with Notebook Software and wait for creation. Open up your Notebook via the `NotebookConnectionURI` under `Outputs` tab
+1. Create instance under Linux Docker and wait for creation. Open up your Notebook via the `ConnectionURI` under `Outputs` tab
 2. In the terminal, clone [nf-genie](https://github.com/Sage-Bionetworks-Workflows/nf-genie) and checkout `main` branch
 
-```git
-git clone https://github.com/Sage-Bionetworks-Workflows/nf-genie.git
-git checkout main
-```
+    ```git
+    git clone https://github.com/Sage-Bionetworks-Workflows/nf-genie.git
+    git checkout main
+    ```
 
-3. Create new project on `nf-genie` directory in your R notebook
-4. Open up the `generate_data_guide_cli.R` and `data_guide.qmd` files under `scripts/data_guide` on your notebook UI. You should be prompted to install required packages for each file you view, proceed to install.
-5. Run the following in the terminal to install the latest version of `tinytex`
+3. Create a new python virtual environment in your `nf-genie` directory. `pip install -r requirements.txt`
+4. Run the following in the terminal to install the latest version of `tinytex`
 
-```bash
-quarto install tinytex
-```
+    ```bash
+    quarto install tinytex
+    ```
 
-6. If you don't have quarto installed, run the following to install it
+5. If you don't have quarto installed, run the following to install it
 
-```bash
-wget -qO quarto.deb https://quarto.org/download/latest/quarto-linux-amd64.deb
-```
+    ```bash
+    wget -qO quarto.deb https://quarto.org/download/latest/quarto-linux-amd64.deb
+    ```
 
-7. Run the following command on the terminal to generate and save your data guide
+6. Run the following command on the terminal to generate and save your data guide
 
-```bash
-Rscript generate_data_guide_cli.R <consortium_release> <project_id>
-```
+    ```bash
+    python generate_data_guide.py <consortium_release> <project_id>
+    ```
 
 8. [Optional] Sometimes depending on the rendering, you may have the front page genie banner be cut off/too big like the below example ![alt text](/img/cut_off_genie_banner.png) To resolve, you will need to adjust [this width in the data_guide.qmd file](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/df3796dce8431fc2a86e297a7350058241c1321c/scripts/data_guide/data_guide.qmd#L11) (e.g: used `15cm` instead of `20cm` for the example below)
 
@@ -46,5 +44,5 @@ Rscript generate_data_guide_cli.R <consortium_release> <project_id>
 This will generate the data_guide for TEST.consortium in the [TEST release folder](https://www.synapse.org/Synapse:syn21895009)
 
 ```bash
-Rscript generate_data_guide_cli.R TEST.consortium syn7208886
+python generate_data_guide.py TEST.consortium syn7208886
 ```
