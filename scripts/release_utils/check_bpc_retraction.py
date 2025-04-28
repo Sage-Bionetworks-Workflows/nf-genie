@@ -26,7 +26,7 @@ def main():
 
     # Pull table with full redcap clinical export
     bpc_samples = syn.tableQuery(
-        "SELECT cpt_genie_sample_id FROM syn23285889"
+        "SELECT cpt_genie_sample_id FROM syn23285889 where cpt_genie_sample_id is not null"
     )
     bpc_samples_df = bpc_samples.asDataFrame()
 
