@@ -1,4 +1,6 @@
 process process_maf {
+    maxForks 1
+    fair true
     debug true
     container "$params.main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
