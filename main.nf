@@ -24,7 +24,7 @@ include { process_maf } from './modules/process_maf'
 // Different process types (only_validate, main_process, maf_process, consortium_release, public_release)
 params.process_type = "only_validate"
 // Specify center
-params.center = "ALL"
+params.center = ['ALL']
 // to create new maf database
 params.create_new_maf_db = false
 // release name (pass in TEST.public to test the public release scripts)
@@ -119,7 +119,9 @@ workflow {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
-    process_maf(ch_project_id, ch_center, params.create_new_maf_db)
+    ch_center.each { center ->
+      process_maf(ch_project_id, center, params.create_new_maf_db)
+    }
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)

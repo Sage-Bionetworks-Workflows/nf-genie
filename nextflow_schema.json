@@ -27,9 +27,9 @@
                     ]
                 },
                 "center": {
-                    "type": "string",
-                    "description": "Pick a center to process or validate. Defaults to ALL which means all centers. This value should be ALL if you pick consortium release or public release.",
-                    "default": "ALL"
+                    "type": "array",
+                    "description": "The list of centers to process or validate. Defaults to ['ALL'] which means all centers. This value should be ALL if you pick consortium release or public release.",
+                    "default": ["ALL"]
                 },
                 "create_new_maf_db": {
                     "type": "boolean",

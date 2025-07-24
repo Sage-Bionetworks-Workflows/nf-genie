@@ -8,6 +8,8 @@ process process_maf {
     val center
     val create_new_maf_db
 
+    tag "processing_${center}"
+
     output:
     stdout
 
