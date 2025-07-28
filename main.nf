@@ -109,7 +109,6 @@ maf_centers = [
   'CHOP',
   'VHIO',
   'UMIAMI',
-  'PROV',
   'MSK',
   'YALE',
   'DUKE',
