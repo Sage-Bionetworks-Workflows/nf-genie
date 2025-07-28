@@ -3,7 +3,6 @@ process process_maf {
     container "$params.main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
     maxForks 1
-    maxRetries 0
 
     input:
     val proj_id
