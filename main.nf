@@ -138,15 +138,14 @@ workflow {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
-    process_maf(ch_project_id, ch_center, params.create_new_maf_db)
+    ch_centers = Channel.fromList(maf_centers)
+    process_maf(ch_project_id, ch_centers, params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    for (center in maf_centers) {
-      //process_maf(ch_project_id, ch_center, params.create_new_maf_db)
-      process_maf(ch_project_id, Channel.value(center), params.create_new_maf_db)
-    }
+    ch_centers = Channel.fromList(maf_centers)
+    process_maf(ch_project_id, ch_centers, params.create_new_maf_db)
     process_main(process_maf.out, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
