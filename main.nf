@@ -103,6 +103,25 @@ else {
   is_staging = false
 }
 
+maf_centers = [
+  'WAKE',
+  'VICC',
+  'CHOP',
+  'VHIO',
+  'UMIAMI',
+  'PROV',
+  'MSK',
+  'YALE',
+  'DUKE',
+  'COLU',
+  'MDA',
+  'SCI',
+  'UCSF',
+  'UCHI',
+  'CRUK',
+  'UHN'
+]
+
 workflow {
   ch_release = Channel.value(params.release)
   ch_project_id = Channel.value(project_id)
@@ -124,7 +143,10 @@ workflow {
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    process_maf(ch_project_id, ch_center, params.create_new_maf_db)
+    for (center in maf_centers) {
+      //process_maf(ch_project_id, ch_center, params.create_new_maf_db)
+      process_maf(ch_project_id, Channel.value(center), params.create_new_maf_db)
+    }
     process_main(process_maf.out, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
