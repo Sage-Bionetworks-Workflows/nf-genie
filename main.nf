@@ -106,9 +106,6 @@ else {
 maf_centers = [
   'WAKE',
   'VICC',
-  'CHOP',
-  'VHIO',
-  'UMIAMI',
   'MSK',
   'YALE',
   'DUKE',
