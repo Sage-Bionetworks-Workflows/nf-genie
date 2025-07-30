@@ -140,7 +140,7 @@ def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_m
     return process_maf_reuse(process_maf_col1, ch_project_id, ch_maf_centers.remaining, false).collect()
 
   } else {
-    // Process centers if the process type is "maf_process"
+    // Process centers as the specified maf center list
     return process_maf(previous, ch_project_id, ch_maf_centers, create_new_maf_db).collect()
   }
 }
