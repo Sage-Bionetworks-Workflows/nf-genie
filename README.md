@@ -95,9 +95,9 @@ Note that all the docker parameters have set default docker containers based on 
     nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
 
-3. To execute the MAF process for multiple centers, you can specify the `maf_centers` as a comma-separated list of center names.
+3. To execute the MAF process for multiple centers, you can specify the `maf_centers` as a comma-separated list of center names and **append** results to the MAF table.
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST,SAGE --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST,SAGE --create_new_maf_db false -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
 
 * Runs **processing** and **consortium** release (including data guide creation) on test pipeline
