@@ -34,11 +34,7 @@ params.release = "TEST.consortium"
 params.maf_centers = "ALL"
 // List of centers to be processed converted from params.maf_centers
 maf_center_list = params.maf_centers?.split(",").toList()
-// If the list contains "ALL", use the predefined list of all centers
-all_centers = ["JHU","DFCI","GRCC","NKI","MSK","UHN","VICC","MDA","WAKE","YALE","UCSF","CRUK","CHOP","VHIO","SCI","PROV","COLU","UCHI","DUKE","UMIAMI"]
-if (params.maf_centers = "ALL") {
-    maf_center_list = all_centers
-}
+
 // Validate input parameters
 WorkflowMain.initialise(workflow, params, log)
 
@@ -98,6 +94,7 @@ if (major_release == "TEST") {
   center_map_synid = "syn11601248"
   is_prod = false
   is_staging = false
+  
 } else if (major_release == "STAGING"){
   project_id = "syn22033066"
   center_map_synid = "syn22089188"
@@ -110,6 +107,16 @@ else {
   center_map_synid = "syn10061452"
   is_prod = true
   is_staging = false
+}
+
+// Extract center list for MAF processing
+if (major_release == "TEST"){
+  all_centers = ["SAGE", "TEST", "GOLD"]
+} else {
+  all_centers = ["JHU","DFCI","GRCC","NKI","MSK","UHN","VICC","MDA","WAKE","YALE","UCSF","CRUK","CHOP","VHIO","SCI","PROV","COLU","UCHI","DUKE","UMIAMI"]
+}
+if (params.maf_centers = "ALL") {
+  maf_center_list = all_centers
 }
 
 def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
