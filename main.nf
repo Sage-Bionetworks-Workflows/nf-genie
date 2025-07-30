@@ -14,6 +14,7 @@ include { reset_processing } from './modules/reset_processing'
 include { validate_data } from './modules/validate_data'
 include { process_main } from './modules/process_main'
 include { process_maf } from './modules/process_maf'
+include { process_maf as process_maf_reuse} from './modules/process_maf'
 
 // SET PARAMETERS
 
@@ -31,10 +32,12 @@ params.create_new_maf_db = false
 params.release = "TEST.consortium"
 // List all centers to be processed for maf_process
 params.maf_centers = "ALL"
-maf_centers = params.maf_centers?.split(",").toList()
-maf_center_list = ["JHU","DFCI","GRCC","NKI","MSK","UHN","VICC","MDA","WAKE","YALE","UCSF","CRUK","CHOP","VHIO","SCI","PROV","COLU","UCHI","DUKE","UMIAMI"]
-if (!maf_centers.contains("ALL")) {
-    maf_center_list = maf_centers
+// List of centers to be processed converted from params.maf_centers
+maf_center_list = params.maf_centers?.split(",").toList()
+// If the list contains "ALL", use the predefined list of all centers
+all_centers = ["JHU","DFCI","GRCC","NKI","MSK","UHN","VICC","MDA","WAKE","YALE","UCSF","CRUK","CHOP","VHIO","SCI","PROV","COLU","UCHI","DUKE","UMIAMI"]
+if (params.maf_centers = "ALL") {
+    maf_center_list = all_centers
 }
 // Validate input parameters
 WorkflowMain.initialise(workflow, params, log)
@@ -109,17 +112,36 @@ else {
   is_staging = false
 }
 
-def process_maf_helper(ch_project_id, ch_maf_centers, maf_centers, maf_center_list, params.create_new_maf_db) {
-  if (maf_centers.contains("ALL")) {
-    // Process centers if the process type is "maf_process"
-    ch_createNewMafDb = ch_maf_centers
-      .map { center -> 
-        def createNewMafDb = (center == maf_center_list[0]) ? true : false
-      }
-    return process_maf(ch_project_id, ch_maf_centers, ch_createNewMafDb).collect()
+def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
+    /**
+  * Processes MAF files for a given center list.
+  *
+  * @param maf_centers          Parameter containing the centers to be processed, can be "ALL" or a comma-separated list
+  * @param ch_project_id        Channel with project ID
+  * @param maf_center_list          List of centers to be processed converted from params.maf_centers
+  * @param create_new_maf_db    Boolean flag to create new DB
+  * @return                     A collect output of the MAF process
+  */
+
+  // Create a channel from the list of centers
+  ch_maf_centers = Channel.fromList(maf_center_list)
+  // placeholder for previous output
+  previous = false
+  // If maf_centers is "ALL", we will process all centers in the maf_center_list
+  if (maf_centers == "ALL") {
+    // Create a channel to indicate whether it's the first center or not
+    ch_maf_centers = ch_maf_centers.branch { v ->
+        first: v == maf_center_list[0]
+        remaining: v != maf_center_list[0]
+    }
+    // Process the first center with createNewMafDb as true
+    process_maf_col1 = process_maf(previous, ch_project_id, ch_maf_centers.first, true).collect()
+    // Process the rest with createNewMafDb as false
+    return process_maf_reuse(process_maf_col1, ch_project_id, ch_maf_centers.remaining, false).collect()
+
   } else {
     // Process centers if the process type is "maf_process"
-    return process_maf(ch_project_id, ch_maf_centers, params.create_new_maf_db).collect()
+    return process_maf(previous, ch_project_id, ch_maf_centers, create_new_maf_db).collect()
   }
 }
 
@@ -130,7 +152,6 @@ workflow {
   ch_center = Channel.value(params.center)
   ch_is_prod = Channel.value(is_prod)
   ch_is_staging = Channel.value(is_staging)
-  ch_maf_centers = Channel.fromList(maf_center_list)
 
   // if (params.force) {
   //   reset_processing(center_map_synid)
@@ -141,12 +162,12 @@ workflow {
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
     // Call the function
-    process_maf_helper(ch_project_id, ch_maf_centers, maf_centers, maf_center_list, params.create_new_maf_db)
+    process_maf_helper(params.maf_centers, ch_project_id, ch_maf_centers, params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    process_maf_col = process_maf_helper(ch_project_id, ch_maf_centers, maf_centers, maf_center_list, params.create_new_maf_db)
+    process_maf_col = process_maf_helper(params.maf_centers, ch_project_id, ch_maf_centers, params.create_new_maf_db)
     process_main(process_maf_col, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
