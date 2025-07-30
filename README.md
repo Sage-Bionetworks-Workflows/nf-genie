@@ -82,22 +82,9 @@ Note that all the docker parameters have set default docker containers based on 
     ```
 
 * Processes **mutation** files on test pipeline
-1. To execute the MAF process for all centers, you can either specify the `maf_centers` as "ALL" or leave it blank. 
+
     ```
     nextflow run main.nf -profile aws_test --process_type maf_process --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
-    ```
-    Or
-    ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers ALL --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
-    ```
-2. To execute the MAF process for a single center, you can specify the `maf_centers` parameter using the name of that center.
-    ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
-    ```
-
-3. To execute the MAF process for multiple centers, you can specify the `maf_centers` as a comma-separated list of center names and **append** results to the MAF table.
-    ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST,SAGE --create_new_maf_db false -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
 
 * Runs **processing** and **consortium** release (including data guide creation) on test pipeline

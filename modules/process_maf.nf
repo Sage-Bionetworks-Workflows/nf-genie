@@ -4,12 +4,9 @@ process process_maf {
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
-    val previous
     val proj_id
     val center
     val create_new_maf_db
-
-    tag "processing_${center}"
 
     output:
     stdout
