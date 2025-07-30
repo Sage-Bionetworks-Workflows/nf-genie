@@ -14,7 +14,7 @@ include { reset_processing } from './modules/reset_processing'
 include { validate_data } from './modules/validate_data'
 include { process_main } from './modules/process_main'
 include { process_maf } from './modules/process_maf'
-include { process_maf as process_maf_reuse} from './modules/process_maf'
+include { process_maf as process_maf_remaining_centers} from './modules/process_maf'
 
 // SET PARAMETERS
 
@@ -115,7 +115,7 @@ if (major_release == "TEST"){
 } else {
   all_centers = ["JHU","DFCI","GRCC","NKI","MSK","UHN","VICC","MDA","WAKE","YALE","UCSF","CRUK","CHOP","VHIO","SCI","PROV","COLU","UCHI","DUKE","UMIAMI"]
 }
-if (params.maf_centers = "ALL") {
+if (params.maf_centers == "ALL") {
   maf_center_list = all_centers
 }
 
@@ -133,7 +133,7 @@ def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_m
   // Create a channel from the list of centers
   ch_maf_centers = Channel.fromList(maf_center_list)
   // placeholder for previous output
-  previous = false
+  previous = "default"
   // If maf_centers is "ALL", we will process all centers in the maf_center_list
   if (maf_centers == "ALL") {
     // Create a channel to indicate whether it's the first center or not
@@ -142,9 +142,9 @@ def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_m
         remaining: v != maf_center_list[0]
     }
     // Process the first center with createNewMafDb as true
-    process_maf_col1 = process_maf(previous, ch_project_id, ch_maf_centers.first, true).collect()
+    process_maf_first_center = process_maf(previous, ch_project_id, ch_maf_centers.first, true).collect()
     // Process the rest with createNewMafDb as false
-    return process_maf_reuse(process_maf_col1, ch_project_id, ch_maf_centers.remaining, false).collect()
+    return process_maf_remaining_centers(process_maf_first_center, ch_project_id, ch_maf_centers.remaining, false).collect()
 
   } else {
     // Process centers as the specified maf center list
