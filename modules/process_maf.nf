@@ -2,6 +2,7 @@ process process_maf {
     debug true
     container "$params.main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
+    maxForks 1
 
     input:
     val proj_id
