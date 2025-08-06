@@ -73,7 +73,8 @@ def consortium_map = [
   "16": "Jan-2024",
   "17": "Jul-2024",
   "18": "Jan-2025",
-  "20": "Jul-2025"
+  "19": "Jul-2025",
+  "20": "Jan-2026"
 ]
 release_split = params.release.tokenize('.')
 major_release = release_split[0]
