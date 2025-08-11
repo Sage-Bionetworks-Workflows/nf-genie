@@ -14,6 +14,7 @@ include { reset_processing } from './modules/reset_processing'
 include { validate_data } from './modules/validate_data'
 include { process_main } from './modules/process_main'
 include { process_maf } from './modules/process_maf'
+include { process_maf as process_maf_remaining_centers} from './modules/process_maf'
 
 // SET PARAMETERS
 
@@ -29,6 +30,10 @@ params.center = "ALL"
 params.create_new_maf_db = false
 // release name (pass in TEST.public to test the public release scripts)
 params.release = "TEST.consortium"
+// List all centers to be processed for maf_process
+params.maf_centers = "ALL"
+// List of centers to be processed converted from params.maf_centers
+maf_center_list = params.maf_centers?.split(",").toList()
 
 // Validate input parameters
 WorkflowMain.initialise(workflow, params, log)
@@ -90,6 +95,7 @@ if (major_release == "TEST") {
   center_map_synid = "syn11601248"
   is_prod = false
   is_staging = false
+  
 } else if (major_release == "STAGING"){
   project_id = "syn22033066"
   center_map_synid = "syn22089188"
@@ -102,6 +108,49 @@ else {
   center_map_synid = "syn10061452"
   is_prod = true
   is_staging = false
+}
+
+// Extract center list for MAF processing
+if (major_release == "TEST"){
+  all_centers = ["SAGE", "TEST", "GOLD"]
+} else {
+  all_centers = ["JHU","DFCI","GRCC","NKI","MSK","UHN","VICC","MDA","WAKE","YALE","UCSF","CRUK","CHOP","VHIO","SCI","PROV","COLU","UCHI","DUKE","UMIAMI"]
+}
+if (params.maf_centers == "ALL") {
+  maf_center_list = all_centers
+}
+
+def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
+    /**
+  * Processes MAF files for a given center list.
+  *
+  * @param maf_centers          Parameter containing the centers to be processed, can be "ALL" or a comma-separated list
+  * @param ch_project_id        Channel with project ID
+  * @param maf_center_list          List of centers to be processed converted from params.maf_centers
+  * @param create_new_maf_db    Boolean flag to create new DB
+  * @return                     A collect output of the MAF process
+  */
+
+  // Create a channel from the list of centers
+  ch_maf_centers = Channel.fromList(maf_center_list)
+  // placeholder for previous output
+  previous = "default"
+  // If maf_centers is "ALL", we will process all centers in the maf_center_list
+  if (maf_centers == "ALL") {
+    // Create a channel to indicate whether it's the first center or not
+    ch_maf_centers = ch_maf_centers.branch { v ->
+        first: v == maf_center_list[0]
+        remaining: v != maf_center_list[0]
+    }
+    // Process the first center with createNewMafDb as true
+    process_maf_first_center = process_maf(previous, ch_project_id, ch_maf_centers.first, true).collect()
+    // Process the rest with createNewMafDb as false
+    return process_maf_remaining_centers(process_maf_first_center, ch_project_id, ch_maf_centers.remaining, false).collect()
+
+  } else {
+    // Process centers as the specified maf center list
+    return process_maf(previous, ch_project_id, ch_maf_centers, create_new_maf_db).collect()
+  }
 }
 
 workflow {
@@ -120,13 +169,14 @@ workflow {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
-    process_maf(ch_project_id, ch_center, params.create_new_maf_db)
+    // Call the function
+    process_maf_helper(params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    process_maf(ch_project_id, ch_center, params.create_new_maf_db)
-    process_main(process_maf.out, ch_project_id, ch_center)
+    process_maf_col = process_maf_helper(params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+    process_main(process_maf_col, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
     if (!is_staging) {
