@@ -1,5 +1,5 @@
 // Create data guide
-process sync_staging_table_with_prod {
+process sync_staging_table_with_production {
     debug true
     container "$params.main_pipeline_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
@@ -12,12 +12,12 @@ process sync_staging_table_with_prod {
 
     script:
     """
-    python sync_staging_table_with_prod.py
+    python sync_staging_table_with_production.py
     """
 
     stub:
     """
-    echo "sync_staging_table_with_prod"
+    echo "sync_staging_table_with_production"
     """
 
 

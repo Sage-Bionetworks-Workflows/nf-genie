@@ -36,7 +36,7 @@
                     "description": "The list of centers to be processed in the MAF processing. Defaults to ALL which means all centers.",
                     "default": "ALL"
                 },
-                "sync_staging_with_production": {
+                "sync_staging_table_with_production": {
                     "type": "boolean",
                     "description": "Indicates if staging tables should be synchronized with production tables.",
                     "default": "false"
