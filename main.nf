@@ -15,6 +15,7 @@ include { validate_data } from './modules/validate_data'
 include { process_main } from './modules/process_main'
 include { process_maf } from './modules/process_maf'
 include { process_maf as process_maf_remaining_centers} from './modules/process_maf'
+include {sync_staging_table_with_production} from './modules/sync_staging_table_with_production'
 
 // SET PARAMETERS
 
@@ -34,7 +35,8 @@ params.release = "TEST.consortium"
 params.maf_centers = "ALL"
 // List of centers to be processed converted from params.maf_centers
 maf_center_list = params.maf_centers?.split(",").toList()
-
+// whether to sync staging table with prod table at the start of the run
+params.sync_staging_table_with_production = false
 // Validate input parameters
 WorkflowMain.initialise(workflow, params, log)
 
@@ -165,6 +167,9 @@ workflow {
   //   reset_processing(center_map_synid)
   //   reset_processing.out.view()
   // }
+  if (params.sync_staging_table_with_production == true && is_staging) {
+    sync_staging_table_with_production(ch_is_staging)
+  }
   if (params.process_type == "only_validate") {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
