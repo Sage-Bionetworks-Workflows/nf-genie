@@ -14,4 +14,11 @@ process sync_staging_table_with_prod {
     """
     python sync_staging_table_with_prod.py
     """
+
+    stub:
+    """
+    echo "sync_staging_table_with_prod"
+    """
+
+
 }
