@@ -35,7 +35,8 @@ params.release = "TEST.consortium"
 params.maf_centers = "ALL"
 // List of centers to be processed converted from params.maf_centers
 maf_center_list = params.maf_centers?.split(",").toList()
-
+// whether to sync staging table with prod table at the start of the run
+params.sync_staging_with_production = false
 // Validate input parameters
 WorkflowMain.initialise(workflow, params, log)
 
@@ -166,7 +167,7 @@ workflow {
   //   reset_processing(center_map_synid)
   //   reset_processing.out.view()
   // }
-  if (major_release == "STAGING") {
+  if (params.sync_staging_with_production == true && is_staging) {
     sync_staging_table_with_prod()
   }
   if (params.process_type == "only_validate") {
