@@ -17,7 +17,7 @@ process sync_staging_table_with_production {
 
     stub:
     """
-    echo "sync_staging_table_with_production"
+    echo "sync_staging_table_with_production ran successfully"
     """
 
 
