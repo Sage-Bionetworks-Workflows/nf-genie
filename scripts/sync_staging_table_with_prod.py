@@ -1,0 +1,1 @@
+print('synced_table_with_prod')

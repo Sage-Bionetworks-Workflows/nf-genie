@@ -15,6 +15,7 @@ include { validate_data } from './modules/validate_data'
 include { process_main } from './modules/process_main'
 include { process_maf } from './modules/process_maf'
 include { process_maf as process_maf_remaining_centers} from './modules/process_maf'
+include {sync_staging_table_with_prod} from './modules/sync_staging_table_with_prod'
 
 // SET PARAMETERS
 
@@ -165,6 +166,9 @@ workflow {
   //   reset_processing(center_map_synid)
   //   reset_processing.out.view()
   // }
+  if (major_release == "STAGING") {
+    sync_staging_table_with_prod()
+  }
   if (params.process_type == "only_validate") {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
