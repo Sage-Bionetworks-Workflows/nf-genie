@@ -5,7 +5,7 @@ process sync_staging_table_with_production {
     secret 'SYNAPSE_AUTH_TOKEN'
 
     input:
-    val previous
+    val is_staging
 
     output:
     stdout

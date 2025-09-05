@@ -168,7 +168,7 @@ workflow {
   //   reset_processing.out.view()
   // }
   if (params.sync_staging_table_with_production == true && is_staging) {
-    sync_staging_table_with_production()
+    sync_staging_table_with_production(ch_is_staging)
   }
   if (params.process_type == "only_validate") {
     validate_data(ch_project_id, ch_center)
