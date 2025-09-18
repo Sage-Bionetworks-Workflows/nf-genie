@@ -8,12 +8,13 @@ from datetime import date
 
 import synapseclient
 from genie import load, process_functions
+from synapseclient.models import Table, SchemaStorageStrategy
 
 syn = synapseclient.login()
 syn.table_query_timeout = 50000
 
 tables_to_copy = [
-    "vcf2maf",
+    #"vcf2maf",
     "bed",
     "seg",
     "sample",
@@ -63,6 +64,8 @@ def replace_table(data_to_replace_with, table_key):
     else:
         databaseEnt = syn.get(table_to_replace_syn_id)
         primary_key = databaseEnt.primaryKey if table_key not in ["validationStatus", "errorTracker"] else ["id"]
+
+
         load._update_table(
             syn,
             database = data_to_replace,
@@ -72,6 +75,17 @@ def replace_table(data_to_replace_with, table_key):
             to_delete=True,
         )
     
+        changes = load.check_database_changes(data_to_replace, data_to_replace_with, primary_key, to_delete = True)
+        # store the changed and new rows
+        col_order = changes["col_order"]
+        if not changes["allupdates"].empty:
+            import pdb; pdb.set_trace()
+            Table(id = table_to_replace_syn_id).store_rows(
+                values = changes["allupdates"][col_order], to_csv_kwargs= {"float_format": "%.12g"}, schema_storage_strategy=SchemaStorageStrategy.INFER_FROM_DATA)
+        if not changes["to_delete_rows"].empty:
+            print(f"Deleting {len(changes['to_delete_rows'])} rows from {table_key} table")
+
+
 for table in tables_to_copy:
     print(table)
     data_replace = download_table(table_key = table)
