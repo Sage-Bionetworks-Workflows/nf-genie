@@ -64,7 +64,7 @@ def public_map = [
 ]
 def consortium_map = [
   "TEST": "Jul-2022",
-  "STAGING": "Jan-2025",
+  "STAGING": "Sep-2025",
   "11": "Jul-2021",
   "12": "Jan-2022",
   "13": "Jul-2022",
