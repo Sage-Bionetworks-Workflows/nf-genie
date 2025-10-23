@@ -1,5 +1,20 @@
 ### [University of Miami - Sylvester Comprehensive Cancer Center](https://umiamihealth.org/en/sylvester-comprehensive-cancer-center) (UMIAMI)
 
+#### Caris Life Sciences
 Direct sequence analysis was performed on genomic DNA isolated from a micro-dissected tumor sample using Illumina NovaSeq 6000 sequencers. Sequencing was conducted through Caris Life Sciences, utilizing a hybrid pull-down panel of baits to enrich more than 700 clinically relevant genes along with > 20,000 other genes. Base calls are detected from the signal intensity measurements during each cycle. Base Call (BCL) files generated from the Illumina NovaSeq systems are stored on a secure High-Performance Computing server on rapid solid-state hard drives.
 
 The initial sequencing metrics for the flow cells are reviewed by the NGS bioinformatics pipeline, which includes the following run validity criteria and quality control checks: Reads Passing Filter, Yield, and Q30 scores for each read 1 and read 4 (forward and reverse). The pipeline initiates automatic conversion and de-multiplexing using the FPGA-adapted version of bcl2fastq via Illumina DRAGEN devices to convert the Illumina-generated BCL files to FASTQ file formats for downstream analysis. Demultiplexing is performed on the TNA reads, creating sample-specific FASTQ files. Custom software is applied to differentiate RNA and DNA molecules using the synthetic labels added during cDNA synthesis.
+
+#### Guardant Health
+Guardant360® CDx is a single-site test performed at Guardant Health, Inc. The test includes reagents, software, and procedures for testing cfDNA from whole blood samples. The test uses 5-30 ng of cfDNA for library construction and next generation sequencing (NGS). Sequencing data is processed using a customized bioinformatics pipeline designed to detect several classes of genomic alterations, including nucleotide substitutions, indels, copy number amplifications, and genomic fusions / rearrangements.
+
+#### Foundation Medicine 
+##### FoundationOne
+##### FoundationOne CDx
+FoundationOne®CDx (F1CDx) is a qualitative next-generation sequencing based in vitro diagnostic test that uses targeted high throughput hybridization-based capture technology for detection of substitutions, insertion and deletion alterations (indels), and copy number alterations (CNAs) in 324 genes and select gene rearrangements, as well as genomic signatures including microsatellite instability (MSI) and tumor mutational burden (TMB) using DNA isolated from formalin-fixed, paraffin-embedded (FFPE) tumor tissue specimens when using the DNAx extraction method. The test is intended for detection of substitutions and indels in 324 genes, CNAs in 16 genes and select gene rearrangements, as well as genomic signatures including MSI and TMB using DNA isolated from FFPE tumor tissue specimens when using the CoExtraction method for DNA isolation. 
+
+##### FoundationOne Heme
+FoundationOne Heme is a comprehensive genomic profiling (CGP) test combining DNA and RNA sequencing for patients with hematologic malignancies and solid tumors. FoundationOne Heme detects known, novel, and complex fusion events as well as other common genomic alterations (substitutions, indels, and CNVs). This laboratory developed test (LDT) can be used by physicians to identify potential targeted therapy options, detect alterations in prognostic genes, and sub-classify diagnoses.
+
+##### FoundationOne Liquid CDx
+FoundationOne Liquid CDx is a qualitative next generation sequencing based in vitro diagnostic test that uses targeted high throughput hybridization-based capture technology to detect and report substitutions, insertions and deletions (indels) in 311 genes, including rearrangements in eight (8) genes, and copy number alterations in three (3) genes. FoundationOne Liquid CDx utilizes circulating cell-free DNA (cfDNA) isolated from plasma derived from anti-coagulated peripheral whole blood of cancer patients collected in FoundationOne Liquid CDx cfDNA blood collection tubes included in the FoundationOne Liquid CDx Blood Sample Collection Kit.
