@@ -33,7 +33,7 @@ db_to_synid_mapping = {
     "staging":"syn12094210"
 }
 
-def download_table(table_key):
+def download_table(table_key: str) -> pd.DataFrame:
     # download production tables
     db_table = syn.tableQuery(f"SELECT * FROM {db_to_synid_mapping['production']}").asDataFrame()
     syn_id = db_table[db_table["Database"] == table_key].Id.values[0]
@@ -41,7 +41,7 @@ def download_table(table_key):
     return(data)
     
 
-def replace_table(data_to_replace_with, table_key):
+def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
     # replace staging tables with production tables
     table_to_replace = syn.tableQuery(f"SELECT * FROM {db_to_synid_mapping['staging']}").asDataFrame()
     table_to_replace_syn_id = table_to_replace[table_to_replace["Database"] == table_key].Id.values[0]
@@ -60,12 +60,10 @@ def replace_table(data_to_replace_with, table_key):
         )
         syn.setPermissions(new_tables["newdb_ent"].id, 3326313, [])
         table_to_replace_syn_id = new_tables["newdb_ent"].id
-        syn.store(synapseclient.Table(table_to_replace_syn_id, data_to_replace_with))
+        Table(id=table_to_replace_syn_id).store_rows(data_to_replace_with)
     else:
         databaseEnt = syn.get(table_to_replace_syn_id)
         primary_key = databaseEnt.primaryKey if table_key not in ["validationStatus", "errorTracker"] else ["id"]
-
-
         load._update_table(
             syn,
             database = data_to_replace,
@@ -74,17 +72,6 @@ def replace_table(data_to_replace_with, table_key):
             primary_key_cols = primary_key,
             to_delete=True,
         )
-    
-        changes = load.check_database_changes(data_to_replace, data_to_replace_with, primary_key, to_delete = True)
-        # store the changed and new rows
-        col_order = changes["col_order"]
-        if not changes["allupdates"].empty:
-            import pdb; pdb.set_trace()
-            Table(id = table_to_replace_syn_id).store_rows(
-                values = changes["allupdates"][col_order], to_csv_kwargs= {"float_format": "%.12g"}, schema_storage_strategy=SchemaStorageStrategy.INFER_FROM_DATA)
-        if not changes["to_delete_rows"].empty:
-            print(f"Deleting {len(changes['to_delete_rows'])} rows from {table_key} table")
-
 
 for table in tables_to_copy:
     print(table)
