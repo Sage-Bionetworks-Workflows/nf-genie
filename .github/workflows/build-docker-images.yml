@@ -72,5 +72,5 @@ jobs:
         context: scripts/${{ matrix.module }}
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.module }}
-        cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.module }}-cache
-        cache-to: type=inline,mode=max
+        cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.module }}
+        cache-to: type=inline
