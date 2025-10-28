@@ -88,4 +88,4 @@ for table in tables_to_copy:
     print(table)
     data_replace = download_table(table_key=table)
     replace_table(data_to_replace_with=data_replace, table_key=table)
-    
+    print(f"Successfully synced {table} from production to staging")

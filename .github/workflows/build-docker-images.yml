@@ -17,7 +17,7 @@ jobs:
         module: ["data_guide", "patch_release", "release_utils", "sync_tables"] # Define the modules you want to loop through for builds
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: sage-bionetworks/nf-genie
+      IMAGE_NAME: sage-bionetworks-workflows/nf-genie
     permissions:
       contents: read
       packages: write
@@ -72,4 +72,5 @@ jobs:
         context: scripts/${{ matrix.module }}
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.module }}
-        cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.module }}-cache, mode=max
+        cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.module }}-cache
+        cache-to: type=inline,mode=max
