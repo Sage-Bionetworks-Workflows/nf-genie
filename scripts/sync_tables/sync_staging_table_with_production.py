@@ -84,7 +84,6 @@ def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
             to_delete=True,
         )
 
-
 for table in tables_to_copy:
     print(table)
     data_replace = download_table(table_key=table)
