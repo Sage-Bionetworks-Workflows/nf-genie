@@ -33,6 +33,13 @@ db_to_synid_mapping = {"production": "syn10967259", "staging": "syn12094210"}
 
 
 def download_table(table_key: str) -> pd.DataFrame:
+    """
+    Downloads the production table from Synapse.
+    Args:
+        table_key: The table name key of the table to download.
+    Returns:
+        data: A pandas DataFrame containing the data from the production table.
+    """
     # download production tables
     db_table = syn.tableQuery(
         f"SELECT * FROM {db_to_synid_mapping['production']}"
@@ -43,7 +50,14 @@ def download_table(table_key: str) -> pd.DataFrame:
 
 
 def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
-    # replace staging tables with production tables
+    """
+    Replaces the staging table with the production table.
+    Args:
+        data_to_replace_with: The data to replace the staging table with.
+        table_key: The key of the table to replace.
+    Returns:
+        None
+    """
     table_to_replace = syn.tableQuery(
         f"SELECT * FROM {db_to_synid_mapping['staging']}"
     ).asDataFrame()
@@ -83,6 +97,7 @@ def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
             primary_key_cols=primary_key,
             to_delete=True,
         )
+
 
 for table in tables_to_copy:
     print(table)
