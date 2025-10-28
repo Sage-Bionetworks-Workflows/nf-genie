@@ -12,7 +12,7 @@ process sync_staging_table_with_production {
 
     script:
     """
-    python sync_staging_table_with_production.py
+    python /sync_tables/sync_staging_table_with_production.py
     """
 
     stub:
