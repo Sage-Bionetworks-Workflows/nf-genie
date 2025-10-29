@@ -162,7 +162,7 @@ workflow table_sync {
     ch_is_staging = Channel.value(is_staging)
     sync_staging_table_with_production(ch_is_staging)
     // Pass through the sync output to create a dependency
-    ch_sync_table_complete = Channel.value("sync_complete")
+    ch_sync_table_complete = sync_staging_table_with_production.out.map { "sync_complete" }
   } else {
     // If sync is not needed, emit a single value immediately to unblock
     ch_sync_table_complete = Channel.value("skip_sync")
