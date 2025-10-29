@@ -156,10 +156,19 @@ def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_m
 }
 
 workflow table_sync {
-  ch_is_staging = Channel.value(is_staging)
+  // Emit a channel that indicates this workflow completed
+  ch_sync_complete = Channel.empty()
   if (params.sync_staging_table_with_production == true && is_staging) {
+    ch_is_staging = Channel.value(is_staging)
     sync_staging_table_with_production(ch_is_staging)
+    // Pass through the sync output to create a dependency
+    ch_sync_complete = sync_staging_table_with_production.out.map { "sync_complete" }
+  } else {
+    // If sync is not needed, emit a single value immediately to unblock
+    ch_sync_complete = Channel.value("skip_sync")
   }
+  emit:
+  ch_sync_complete
 }
 
 workflow data_processing {
@@ -217,6 +226,9 @@ workflow data_processing {
 }
 
 workflow {
+  // Run table_sync first and capture its output
   table_sync()
-  data_processing()
+  
+  // Pass the sync barrier to data_processing to ensure it waits
+  data_processing(table_sync.out.ch_sync_complete)
 }
