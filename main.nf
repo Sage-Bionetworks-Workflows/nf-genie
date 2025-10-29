@@ -162,7 +162,7 @@ workflow table_sync {
   }
 }
 
-workflow main {
+workflow process {
   ch_release = Channel.value(params.release)
   ch_project_id = Channel.value(project_id)
   ch_seq_date = Channel.value(seq_date)
@@ -218,5 +218,5 @@ workflow main {
 
 workflow {
   table_sync()
-  main(table_sync.out)
+  process(table_sync.out)
 }
