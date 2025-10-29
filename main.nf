@@ -179,12 +179,12 @@ workflow  {
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
     // Call the function
-    process_maf_helper(ch_sync_done.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+    process_maf_helper(ch_sync_done, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    process_maf_col = process_maf_helper(ch_sync_done.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+    process_maf_col = process_maf_helper(ch_sync_done, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     process_main(process_maf_col, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
