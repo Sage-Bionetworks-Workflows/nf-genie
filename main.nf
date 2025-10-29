@@ -230,9 +230,6 @@ workflow data_processing {
 }
 
 workflow {
-  // Run table_sync first and capture its output
-  table_sync()
-  
-  // Pass the sync barrier to data_processing to ensure it waits
-  data_processing(table_sync.out.ch_sync_table_complete)
+  // Pass the table_sync to data_processing to ensure it waits
+  data_processing(table_sync())
 }
