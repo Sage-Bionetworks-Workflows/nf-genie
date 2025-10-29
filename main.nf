@@ -165,8 +165,8 @@ workflow  {
   ch_is_staging = Channel.value(is_staging)
 
   if (params.sync_staging_table_with_production == true && is_staging) {
-    ch_sync_done = sync_staging_table_with_production()
-    ch_sync_done = ch_sync_done.out.map{ "sync_table_complete" }
+    sync_done = sync_staging_table_with_production()
+    ch_sync_done =  Channel.value("sync_table_complete")
   } else {
     ch_sync_done = Channel.value("skip_sync_table")
   }
