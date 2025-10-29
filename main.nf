@@ -155,27 +155,13 @@ def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_m
   }
 }
 
-workflow table_sync {
-  // Emit a channel that indicates this workflow completed
-  main:
-    if (params.sync_staging_table_with_production == true && is_staging) {
-      sync_staging_table_with_production()
-    } 
-  emit:
-  sync_done = sync_staging_table_with_production.out.ifEmpty { Channel.value("skip_sync") }
-}
-
-workflow data_processing {
-  take:
-  sync_done
-  
-  main:
+workflow  {
   ch_release = Channel.value(params.release)
   ch_project_id = Channel.value(project_id)
   ch_seq_date = Channel.value(seq_date)
   ch_center = Channel.value(params.center)
   ch_is_prod = Channel.value(is_prod)
-
+  
   // if (params.force) {
   //   reset_processing(center_map_synid)]
   //   reset_processing.out.view()
@@ -190,6 +176,9 @@ workflow data_processing {
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
+      if (params.sync_staging_table_with_production == true && is_staging) {
+        sync_staging_table_with_production()
+      }
     process_maf_col = process_maf_helper(params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     process_main(process_maf_col, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
@@ -221,13 +210,4 @@ workflow data_processing {
   } else {
     throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium_release', 'public_release', 'consortium_release_step_only', data_guide_only', 'public_release_step_only'")
   }
-}
-
-workflow {
-  // Run table_sync first and capture its output
-  ch_sync_done = table_sync()
-  ch_sync_done.view { "ch_sync_done: ${it}" }
-  
-  // Pass the sync barrier to data_processing to ensure it waits
-  data_processing(ch_sync_done)
 }
