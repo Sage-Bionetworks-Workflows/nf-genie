@@ -122,11 +122,11 @@ if (params.maf_centers == "ALL") {
   maf_center_list = all_centers
 }
 
-def process_maf_helper(ch_sync_done, maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
+def process_maf_helper(sync_done, maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
     /**
   * Processes MAF files for a given center list.
   *
-  * @param ch_sync_done         Channel indicating sync table completion
+  * @param sync_done         Indicating sync table completion
   * @param maf_centers          Parameter containing the centers to be processed, can be "ALL" or a comma-separated list
   * @param ch_project_id        Channel with project ID
   * @param maf_center_list      List of centers to be processed converted from params.maf_centers
@@ -164,25 +164,23 @@ workflow  {
   ch_is_prod = Channel.value(is_prod)
   ch_is_staging = Channel.value(is_staging)
 
-  if (params.sync_staging_table_with_production == true && is_staging) {
-    sync_done = sync_staging_table_with_production()
-    ch_sync_done =  sync_done.out.ifEmpty { Channel.value("skip_sync_table") }
-  }
   // if (params.force) {
   //   reset_processing(center_map_synid)]
   //   reset_processing.out.view()
   // }
+  sync_done = sync_staging_table_with_production(ch_is_staging, params.sync_staging_table_with_production)
+  
   if (params.process_type == "only_validate") {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
     // Call the function
-    process_maf_helper(ch_sync_done.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+    process_maf_helper(sync_done.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    process_maf_col = process_maf_helper(ch_sync_done.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+    process_maf_col = process_maf_helper(sync_done.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     process_main(process_maf_col, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
