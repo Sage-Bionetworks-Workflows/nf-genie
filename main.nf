@@ -155,21 +155,24 @@ def process_maf_helper(maf_centers, ch_project_id, maf_center_list, create_new_m
   }
 }
 
-workflow {
+workflow table_sync {
+  ch_is_staging = Channel.value(is_staging)
+  if (params.sync_staging_table_with_production == true && is_staging) {
+    sync_staging_table_with_production(ch_is_staging)
+  }
+}
+
+workflow main {
   ch_release = Channel.value(params.release)
   ch_project_id = Channel.value(project_id)
   ch_seq_date = Channel.value(seq_date)
   ch_center = Channel.value(params.center)
   ch_is_prod = Channel.value(is_prod)
-  ch_is_staging = Channel.value(is_staging)
 
   // if (params.force) {
-  //   reset_processing(center_map_synid)
+  //   reset_processing(center_map_synid)]
   //   reset_processing.out.view()
   // }
-  if (params.sync_staging_table_with_production == true && is_staging) {
-    sync_staging_table_with_production(ch_is_staging)
-  }
   if (params.process_type == "only_validate") {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
@@ -211,4 +214,9 @@ workflow {
   } else {
     throw new Exception("process_type can only be 'only_validate', 'maf_process', 'main_process', 'consortium_release', 'public_release', 'consortium_release_step_only', data_guide_only', 'public_release_step_only'")
   }
+}
+
+workflow {
+  table_sync()
+  main(table_sync.out)
 }
