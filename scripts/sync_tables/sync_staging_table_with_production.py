@@ -31,7 +31,6 @@ tables_to_copy = [
 
 db_to_synid_mapping = {"production": "syn10967259", "staging": "syn12094210"}
 
-
 def download_table(table_key: str) -> pd.DataFrame:
     """
     Downloads the production table from Synapse.
