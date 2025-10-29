@@ -176,7 +176,7 @@ workflow  {
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
     // Call the function
-    process_maf_helper(ch_sync_done, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+    process_maf_helper(ch_sync_done.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
