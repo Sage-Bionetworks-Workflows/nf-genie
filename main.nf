@@ -218,5 +218,5 @@ workflow data_processing {
 
 workflow {
   table_sync()
-  data_processing(table_sync.out)
+  data_processing()
 }
