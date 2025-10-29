@@ -161,7 +161,7 @@ workflow  {
   ch_seq_date = Channel.value(seq_date)
   ch_center = Channel.value(params.center)
   ch_is_prod = Channel.value(is_prod)
-  
+  ch_is_staging = Channel.value(is_staging)
   // if (params.force) {
   //   reset_processing(center_map_synid)]
   //   reset_processing.out.view()
