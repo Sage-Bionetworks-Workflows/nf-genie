@@ -160,7 +160,7 @@ workflow table_sync {
   main:
     if (params.sync_staging_table_with_production == true && is_staging) {
       sync_staging_table_with_production()
-
+    } 
   emit:
   sync_done = sync_staging_table_with_production.out.ifEmpty { Channel.value("skip_sync") }
 }
