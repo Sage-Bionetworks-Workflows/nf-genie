@@ -188,6 +188,7 @@ workflow data_processing {
   //   reset_processing(center_map_synid)]
   //   reset_processing.out.view()
   // }
+  ch_sync_table_complete.view { "ch_sync_table_complete: ${it}" }
   if (params.process_type == "only_validate") {
     validate_data(ch_project_id, ch_center)
     // validate_data.out.view()
