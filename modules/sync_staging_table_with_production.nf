@@ -4,9 +4,6 @@ process sync_staging_table_with_production {
     container "$params.sync_table_docker"
     secret 'SYNAPSE_AUTH_TOKEN'
 
-    input:
-    val is_staging
-
     output:
     stdout
 
