@@ -167,6 +167,7 @@ workflow  {
   if (params.sync_staging_table_with_production == true && is_staging) {
     sync_done = sync_staging_table_with_production()
     ch_sync_done =  sync_done.out.ifEmpty { Channel.value("skip_sync_table") }
+  }
   // if (params.force) {
   //   reset_processing(center_map_synid)]
   //   reset_processing.out.view()
