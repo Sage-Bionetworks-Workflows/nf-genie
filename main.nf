@@ -184,6 +184,7 @@ workflow  {
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
+    ch_sync_done.view { "ch_sync_done: ${it}" }
     process_maf_col = process_maf_helper(ch_sync_done, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     process_main(process_maf_col, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
