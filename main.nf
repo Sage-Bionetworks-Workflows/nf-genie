@@ -166,10 +166,7 @@ workflow  {
 
   if (params.sync_staging_table_with_production == true && is_staging) {
     sync_done = sync_staging_table_with_production()
-    ch_sync_done =  Channel.value("sync_table_complete")
-  } else {
-    ch_sync_done = Channel.value("skip_sync_table")
-  }
+    ch_sync_done =  sync_done.out.ifEmpty { Channel.value("skip_sync_table") }
   // if (params.force) {
   //   reset_processing(center_map_synid)]
   //   reset_processing.out.view()
@@ -184,8 +181,7 @@ workflow  {
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    ch_sync_done.view { "ch_sync_done: ${it}" }
-    process_maf_col = process_maf_helper(ch_sync_done, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+    process_maf_col = process_maf_helper(ch_sync_done.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     process_main(process_maf_col, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
