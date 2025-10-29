@@ -167,6 +167,8 @@ workflow table_sync {
     // If sync is not needed, emit a single value immediately to unblock
     ch_sync_table_complete = Channel.value("skip_sync")
   }
+  // Print the emitted value for debugging
+  ch_sync_table_complete.view { "ch_sync_table_complete: ${it}" }
   emit:
   ch_sync_table_complete
 }
@@ -232,6 +234,7 @@ workflow data_processing {
 workflow {
   // Run table_sync first and capture its output
   ch_sync_done = table_sync()
+  ch_sync_done.view { "ch_sync_done: ${it}" }
   
   // Pass the sync barrier to data_processing to ensure it waits
   data_processing(ch_sync_done)
