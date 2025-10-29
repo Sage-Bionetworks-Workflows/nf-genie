@@ -172,7 +172,7 @@ workflow table_sync {
 }
 
 workflow data_processing {
-  input:
+  take:
   ch_sync_table_complete
   
   main:
