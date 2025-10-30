@@ -122,7 +122,7 @@ if (params.maf_centers == "ALL") {
   maf_center_list = all_centers
 }
 
-def process_maf_helper(sync_done, maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
+def process_maf_helper(previous, maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
     /**
   * Processes MAF files for a given center list.
   *

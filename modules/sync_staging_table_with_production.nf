@@ -20,8 +20,8 @@ process sync_staging_table_with_production {
         """
     }
     else {
-        """
+        '''
         echo "Skipping sync staging table with production"
-        """
+        '''
     }
 }
