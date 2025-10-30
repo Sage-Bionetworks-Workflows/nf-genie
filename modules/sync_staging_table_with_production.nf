@@ -11,3 +11,4 @@ process sync_staging_table_with_production {
     """ 
     python3 /sync_tables/sync_staging_table_with_production.py
     """
+}
