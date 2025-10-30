@@ -136,8 +136,6 @@ def process_maf_helper(previous, maf_centers, ch_project_id, maf_center_list, cr
 
   // Create a channel from the list of centers
   ch_maf_centers = Channel.fromList(maf_center_list)
-  // placeholder for previous output
-  previous = "default"
   // If maf_centers is "ALL", we will process all centers in the maf_center_list
   if (maf_centers == "ALL") {
     // Create a channel to indicate whether it's the first center or not
