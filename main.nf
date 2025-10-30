@@ -122,11 +122,11 @@ if (params.maf_centers == "ALL") {
   maf_center_list = all_centers
 }
 
-def process_maf_helper(previous, maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
+def process_maf_helper(previous = "default", maf_centers, ch_project_id, maf_center_list, create_new_maf_db) {
     /**
   * Processes MAF files for a given center list.
   *
-  * @param sync_done         Indicating sync table completion
+  * @param previous         Default value "default" indicating previous output
   * @param maf_centers          Parameter containing the centers to be processed, can be "ALL" or a comma-separated list
   * @param ch_project_id        Channel with project ID
   * @param maf_center_list      List of centers to be processed converted from params.maf_centers
@@ -175,14 +175,19 @@ workflow  {
     // validate_data.out.view()
   } else if (params.process_type == "maf_process") {
     // Call the function
-    sync_staging_table_with_production(ch_is_staging, params.sync_staging_table_with_production)
-    process_maf_helper(sync_staging_table_with_production.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+    process_maf_helper(maf_centers=params.maf_centers, ch_project_id=ch_project_id, maf_center_list=maf_center_list, create_new_maf_db=params.create_new_maf_db)
     // process_maf.out.view()
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-    sync_staging_table_with_production(ch_is_staging, params.sync_staging_table_with_production)
-    process_maf_col = process_maf_helper(sync_staging_table_with_production.out, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
+  if (is_staging && params.sync_staging_table_with_production) {
+      sync_done = sync_staging_table_with_production()
+    } else {
+      // create a dummy channel so the rest of the pipeline still runs
+      sync_done = Channel.value("Skipping sync staging table with production")
+      log.info "Skipping sync_staging_table_with_production because not in staging mode."
+    }
+    process_maf_col = process_maf_helper(sync_done, params.maf_centers, ch_project_id, maf_center_list, params.create_new_maf_db)
     process_main(process_maf_col, ch_project_id, ch_center)
     create_consortium_release(process_main.out, ch_release, ch_is_prod, ch_seq_date, ch_is_staging)
     create_data_guide(create_consortium_release.out, ch_release, ch_project_id)
