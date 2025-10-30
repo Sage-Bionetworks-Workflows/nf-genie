@@ -168,7 +168,6 @@ workflow  {
   //   reset_processing(center_map_synid)]
   //   reset_processing.out.view()
   // }
-  sync_done = sync_staging_table_with_production(ch_is_staging, params.sync_staging_table_with_production)
 
   if (params.process_type == "only_validate") {
     validate_data(ch_project_id, ch_center)
