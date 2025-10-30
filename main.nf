@@ -126,7 +126,7 @@ def process_maf_helper(previous = "default", maf_centers, ch_project_id, maf_cen
     /**
   * Processes MAF files for a given center list.
   *
-  * @param previous         Default value "default" indicating previous output
+  * @param previous             Default value "default" indicating previous output
   * @param maf_centers          Parameter containing the centers to be processed, can be "ALL" or a comma-separated list
   * @param ch_project_id        Channel with project ID
   * @param maf_center_list      List of centers to be processed converted from params.maf_centers
@@ -154,9 +154,6 @@ def process_maf_helper(previous = "default", maf_centers, ch_project_id, maf_cen
   }
 }
 
-workflow.onComplete {
-  sync_staging_table_with_production(ch_is_staging, params.sync_staging_table_with_production)
-}
 workflow  {
   ch_release = Channel.value(params.release)
   ch_project_id = Channel.value(project_id)
@@ -180,7 +177,7 @@ workflow  {
   } else if (params.process_type == "main_process") {
     process_main("default", ch_project_id, ch_center)
   } else if (params.process_type == "consortium_release") {
-  if (is_staging && params.sync_staging_table_with_production) {
+    if (is_staging && params.sync_staging_table_with_production) {
       sync_done = sync_staging_table_with_production()
     } else {
       // create a dummy channel so the rest of the pipeline still runs
