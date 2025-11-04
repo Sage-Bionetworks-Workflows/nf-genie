@@ -60,7 +60,9 @@ See [nextflow.config](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blo
 
 #### Running with docker locally
 
-Add `-with-docker <docker_image_name>` to every nextflow command to invoke docker in general to be used. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
+Add `-with-docker <docker_image_name>` and specify the docker image parameter to every nextflow command to invoke docker in general to be used. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
+
+See [nextflow.config](/nextflow_schema.json) for the docker parameters available.
 
 Note that all the docker parameters have set default docker containers based on the **profile** you select. If you want to use a different default from what is available in the profiles, you must:
 
@@ -72,43 +74,71 @@ Note that all the docker parameters have set default docker containers based on 
 * **Only validate** files on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type only_validate -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type only_validate \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 * Processes **non-mutation** files on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type main_process -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type main_process \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 * Processes **mutation** files on test pipeline
-1. To execute the MAF process for all centers, you can either specify the `maf_centers` as "ALL" or leave it blank. 
+1. To execute the MAF process for all centers, you can either specify the `maf_centers` as "ALL" or leave it blank.
     ```
     nextflow run main.nf -profile aws_test --process_type maf_process --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
     Or
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers ALL --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type maf_process \
+            --maf_centers ALL \
+            --create_new_maf_db \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop \
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 2. To execute the MAF process for a single center, you can specify the `maf_centers` parameter using the name of that center.
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type maf_process \
+            --maf_centers TEST \
+            --create_new_maf_db \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop \
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 3. To execute the MAF process for multiple centers, you can specify the `maf_centers` as a comma-separated list of center names and **append** results to the MAF table.
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST,SAGE --create_new_maf_db false -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type maf_process \
+            --maf_centers TEST,SAGE \
+            --create_new_maf_db false \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop \
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 * Runs **processing** and **consortium** release (including data guide creation) on test pipeline
     ```
-    nextflow run main.nf -profile aws_test --process_type consortium_release --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type consortium_release \
+            --create_new_maf_db \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 * Runs **public** release (including data guide creation) on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type public_release -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type public_release \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 ### Testing
