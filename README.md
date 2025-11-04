@@ -92,7 +92,11 @@ Note that all the docker parameters have set default docker containers based on 
 * Processes **mutation** files on test pipeline
 1. To execute the MAF process for all centers, you can either specify the `maf_centers` as "ALL" or leave it blank.
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type maf_process \
+            --create_new_maf_db \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
     Or
     ```
@@ -152,15 +156,15 @@ python3 -m pytest tests
 Unit tests have to be run manually for now. You will need
 `pandas` and `synapseclient` to run them. See [Dockerfile](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/scripts/release_utils/Dockerfile) for the version of `synapseclient` to use.
 
-## Processing on Nextflow Tower
+## Processing on Seqera Platform
 
-Follow instructions here for running the main GENIE processing directly on Nextflow tower:
+Follow instructions here for running the main GENIE processing directly on Seqera Platform:
 
-1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the `genie-bpc-project` on [Sage nextflow tower](https://tower.sagebionetworks.org/login).
+1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the `genie-bpc-project` on [Seqera Platform](https://tower.sagebionetworks.org/login).
 1. After you have access, you will want to head to the [launchpad](https://tower.sagebionetworks.org/orgs/Sage-Bionetworks/workspaces/genie-bpc-project/launchpad)
-1. Click on the `main_genie` pipeline
-1. Fill out the parameters for launching the specific parts of the pipeline. ![launch_nf.png](img/launch_nf.png)
-1. If you need to modify any of the underlying default launch settings like config profiles, click on **Launch settings** on the right. The relevant settings you would need to modify would be the following:
+1. Click on the `test_main_genie` pipeline
+1. Fill out the parameters for launching the specific parts of the pipeline. ![launch_nf.png](/img/launch_nf.png)
+1. If you need to modify any of the underlying default launch settings like config profiles or run a pipeline on a feature branch rather than `develop` or `main`, navigate back to the **Launchpad** and click on **Add pipeline**. ![add_pipeline.png](/img/add_pipeline.png) Typically, the relevant settings you would need to modify would be the following:
     - **Config profiles** - profile to launch with, see [Config profiles](#config-profiles) for more details
     - **Revision number** - branch of `nf-genie` that you're launching the pipeline on
 
