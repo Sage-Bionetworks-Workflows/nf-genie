@@ -66,8 +66,14 @@ See [nextflow.config](/nextflow_schema.json) for the docker parameters available
 
 Note that all the docker parameters have set default docker containers based on the **profile** you select. If you want to use a different default from what is available in the profiles, you must:
 
-1. Docker pull the container(s) you want to use in your local / ec2 instance
-2. Specify the parameter(s) in your command call below to be the container(s) you pulled
+1. `docker pull <container_name>` the container(s) you want to use in your local / ec2 instance
+2. Specify the docker parameter(s) in your command call(s) below to be the name of the container(s) you pulled
+
+Example: To use a feature branch docker image for your nextflow pipeline step run, specify
+```
+nextflow run main.nf ... \
+    --main_pipeline_docker <name_of_your_feature_branch_docker_image>
+```
 
 #### Commands
 
