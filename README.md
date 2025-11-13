@@ -82,7 +82,7 @@ Note that all the docker parameters have set default docker containers based on 
     ```
 
 * Processes **mutation** files on test pipeline
-1. To execute the MAF process for all centers, you can either specify the `maf_centers` as "ALL" or leave it blank. 
+1. To execute the MAF process for all centers, you can either specify the `maf_centers` as "ALL" or leave it blank.
     ```
     nextflow run main.nf -profile aws_test --process_type maf_process --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
     ```
@@ -135,3 +135,12 @@ Follow instructions here for running the main GENIE processing directly on Nextf
     - **Revision number** - branch of `nf-genie` that you're launching the pipeline on
 
 Visit the [Nextflow Tower docs for more info/training](https://docs.seqera.io/platform/)
+
+
+## Other Modules
+
+There are other scripts that are not part of the direct GENIE pipeline steps. Those will have their own READMEs and will be linked here.
+
+- [Table Schemas](/scripts/table_schemas/README.md)
+- [Data Guide](/scripts/data_guide/README.md)
+- [**[DEPRECATED]** Patch Release](/scripts/patch_release/README.md)
