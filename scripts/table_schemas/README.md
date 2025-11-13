@@ -6,7 +6,16 @@ This module contains the scripts that spin up any Synapse Tables in genie
 
 ## Setup
 
-Install `pandas` and `synapseclient` in your environment
+Build docker image:
+```
+cd scripts/table_schemas
+docker build -f Dockerfile -t <docker_image_name> .
+```
+
+Run docker image in interactive mode:
+```
+docker run -it -e SYNAPSE_AUTH_TOKEN=<insert_synapse_token> <docker_image_name>
+```
 
 ## Create Patient and Sample Tracking Table Script
 
