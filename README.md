@@ -175,3 +175,12 @@ Follow instructions here for running the main GENIE processing directly on Seqer
     - **Revision number** - branch of `nf-genie` that you're launching the pipeline on
 
 Visit the [Nextflow Tower docs for more info/training](https://docs.seqera.io/platform/)
+
+
+## Other Modules
+
+There are other scripts that are not part of the direct GENIE pipeline steps. Those will have their own READMEs and will be linked here.
+
+- [Table Schemas](/scripts/table_schemas/README.md)
+- [Data Guide](/scripts/data_guide/README.md)
+- [**[DEPRECATED]** Patch Release](/scripts/patch_release/README.md)
