@@ -10,7 +10,7 @@ from typing import List
 
 import pandas as pd
 import synapseclient
-from synapseclient import Schema, Column, Table
+from synapseclient.models import Column, Table
 
 syn = synapseclient.login()
 
@@ -87,37 +87,12 @@ def create_columns(data_model: pd.DataFrame) -> List[Column]:
 
         col = Column(
             name=name,
-            columnType=col_type,
-            enumValues=enum_values,  # this is the "Restrict Values" list
-            maximumSize=250 if col_type == "STRING" else None,
+            column_type=col_type,
+            enum_values=enum_values,  # this is the "Restrict Values" list
+            maximum_size=250 if col_type == "STRING" else None,
         )
         columns.append(col)
     return columns
-
-
-def create_schema(project_synid: str, columns: List[Column], table_name: str) -> Schema:
-    """Creates the synapse schema  with the given
-        column schemas in the designated project
-
-    Args:
-        project_synid (str): synapse if of the synapse project
-            to create table in
-        columns (List[Column]): list of the
-            column schema objects
-        table_name (str): name of the table to create
-
-    Returns:
-        Schema: the table schema object
-    """
-    schema = Schema(
-        name=table_name,
-        columns=columns,
-        parent=project_synid,
-        description="Schema auto-generated from data model TSV",
-    )
-    schema = syn.store(schema)
-    print(f"Created schema: {schema.name} ({schema.id})")
-    return schema
 
 
 def create_table(data_model_synid: str, project_synid: str, table_name: str) -> None:
@@ -131,14 +106,14 @@ def create_table(data_model_synid: str, project_synid: str, table_name: str) -> 
     """
     data_model = get_data_model(synid=data_model_synid)
     columns = create_columns(data_model)
-    schema = create_schema(
-        project_synid=project_synid, columns=columns, table_name=table_name
+    # Create an empty table instance with the schema
+    table = Table(
+        name=table_name,
+        columns=columns,
+        parent_id=project_synid,
     )
-    # Create an empty table instance
-    empty_df = pd.DataFrame(columns=data_model["Attribute"].tolist())
-    table = Table(schema, empty_df)
-    table = syn.store(table)
-    print(f"Created table: {table.schema.name} ({table.schema.id})")
+    table = table.store()
+    print(f"Created table: {table.name} ({table.id})")
 
 
 def main():

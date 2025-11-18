@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 from unittest.mock import MagicMock, patch
-from synapseclient import Column, Schema, Table
+from synapseclient.models import Column, Table
 
 from scripts.table_schemas import create_patient_sample_tracking_table_schema as create_schema
 
@@ -9,7 +9,7 @@ from scripts.table_schemas import create_patient_sample_tracking_table_schema as
 @pytest.mark.parametrize(
     "validation_rule,expected",
     [
-        ("bool", "BOOLEAN"),
+        ("boolean", "BOOLEAN"),
         ("int", "INTEGER"),
         ("float", "DOUBLE"),
         ("date", "DATE"),
@@ -49,30 +49,12 @@ def test_create_columns_with_enum_values():
     col2 = columns[1]
 
     assert col1.name == "COL1"
-    assert col1.columnType == "INTEGER"
-    assert col1.enumValues is None
+    assert col1.column_type == "INTEGER"
+    assert col1.enum_values is None
 
     assert col2.name == "COL2"
-    assert col2.columnType == "STRING"
-    assert col2.enumValues == ["A", "B", "C"]
-
-
-def test_create_schema(monkeypatch):
-    mock_syn = MagicMock()
-    fake_schema = MagicMock(id="syn999", name="FakeSchema")
-
-    with patch.object(create_schema, "syn", mock_syn):
-        mock_syn.store.return_value = fake_schema
-
-        result = create_schema.create_schema(
-            project_synid="synProject1",
-            columns=[Column(name="test", columnType="STRING")],
-            table_name="FakeTable",
-        )
-
-        mock_syn.store.assert_called_once()
-        assert result.id == "syn999"
-        assert result.name == "FakeSchema"
+    assert col2.column_type == "STRING"
+    assert col2.enum_values == ["A", "B", "C"]
 
 
 def test_create_table(monkeypatch, tmp_path):
@@ -90,7 +72,6 @@ def test_create_table(monkeypatch, tmp_path):
 
     # Patch everything inside the function scope
     with patch.object(create_schema, "syn", mock_syn), \
-         patch.object(create_schema, "Schema", MagicMock(return_value=mock_schema)), \
          patch.object(create_schema, "Table", MagicMock(return_value=mock_table)), \
          patch("pandas.read_csv", return_value=pd.read_csv(tsv_file, sep="\t")):
 
@@ -105,7 +86,7 @@ def test_create_table(monkeypatch, tmp_path):
 
         # Ensure we fetched and stored things properly
         mock_syn.get.assert_called_once_with("synDataModel")
-        assert mock_syn.store.call_count == 2  # one for schema, one for table
+        assert mock_table.store.call_count == 1  # one for table
 
 
 def test_get_data_model(monkeypatch, tmp_path):
