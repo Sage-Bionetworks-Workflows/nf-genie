@@ -66,6 +66,10 @@
                 "create_data_guide_docker":{
                     "type": "string",
                     "description": "Docker used in create_data_guide process"
+                },
+                "sync_table_docker":{
+                    "type": "string",
+                    "description": "Docker used in sync_staging_table_with_production process"
                 }
             }
         }
