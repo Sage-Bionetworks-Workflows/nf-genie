@@ -8,7 +8,7 @@ from datetime import date
 
 import synapseclient
 from genie import load, process_functions
-from synapseclient.models import Table, SchemaStorageStrategy
+from synapseclient.models import query, Table, SchemaStorageStrategy
 import pandas as pd
 
 syn = synapseclient.login()
@@ -40,11 +40,11 @@ def download_table(table_key: str) -> pd.DataFrame:
         data: A pandas DataFrame containing the data from the production table.
     """
     # download production tables
-    db_table = syn.tableQuery(
+    db_table = syn.query(
         f"SELECT * FROM {db_to_synid_mapping['production']}"
-    ).asDataFrame()
+    ).convert_dtypes()
     syn_id = db_table[db_table["Database"] == table_key].Id.values[0]
-    data = syn.tableQuery(f"SELECT * FROM {syn_id}").asDataFrame()
+    data = query(f"SELECT * FROM {syn_id}").convert_dtypes()
     return data
 
 
@@ -57,15 +57,15 @@ def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
     Returns:
         None
     """
-    table_to_replace = syn.tableQuery(
+    table_to_replace = query(
         f"SELECT * FROM {db_to_synid_mapping['staging']}"
-    ).asDataFrame()
+    ).convert_dtypes()
     table_to_replace_syn_id = table_to_replace[
         table_to_replace["Database"] == table_key
     ].Id.values[0]
-    data_to_replace = syn.tableQuery(
+    data_to_replace = query(
         f"SELECT * FROM {table_to_replace_syn_id}"
-    ).asDataFrame()
+    ).convert_dtypes()
 
     # create new table for maf tables
     if table_key == "vcf2maf":
