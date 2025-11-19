@@ -1,4 +1,3 @@
-// Create data guide
 process sync_staging_table_with_production {
     debug true
     container "$params.sync_table_docker"
@@ -8,7 +7,7 @@ process sync_staging_table_with_production {
     stdout
 
     script:
-    """ 
+    """
     python3 /sync_tables/sync_staging_table_with_production.py
     """
 }
