@@ -40,7 +40,7 @@ def download_table(table_key: str) -> pd.DataFrame:
         data: A pandas DataFrame containing the data from the production table.
     """
     # download production tables
-    db_table = syn.query(
+    db_table = query(
         f"SELECT * FROM {db_to_synid_mapping['production']}"
     ).convert_dtypes()
     syn_id = db_table[db_table["Database"] == table_key].Id.values[0]
