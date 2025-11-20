@@ -5,14 +5,19 @@ Usage: python sync_staging_table_with_prod.py
 """
 
 from datetime import date
+import logging
 
-import synapseclient
-from genie import load, process_functions
-from synapseclient.models import query, Table, SchemaStorageStrategy
 import pandas as pd
+import synapseclient
+from synapseclient.models import query, Table
+
+from genie import load, process_functions
 
 syn = synapseclient.login()
 syn.table_query_timeout = 50000
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 tables_to_copy = [
     # "vcf2maf",
@@ -99,7 +104,7 @@ def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
 
 
 for table in tables_to_copy:
-    print(table)
+    logger.info(table)
     data_replace = download_table(table_key=table)
     replace_table(data_to_replace_with=data_replace, table_key=table)
-    print(f"Successfully synced {table} from production to staging")
+    logger.info(f"Successfully synced {table} from production to staging")
