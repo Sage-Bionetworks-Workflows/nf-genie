@@ -13,11 +13,31 @@ DS significantly reduces sequencing errors—by over three orders of magnitude c
 Variant analysis used the locked Guardant360 bioinformatics pipeline, with thresholds pre-established using independent training cohorts. Reads were demultiplexed, quality-trimmed, and aligned to hg19, then used to build double-stranded consensus molecules.
 
 #### Foundation Medicine 
+
+University of Miami uses Illumina or NovaSeq hybridization-based capture panels to detect single nucleotide variants, small indels, copy number alterations and structural variants from FFPE tumor or cell-free blood DNA sequencing using the following.
+
+Foundation Medicine panels: The gene panels were used for FFPE tumor sequencing are:
+* One CDx (DX2 bait set) covering 338 genes
+* One CDx (DX1 bait set) covering 324 genes
+* One (T5a bait set) covering 328 genes
+* One (T7 bait set) covering 435 genes
+* Heme (D2 bait set) covering 508 genes
+* Heme (R2 bait set) covering 498 genes
+* Heme (T4b bait set) covering 220 genes
+* Heme (T6b bait set) covering 412 genes
+ 
+Foundation Medicine panels: The gene panels used for cell free blood DNA sequencing are:
+Liquid CDx (AB1 bait set) covering 324 genes
+Liquid (CF3 bait set) covering 70 genes
+
 ##### FoundationOne CDx
-FoundationOne®CDx (F1CDx) is a qualitative next-generation sequencing based in vitro diagnostic test that uses targeted high throughput hybridization-based capture technology for detection of substitutions, insertion and deletion alterations (indels), and copy number alterations (CNAs) in 324 genes and select gene rearrangements, as well as genomic signatures including microsatellite instability (MSI) and tumor mutational burden (TMB) using DNA isolated from formalin-fixed, paraffin-embedded (FFPE) tumor tissue specimens when using the DNAx extraction method. The test is intended for detection of substitutions and indels in 324 genes, CNAs in 16 genes and select gene rearrangements, as well as genomic signatures including MSI and TMB using DNA isolated from FFPE tumor tissue specimens when using the CoExtraction method for DNA isolation. 
+
+FoundationOne®CDx (F1CDx) is performed exclusively as a laboratory service using DNA extracted from formalin-fixed, paraffin-embedded (FFPE) tumor samples. The assay employs CoExtraction, an automated DNA/RNA co-extraction methodology for DNA extraction from routine FFPE biopsy or surgical resection specimens; 50-1000 ng of DNA will undergo whole-genome shotgun library construction and hybridization-based capture of all coding exons from 309 cancer-related genes, one promoter region, one non-coding (ncRNA), and select intronic regions from 34 commonly rearranged genes, 21 of which also include the coding exons. In total, the assay detects alterations in a total of 324 genes. Using the Illumina® NovaSeq 6000, hybrid capture–selected libraries are sequenced to high uniform depth (targeting >500X median coverage with >99% of exons at coverage >100X). Sequence data is then processed using a customized analysis pipeline designed to detect all classes of genomic alterations, including base substitutions, indels, copy number alterations (amplifications and homozygous gene deletions), and select genomic rearrangements (e.g., gene fusions). Rearrangements in one of the targeted genes may be reported along with their uniquely identified genomic partners, which can be any gene in the genome even if not explicitly targeted by the assay. Additionally, genomic signatures including microsatellite instability (MSI) and tumor mutational burden (TMB) are reported.
 
 ##### FoundationOne Heme
-FoundationOne Heme is a comprehensive genomic profiling (CGP) test combining DNA and RNA sequencing for patients with hematologic malignancies and solid tumors. FoundationOne Heme detects known, novel, and complex fusion events as well as other common genomic alterations (substitutions, indels, and CNVs). This laboratory developed test (LDT) can be used by physicians to identify potential targeted therapy options, detect alterations in prognostic genes, and sub-classify diagnoses.
+
+FoundationOne®Heme uses hybrid capture-based next-generation sequencing. It identifies the four main classes of genomic alterations (base substitutions, insertions and deletions, copy number alterations, and rearrangements). This assay sequences complete coding region of 406 genes using DNA, including introns of 31 select genes involved in rearrangements, to a median depth of ~500X unique coverage. The assay also sequences RNA of 265 genes commonly rearranged in cancer to better identify known and novel gene fusions to an average ~6.9 million unique pairs.
 
 ##### FoundationOne Liquid CDx
-FoundationOne Liquid CDx is a qualitative next generation sequencing based in vitro diagnostic test that uses targeted high throughput hybridization-based capture technology to detect and report substitutions, insertions and deletions (indels) in 311 genes, including rearrangements in eight (8) genes, and copy number alterations in three (3) genes. FoundationOne Liquid CDx utilizes circulating cell-free DNA (cfDNA) isolated from plasma derived from anti-coagulated peripheral whole blood of cancer patients collected in FoundationOne Liquid CDx cfDNA blood collection tubes included in the FoundationOne Liquid CDx Blood Sample Collection Kit.
+
+FoundationOne® Liquid CDx utilizes circulating cell-free DNA (cfDNA) isolated from plasma derived from anti-coagulated peripheral whole blood. The assay employs a single DNA extraction method to obtain cfDNA from plasma from whole blood. Extracted cfDNA undergoes whole-genome shotgun library construction and hybridization-based capture of 324 cancer-related genes. Hybrid-capture selected libraries are sequenced with deep coverage using the NovaSeq® 6000 platform. Sequence data are processed using a custom analysis pipeline designed to detect genomic alterations, including base substitutions and indels, copy number variants, and genomic rearrangements.
