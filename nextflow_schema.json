@@ -36,6 +36,11 @@
                     "description": "The list of centers to be processed in the MAF processing. Defaults to ALL which means all centers.",
                     "default": "ALL"
                 },
+                "sync_staging_table_with_production": {
+                    "type": "boolean",
+                    "description": "Indicates if staging tables should be synchronized with production tables.",
+                    "default": "false"
+                },
                 "create_new_maf_db": {
                     "type": "boolean",
                     "description": "Create a new maf Synapse Table. Toggle this for every consortium release."
@@ -61,6 +66,10 @@
                 "create_data_guide_docker":{
                     "type": "string",
                     "description": "Docker used in create_data_guide process"
+                },
+                "sync_table_docker":{
+                    "type": "string",
+                    "description": "Docker used in sync_staging_table_with_production process"
                 }
             }
         }

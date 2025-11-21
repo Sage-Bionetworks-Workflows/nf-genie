@@ -60,55 +60,95 @@ See [nextflow.config](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blo
 
 #### Running with docker locally
 
-Add `-with-docker <docker_image_name>` to every nextflow command to invoke docker in general to be used. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
+Add `-with-docker <docker_image_name>` and specify the docker image parameter to every nextflow command to invoke docker in general to be used. See [docker-containers](https://www.nextflow.io/docs/latest/docker.html#docker-containers) for more details.
+
+See [nextflow.config](/nextflow_schema.json) for the docker parameters available.
 
 Note that all the docker parameters have set default docker containers based on the **profile** you select. If you want to use a different default from what is available in the profiles, you must:
 
-1. Docker pull the container(s) you want to use in your local / ec2 instance
-2. Specify the parameter(s) in your command call below to be the container(s) you pulled
+1. `docker pull <container_name>` the container(s) you want to use in your local / ec2 instance
+2. Specify the docker parameter(s) in your command call(s) below to be the name of the container(s) you pulled
+
+Example: To use a feature branch docker image for your nextflow pipeline step run, specify
+```
+nextflow run main.nf ... \
+    --main_pipeline_docker <name_of_your_feature_branch_docker_image>
+```
 
 #### Commands
 
 * **Only validate** files on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type only_validate -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type only_validate \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 * Processes **non-mutation** files on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type main_process -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type main_process \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 * Processes **mutation** files on test pipeline
-1. To execute the MAF process for all centers, you can either specify the `maf_centers` as "ALL" or leave it blank. 
+1. To execute the MAF process for all centers, you can either specify the `maf_centers` as "ALL" or leave it blank.
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type maf_process \
+            --create_new_maf_db \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
     Or
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers ALL --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type maf_process \
+            --maf_centers ALL \
+            --create_new_maf_db \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop \
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 2. To execute the MAF process for a single center, you can specify the `maf_centers` parameter using the name of that center.
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type maf_process \
+            --maf_centers TEST \
+            --create_new_maf_db \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop \
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 3. To execute the MAF process for multiple centers, you can specify the `maf_centers` as a comma-separated list of center names and **append** results to the MAF table.
     ```
-    nextflow run main.nf -profile aws_test --process_type maf_process --maf_centers TEST,SAGE --create_new_maf_db false -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type maf_process \
+            --maf_centers TEST,SAGE \
+            --create_new_maf_db false \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop \
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 * Runs **processing** and **consortium** release (including data guide creation) on test pipeline
     ```
-    nextflow run main.nf -profile aws_test --process_type consortium_release --create_new_maf_db -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type consortium_release \
+            --create_new_maf_db \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 * Runs **public** release (including data guide creation) on test pipeline
 
     ```
-    nextflow run main.nf -profile aws_test --process_type public_release -with-docker ghcr.io/sage-bionetworks/genie:main
+    nextflow run main.nf -profile aws_test \
+            --process_type public_release \
+            -with-docker ghcr.io/sage-bionetworks/genie:develop
+            --main_pipeline_docker ghcr.io/sage-bionetworks/genie:develop
     ```
 
 ### Testing
@@ -122,16 +162,25 @@ python3 -m pytest tests
 Unit tests have to be run manually for now. You will need
 `pandas` and `synapseclient` to run them. See [Dockerfile](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/main/scripts/release_utils/Dockerfile) for the version of `synapseclient` to use.
 
-## Processing on Nextflow Tower
+## Processing on Seqera Platform
 
-Follow instructions here for running the main GENIE processing directly on Nextflow tower:
+Follow instructions here for running the main GENIE processing directly on Seqera Platform:
 
-1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the `genie-bpc-project` on [Sage nextflow tower](https://tower.sagebionetworks.org/login).
+1. Please create a [IBCDPE help desk](https://sagebionetworks.jira.com/servicedesk/customer/portal/5) request to gain access to the `genie-bpc-project` on [Seqera Platform](https://tower.sagebionetworks.org/login).
 1. After you have access, you will want to head to the [launchpad](https://tower.sagebionetworks.org/orgs/Sage-Bionetworks/workspaces/genie-bpc-project/launchpad)
-1. Click on the `main_genie` pipeline
-1. Fill out the parameters for launching the specific parts of the pipeline. ![launch_nf.png](img/launch_nf.png)
-1. If you need to modify any of the underlying default launch settings like config profiles, click on **Launch settings** on the right. The relevant settings you would need to modify would be the following:
+1. Click on the `test_main_genie` pipeline
+1. Fill out the parameters for launching the specific parts of the pipeline. ![launch_nf.png](/img/launch_nf.png)
+1. If you need to modify any of the underlying default launch settings like config profiles or run a pipeline on a feature branch rather than `develop` or `main`, navigate back to the **Launchpad** and click on **Add pipeline**. ![add_pipeline.png](/img/add_pipeline.png) Typically, the relevant settings you would need to modify would be the following:
     - **Config profiles** - profile to launch with, see [Config profiles](#config-profiles) for more details
     - **Revision number** - branch of `nf-genie` that you're launching the pipeline on
 
 Visit the [Nextflow Tower docs for more info/training](https://docs.seqera.io/platform/)
+
+
+## Other Modules
+
+There are other scripts that are not part of the direct GENIE pipeline steps. Those will have their own READMEs and will be linked here.
+
+- [Table Schemas](/scripts/table_schemas/README.md)
+- [Data Guide](/scripts/data_guide/README.md)
+- [**[DEPRECATED]** Patch Release](/scripts/patch_release/README.md)
