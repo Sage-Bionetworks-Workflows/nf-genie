@@ -52,15 +52,19 @@ def download_table(table_key: str) -> pd.DataFrame:
     return data
 
 
-def replace_table(data_to_replace_with: pd.DataFrame, table_key: str, partition_key : str) -> None:
+def replace_table(
+    data_to_replace_with: pd.DataFrame,
+    table_key: str,
+    partition_key : str = None
+    ) -> None:
     """
-    Replaces the staging table with the production table.
+    Replaces the staging table with the production table. The primary keys for the tables
+    are pulled from the synapse table's primary key attribute + the partition key (if it exists).
+
     Args:
         data_to_replace_with (pd.DataFrame): The data to replace the staging table with.
         table_key (str): The key of the table to replace.
-        partition_key (str): The attribute to separate the table sections by
-    Returns:
-        None
+        partition_key (str): The attribute to separate the table sections by. Optional.
     """
     table_to_replace = query(
         f"SELECT * FROM {db_to_synid_mapping['staging']}"
