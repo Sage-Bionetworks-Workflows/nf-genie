@@ -1,5 +1,43 @@
 ### [University of Miami - Sylvester Comprehensive Cancer Center](https://umiamihealth.org/en/sylvester-comprehensive-cancer-center) (UMIAMI)
 
+#### Caris Life Sciences
 Direct sequence analysis was performed on genomic DNA isolated from a micro-dissected tumor sample using Illumina NovaSeq 6000 sequencers. Sequencing was conducted through Caris Life Sciences, utilizing a hybrid pull-down panel of baits to enrich more than 700 clinically relevant genes along with > 20,000 other genes. Base calls are detected from the signal intensity measurements during each cycle. Base Call (BCL) files generated from the Illumina NovaSeq systems are stored on a secure High-Performance Computing server on rapid solid-state hard drives.
 
 The initial sequencing metrics for the flow cells are reviewed by the NGS bioinformatics pipeline, which includes the following run validity criteria and quality control checks: Reads Passing Filter, Yield, and Q30 scores for each read 1 and read 4 (forward and reverse). The pipeline initiates automatic conversion and de-multiplexing using the FPGA-adapted version of bcl2fastq via Illumina DRAGEN devices to convert the Illumina-generated BCL files to FASTQ file formats for downstream analysis. Demultiplexing is performed on the TNA reads, creating sample-specific FASTQ files. Custom software is applied to differentiate RNA and DNA molecules using the synthetic labels added during cDNA synthesis.
+
+#### Guardant Health
+The Guardant360 assay uses next-generation sequencing–based digital sequencing (DS) to profile 73 cancer-related genes, including clinically actionable and cancer-specific biomarkers. Cell-free DNA (cfDNA) is extracted from stabilized blood (using QIAamp Circulating Nucleic Acid Kit), labeled with molecular barcodes, enriched through hybrid capture, and sequenced (on Illumina platforms NextSeq 500/ HiSeq 2500) in a CLIA-certified, CAP-accredited laboratory. Sequencing data are used to reconstruct each cfDNA molecule with high accuracy through double-stranded consensus sequencing. This process achieves 60–85% molecule recovery and highly uniform coverage across the gene panel.
+
+DS significantly reduces sequencing errors—by over three orders of magnitude compared with standard NGS—enabling reliable detection of variants at very low allele fractions (0.01% for indels and 0.04% for SNVs and fusions). Over half of reconstructed molecules derive from both DNA strands, enhancing accuracy and specificity beyond other sequencing methods that recover both strands in fewer than 12% of molecules.
+
+Variant analysis used the locked Guardant360 bioinformatics pipeline, with thresholds pre-established using independent training cohorts. Reads were demultiplexed, quality-trimmed, and aligned to hg19, then used to build double-stranded consensus molecules.
+
+#### Foundation Medicine 
+
+University of Miami uses Illumina hybridization-based capture panels to detect single nucleotide variants, small indels, copy number alterations and structural variants from FFPE tumor or cell-free blood DNA sequencing using the following:
+
+Foundation Medicine panels: The gene panels were used for FFPE tumor sequencing are:
+* One CDx (DX2 bait set) covering 338 genes
+* One CDx (DX1 bait set) covering 324 genes
+* One (T5a bait set) covering 328 genes
+* One (T7 bait set) covering 435 genes
+* Heme (D2 bait set) covering 508 genes
+* Heme (R2 bait set) covering 498 genes
+* Heme (T4b bait set) covering 220 genes
+* Heme (T6b bait set) covering 412 genes
+ 
+Foundation Medicine panels: The gene panels used for cell free blood DNA sequencing are:
+* Liquid CDx (AB1 bait set) covering 324 genes
+* Liquid (CF3 bait set) covering 70 genes
+
+##### FoundationOne CDx
+
+FoundationOne®CDx (F1CDx) is performed exclusively as a laboratory service using DNA extracted from formalin-fixed, paraffin-embedded (FFPE) tumor samples. The assay employs CoExtraction, an automated DNA/RNA co-extraction methodology for DNA extraction from routine FFPE biopsy or surgical resection specimens; 50-1000 ng of DNA will undergo whole-genome shotgun library construction and hybridization-based capture of all coding exons from 309 cancer-related genes, one promoter region, one non-coding (ncRNA), and select intronic regions from 34 commonly rearranged genes, 21 of which also include the coding exons. In total, the assay detects alterations in a total of 324 genes. Using the Illumina® NovaSeq 6000, hybrid capture–selected libraries are sequenced to high uniform depth (targeting >500X median coverage with >99% of exons at coverage >100X). Sequence data is then processed using a customized analysis pipeline designed to detect all classes of genomic alterations, including base substitutions, indels, copy number alterations (amplifications and homozygous gene deletions), and select genomic rearrangements (e.g., gene fusions). Rearrangements in one of the targeted genes may be reported along with their uniquely identified genomic partners, which can be any gene in the genome even if not explicitly targeted by the assay. Additionally, genomic signatures including microsatellite instability (MSI) and tumor mutational burden (TMB) are reported.
+
+##### FoundationOne Heme
+
+FoundationOne®Heme uses hybrid capture-based next-generation sequencing. It identifies the four main classes of genomic alterations (base substitutions, insertions and deletions, copy number alterations, and rearrangements). This assay sequences complete coding region of 406 genes using DNA, including introns of 31 select genes involved in rearrangements, to a median depth of ~500X unique coverage. The assay also sequences RNA of 265 genes commonly rearranged in cancer to better identify known and novel gene fusions to an average ~6.9 million unique pairs.
+
+##### FoundationOne Liquid CDx
+
+FoundationOne® Liquid CDx utilizes circulating cell-free DNA (cfDNA) isolated from plasma derived from anti-coagulated peripheral whole blood. The assay employs a single DNA extraction method to obtain cfDNA from plasma from whole blood. Extracted cfDNA undergoes whole-genome shotgun library construction and hybridization-based capture of 324 cancer-related genes. Hybrid-capture selected libraries are sequenced with deep coverage using the NovaSeq® 6000 platform. Sequence data are processed using a custom analysis pipeline designed to detect genomic alterations, including base substitutions and indels, copy number variants, and genomic rearrangements.
