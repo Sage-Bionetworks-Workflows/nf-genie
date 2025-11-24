@@ -14,7 +14,7 @@ Variant analysis used the locked Guardant360 bioinformatics pipeline, with thres
 
 #### Foundation Medicine 
 
-University of Miami uses Illumina or NovaSeq hybridization-based capture panels to detect single nucleotide variants, small indels, copy number alterations and structural variants from FFPE tumor or cell-free blood DNA sequencing using the following.
+University of Miami uses Illumina hybridization-based capture panels to detect single nucleotide variants, small indels, copy number alterations and structural variants from FFPE tumor or cell-free blood DNA sequencing using the following:
 
 Foundation Medicine panels: The gene panels were used for FFPE tumor sequencing are:
 * One CDx (DX2 bait set) covering 338 genes
@@ -27,8 +27,8 @@ Foundation Medicine panels: The gene panels were used for FFPE tumor sequencing 
 * Heme (T6b bait set) covering 412 genes
  
 Foundation Medicine panels: The gene panels used for cell free blood DNA sequencing are:
-Liquid CDx (AB1 bait set) covering 324 genes
-Liquid (CF3 bait set) covering 70 genes
+* Liquid CDx (AB1 bait set) covering 324 genes
+* Liquid (CF3 bait set) covering 70 genes
 
 ##### FoundationOne CDx
 
