@@ -39,7 +39,7 @@
                 "sync_staging_table_with_production": {
                     "type": "boolean",
                     "description": "Indicates if staging tables should be synchronized with production tables.",
-                    "default": "false"
+                    "default": false
                 },
                 "create_new_maf_db": {
                     "type": "boolean",
