@@ -19,20 +19,19 @@ syn.table_query_timeout = 50000
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-tables_to_copy = [
-    # "vcf2maf",
-    "bed",
-    "seg",
-    "sample",
-    "patient",
-    "mutationsInCis",
-    "sampleRetraction",
-    "patientRetraction",
-    "sv",
-    "assayinfo",
-    "validationStatus",
-    "errorTracker",
-]
+tables_to_copy = {
+    "bed" : "SEQ_ASSAY_ID",
+    "seg" : "CENTER",
+    "sample" : "CENTER",
+    "patient" : "CENTER",
+    "mutationsInCis" : "Center",
+    "sampleRetraction" : "center",
+    "patientRetraction" : "center",
+    "sv" : "CENTER",
+    "assayinfo" : "CENTER",
+    "validationStatus" : None,
+    "errorTracker" : None,
+}
 
 db_to_synid_mapping = {"production": "syn10967259", "staging": "syn12094210"}
 
@@ -53,14 +52,19 @@ def download_table(table_key: str) -> pd.DataFrame:
     return data
 
 
-def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
+def replace_table(
+    data_to_replace_with: pd.DataFrame,
+    table_key: str,
+    partition_key : str = None
+    ) -> None:
     """
-    Replaces the staging table with the production table.
+    Replaces the staging table with the production table. The primary keys for the tables
+    are pulled from the synapse table's primary key attribute + the partition key (if it exists).
+
     Args:
-        data_to_replace_with: The data to replace the staging table with.
-        table_key: The key of the table to replace.
-    Returns:
-        None
+        data_to_replace_with (pd.DataFrame): The data to replace the staging table with.
+        table_key (str): The key of the table to replace.
+        partition_key (str): The attribute to separate the table sections by. Optional.
     """
     table_to_replace = query(
         f"SELECT * FROM {db_to_synid_mapping['staging']}"
@@ -93,6 +97,10 @@ def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
             if table_key not in ["validationStatus", "errorTracker"]
             else ["id"]
         )
+        # must add partition key into primary keys
+        if partition_key:
+            primary_key += [partition_key]
+
         load._update_table(
             syn,
             database=data_to_replace,
@@ -106,5 +114,9 @@ def replace_table(data_to_replace_with: pd.DataFrame, table_key: str) -> None:
 for table in tables_to_copy:
     logger.info(table)
     data_replace = download_table(table_key=table)
-    replace_table(data_to_replace_with=data_replace, table_key=table)
+    replace_table(
+        data_to_replace_with=data_replace,
+        table_key=table,
+        partition_key=tables_to_copy[table]
+    )
     logger.info(f"Successfully synced {table} from production to staging")
