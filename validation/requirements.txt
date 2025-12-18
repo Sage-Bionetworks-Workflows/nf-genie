@@ -1,0 +1,4 @@
+datacompy==0.17.0
+pandas>=2.0.0,<3.0.0
+synapseclient>=4.5.1,<4.10.0
+ydata-profiling==4.15.0
