@@ -1,9 +1,11 @@
-import pytest
+import importlib
 from unittest.mock import MagicMock, patch
 
 from synapseclient.models import Column
 
-from scripts.table_schemas import create_patient_sample_tracking_table_schema as create_schema
+from scripts.table_schemas import (
+    create_patient_sample_tracking_table_schema as create_schema,
+)
 
 
 def test_create_columns_returns_expected_number_and_types():
@@ -11,9 +13,7 @@ def test_create_columns_returns_expected_number_and_types():
 
     # Expect: 2 string id cols + all BOOLEAN_COLS + (STRING_COLS minus SAMPLE_ID/PATIENT_ID duplicates)
     expected_len = (
-        2
-        + len(create_schema.BOOLEAN_COLS)
-        + (len(create_schema.STRING_COLS) - 2)
+        2 + len(create_schema.BOOLEAN_COLS) + (len(create_schema.STRING_COLS) - 2)
     )
     assert isinstance(cols, list)
     assert len(cols) == expected_len
@@ -36,7 +36,9 @@ def test_create_columns_returns_expected_number_and_types():
     assert all(c.column_type == "BOOLEAN" for c in bool_slice)
 
     # Verify final string release cols in STRING_COLS order excluding SAMPLE_ID/PATIENT_ID
-    expected_release_cols = [c for c in create_schema.STRING_COLS if c not in ("SAMPLE_ID", "PATIENT_ID")]
+    expected_release_cols = [
+        c for c in create_schema.STRING_COLS if c not in ("SAMPLE_ID", "PATIENT_ID")
+    ]
     release_slice = cols[2 + len(create_schema.BOOLEAN_COLS) :]
     assert [c.name for c in release_slice] == expected_release_cols
     assert all(c.column_type == "STRING" for c in release_slice)
@@ -49,33 +51,51 @@ def test_create_columns_has_no_duplicate_column_names():
     assert len(names) == len(set(names)), "Duplicate column names found in schema"
 
 
-def test_create_table_calls_store_once_and_constructs_table(monkeypatch):
-    """
-    Test create_table flow with mocked Table + store().
-    We don't hit Synapse; we just verify Table(...) is created with expected args
-    and store() is called.
-    """
-    mock_table_obj = MagicMock()
-    mock_table_obj.store.return_value = MagicMock(name="TestTable", id="syn123")
+def test_create_table(monkeypatch, tmp_path):
+    """Test create_table flow with mocked Synapse login and Table.store(), using the old-style mocks."""
 
-    with patch.object(create_schema, "Table", MagicMock(return_value=mock_table_obj)) as mock_table_cls, \
-         patch.object(create_schema, "create_columns", wraps=create_schema.create_columns) as mock_create_columns:
+    # Mock a fake TSV file (kept for parity with the old test; new code won't read it)
+    tsv_file = tmp_path / "fake_model.tsv"
+    tsv_file.write_text("Attribute\tValidation Rules\tValid Values\nCOL1\tint\t1,2,3\n")
 
-        create_schema.create_table(project_synid="synProject", table_name="TestTable")
+    # Mock syn object returned by synapseclient.login()
+    mock_syn = MagicMock()
+    mock_syn.get.return_value.path = str(tsv_file)
 
-        # create_columns invoked
-        assert mock_create_columns.call_count == 1
+    # Mock schema/table objects (same as old test)
+    mock_schema = MagicMock(id="synTableSchema", name="TestSchema")
+    mock_table = MagicMock(schema=mock_schema, id="synTable123", name="TestTable")
 
-        # Table constructed with name/columns/parent_id
-        mock_table_cls.assert_called_once()
-        _, kwargs = mock_table_cls.call_args
-        assert kwargs["name"] == "TestTable"
-        assert kwargs["parent_id"] == "synProject"
-        assert isinstance(kwargs["columns"], list)
-        assert len(kwargs["columns"]) > 0
+    # Make store() return an object with name/id so print() formatting doesn't break
+    mock_table.store.return_value = MagicMock(name="TestTable", id="synTable123")
 
-        # store called exactly once
-        assert mock_table_obj.store.call_count == 1
+    # IMPORTANT: Patch login BEFORE importing the module (module logs in at import time)
+    with patch("synapseclient.login", return_value=mock_syn):
+        from scripts.table_schemas import (
+            create_patient_sample_tracking_table_schema as create_schema,
+        )
+
+        importlib.reload(create_schema)
+
+        # Patch Table constructor to return our mock_table
+        with patch.object(
+            create_schema, "Table", MagicMock(return_value=mock_table)
+        ) as mock_table_cls:
+            create_schema.create_table(
+                project_synid="synProject",
+                table_name="TestTable",
+            )
+
+            # Assert Table(...) was created correctly
+            mock_table_cls.assert_called_once()
+            _, kwargs = mock_table_cls.call_args
+            assert kwargs["name"] == "TestTable"
+            assert kwargs["parent_id"] == "synProject"
+            assert isinstance(kwargs["columns"], list)
+            assert len(kwargs["columns"]) > 0
+
+            # Assert store was called exactly once
+            assert mock_table.store.call_count == 1
 
 
 def test_constants_are_consistent():

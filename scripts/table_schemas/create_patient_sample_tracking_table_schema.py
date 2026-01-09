@@ -11,8 +11,6 @@ from typing import List
 import synapseclient
 from synapseclient.models import Column, Table
 
-syn = synapseclient.login()
-
 
 STRING_COLS = [
     "SAMPLE_ID",
@@ -100,6 +98,7 @@ def create_table(project_synid: str, table_name: str) -> None:
         using the table schema generated from the data model
 
     Args:
+        syn (synapseclient.Synapse): synapse client connection
         data_model_synid (str): synapse id of the input data model to parse
         project_synid (str): synapse if of the synapse project to create table in
         table_name (str): name of the table to create
@@ -131,6 +130,7 @@ def main():
     )
 
     args = parser.parse_args()
+    syn = synapseclient.login()
     create_table(project_synid=args.project_synid, table_name=args.table_name)
 
 
