@@ -19,17 +19,9 @@ docker run -it -e SYNAPSE_AUTH_TOKEN=<insert_synapse_token> <docker_image_name>
 
 ## Create Patient and Sample Tracking Table Script
 
-### Input
+### Updating the Table Schema
 
-The input data model expects a format like the following:
-
-![data_model_picture.png](/img/data_model_picture.png)
-
-With the following required columns:
-
-- Attribute
-- Valid Values
-- Validation Rules
+When there are new BPC cohort or SP projects that get released, the `STRING_COLS` and `BOOLEAN_COLS` will need to be updated. Please create a PR with the updated values.
 
 ### How to Run
 
@@ -47,14 +39,6 @@ Run with these settings to create an empty table called
 python create_patient_sample_tracking_table_schema.py \
     --table-name "TEST Patient and Sample Tracking Table" \
     --project-synid syn7208886
-```
-
-Run with these settings to create a table from a different input
-data model that is not the default
-
-```shell
-python create_patient_sample_tracking_table_schema.py \
-    --data-model-synid syn1241241
 ```
 
 ### Output
