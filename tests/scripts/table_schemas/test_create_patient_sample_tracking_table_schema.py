@@ -1,103 +1,93 @@
 import pytest
-import pandas as pd
 from unittest.mock import MagicMock, patch
-from synapseclient.models import Column, Table
+
+from synapseclient.models import Column
 
 from scripts.table_schemas import create_patient_sample_tracking_table_schema as create_schema
 
 
-@pytest.mark.parametrize(
-    "validation_rule,expected",
-    [
-        ("boolean", "BOOLEAN"),
-        ("int", "INTEGER"),
-        ("float", "DOUBLE"),
-        ("date", "DATE"),
-        ("str", "STRING"),
-        (None, "STRING"),  # NaN case
-    ],
-)
-def test_get_synapse_col_type_valid(validation_rule, expected):
-    if validation_rule is None:
-        rule = pd.NA
-    else:
-        rule = validation_rule
-    assert create_schema.get_synapse_col_type(rule) == expected
+def test_create_columns_returns_expected_number_and_types():
+    cols = create_schema.create_columns()
 
-
-def test_get_synapse_col_type_invalid():
-    with pytest.raises(ValueError, match="is not one of the supported rules"):
-        create_schema.get_synapse_col_type("unsupported")
-
-
-def test_create_columns_with_enum_values():
-    data = pd.DataFrame(
-        {
-            "Attribute": ["COL1", "COL2"],
-            "Validation Rules": ["int", "str"],
-            "Valid Values": [pd.NA, "A, B, C"],
-        }
+    # Expect: 2 string id cols + all BOOLEAN_COLS + (STRING_COLS minus SAMPLE_ID/PATIENT_ID duplicates)
+    expected_len = (
+        2
+        + len(create_schema.BOOLEAN_COLS)
+        + (len(create_schema.STRING_COLS) - 2)
     )
+    assert isinstance(cols, list)
+    assert len(cols) == expected_len
 
-    columns = create_schema.create_columns(data)
+    # Verify all are synapseclient.models.Column
+    assert all(isinstance(c, Column) for c in cols)
 
-    assert isinstance(columns, list)
-    assert len(columns) == 2
+    # Verify order: SAMPLE_ID, PATIENT_ID first
+    assert cols[0].name == "SAMPLE_ID"
+    assert cols[0].column_type == "STRING"
+    assert cols[0].maximum_size == 250
 
-    # Validate column properties
-    col1 = columns[0]
-    col2 = columns[1]
+    assert cols[1].name == "PATIENT_ID"
+    assert cols[1].column_type == "STRING"
+    assert cols[1].maximum_size == 250
 
-    assert col1.name == "COL1"
-    assert col1.column_type == "INTEGER"
-    assert col1.enum_values is None
+    # Verify booleans next, exactly in BOOLEAN_COLS order
+    bool_slice = cols[2 : 2 + len(create_schema.BOOLEAN_COLS)]
+    assert [c.name for c in bool_slice] == create_schema.BOOLEAN_COLS
+    assert all(c.column_type == "BOOLEAN" for c in bool_slice)
 
-    assert col2.name == "COL2"
-    assert col2.column_type == "STRING"
-    assert col2.enum_values == ["A", "B", "C"]
-
-
-def test_create_table(monkeypatch, tmp_path):
-    """Test full create_table flow with mocked Synapse and CSV file."""
-
-    # Mock a fake TSV file
-    tsv_file = tmp_path / "fake_model.tsv"
-    tsv_file.write_text("Attribute\tValidation Rules\tValid Values\nCOL1\tint\t1,2,3\n")
-
-    mock_syn = MagicMock()
-    mock_syn.get.return_value.path = str(tsv_file)
-
-    mock_schema = MagicMock(id="synTableSchema", name="TestSchema")
-    mock_table = MagicMock(schema=mock_schema, id="synTable123")
-
-    # Patch everything inside the function scope
-    with patch.object(create_schema, "syn", mock_syn), \
-         patch.object(create_schema, "Table", MagicMock(return_value=mock_table)), \
-         patch("pandas.read_csv", return_value=pd.read_csv(tsv_file, sep="\t")):
-
-        # Mock Synapse store returning schema or table
-        mock_syn.store.side_effect = [mock_schema, mock_table]
-
-        create_schema.create_table(
-            data_model_synid="synDataModel",
-            project_synid="synProject",
-            table_name="TestTable",
-        )
-
-        # Ensure we fetched and stored things properly
-        mock_syn.get.assert_called_once_with("synDataModel")
-        assert mock_table.store.call_count == 1  # one for table
+    # Verify final string release cols in STRING_COLS order excluding SAMPLE_ID/PATIENT_ID
+    expected_release_cols = [c for c in create_schema.STRING_COLS if c not in ("SAMPLE_ID", "PATIENT_ID")]
+    release_slice = cols[2 + len(create_schema.BOOLEAN_COLS) :]
+    assert [c.name for c in release_slice] == expected_release_cols
+    assert all(c.column_type == "STRING" for c in release_slice)
+    assert all(c.maximum_size == 250 for c in release_slice)
 
 
-def test_get_data_model(monkeypatch, tmp_path):
-    """Tests reading TSV via mocked syn.get() and pandas.read_csv"""
-    fake_tsv = tmp_path / "model.tsv"
-    fake_tsv.write_text("Attribute\tValidation Rules\nCOL1\tint\n")
+def test_create_columns_has_no_duplicate_column_names():
+    cols = create_schema.create_columns()
+    names = [c.name for c in cols]
+    assert len(names) == len(set(names)), "Duplicate column names found in schema"
 
-    mock_syn = MagicMock()
-    mock_syn.get.return_value.path = str(fake_tsv)
 
-    with patch.object(create_schema, "syn", mock_syn):
-        df = create_schema.get_data_model("syn123")
-        assert isinstance(df, pd.DataFrame)
-        assert "COL1" in df["Attribute"].values
+def test_create_table_calls_store_once_and_constructs_table(monkeypatch):
+    """
+    Test create_table flow with mocked Table + store().
+    We don't hit Synapse; we just verify Table(...) is created with expected args
+    and store() is called.
+    """
+    mock_table_obj = MagicMock()
+    mock_table_obj.store.return_value = MagicMock(name="TestTable", id="syn123")
+
+    with patch.object(create_schema, "Table", MagicMock(return_value=mock_table_obj)) as mock_table_cls, \
+         patch.object(create_schema, "create_columns", wraps=create_schema.create_columns) as mock_create_columns:
+
+        create_schema.create_table(project_synid="synProject", table_name="TestTable")
+
+        # create_columns invoked
+        assert mock_create_columns.call_count == 1
+
+        # Table constructed with name/columns/parent_id
+        mock_table_cls.assert_called_once()
+        _, kwargs = mock_table_cls.call_args
+        assert kwargs["name"] == "TestTable"
+        assert kwargs["parent_id"] == "synProject"
+        assert isinstance(kwargs["columns"], list)
+        assert len(kwargs["columns"]) > 0
+
+        # store called exactly once
+        assert mock_table_obj.store.call_count == 1
+
+
+def test_constants_are_consistent():
+    """
+    Sanity checks for constants: required columns present and no obvious naming issues.
+    """
+    assert "SAMPLE_ID" in create_schema.STRING_COLS
+    assert "PATIENT_ID" in create_schema.STRING_COLS
+
+    # All boolean flags should start with IN_
+    assert all(name.startswith("IN_") for name in create_schema.BOOLEAN_COLS)
+
+    # Release columns (string) should not overlap with boolean columns
+    overlap = set(create_schema.STRING_COLS) & set(create_schema.BOOLEAN_COLS)
+    assert overlap == set(), f"STRING_COLS and BOOLEAN_COLS overlap: {overlap}"

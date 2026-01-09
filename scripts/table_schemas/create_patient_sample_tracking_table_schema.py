@@ -8,94 +8,94 @@ data model file
 import argparse
 from typing import List
 
-import pandas as pd
 import synapseclient
 from synapseclient.models import Column, Table
 
 syn = synapseclient.login()
 
-def get_data_model(synid: str) -> pd.DataFrame:
-    """Converts the data model into pandas dataframe for
-        parsing later
 
-    Args:
-        synid (str): synapse id of the data model file
+STRING_COLS = [
+    "SAMPLE_ID",
+    "PATIENT_ID",
+    "MAIN_GENIE_RELEASE",
+    "BPC_CRC2_RELEASE",
+    "BPC_PANC_RELEASE",
+    "BPC_RENAL_RELEASE",
+    "BPC_BLADDER_RELEASE",
+    "BPC_BRCA_RELEASE",
+    "BPC_NSCLC_RELEASE",
+    "BPC_PROSTATE_RELEASE",
+]
 
-    Returns:
-        pd.DataFrame: data model as pandas dataframe
+BOOLEAN_COLS = [
+    "IN_LATEST_MAIN_GENIE",
+    "IN_AKT1_PROJECT",
+    "IN_BRCA_DDR_PROJECT",
+    "IN_ERBB2_PROJECT",
+    "IN_FGFE4_PROJECT",
+    "IN_KRAS_PROJECT",
+    "IN_NTRK_PROJECT",
+    "IN_BPC_CRC_RELEASE",
+    "IN_BPC_CRC2_RELEASE",
+    "IN_BPC_PANC_RELEASE",
+    "IN_BPC_RENAL_RELEASE",
+    "IN_BPC_BLADDER_RELEASE",
+    "IN_BPC_BRCA_RELEASE",
+    "IN_BPC_NSCLC_RELEASE",
+    "IN_BPC_PROSTATE_RELEASE",
+]
+
+
+def create_columns() -> List[Column]:
     """
-    data_model = pd.read_csv(syn.get(synid).path, sep="\t")
-    return data_model
-
-
-def get_synapse_col_type(validation_rule: str) -> str:
-    """Helper to map validation rules to
-        Synapse column types
-
-    Args:
-        validation_rule (str): the value,
-            current supported values are
-            ['bool', 'int', 'float', 'date', 'str']
-
-    Returns:
-        str: string representation of the rule translated
-        to synapse table column data types
-    """
-    rules_map = {
-        "boolean": "BOOLEAN",
-        "int": "INTEGER",
-        "float": "DOUBLE",
-        "date": "DATE",
-        "str": "STRING",
-    }
-    if pd.isna(validation_rule):
-        return "STRING"
-    rule = validation_rule.lower()
-
-    if rule in rules_map.keys():
-        return rules_map[rule]
-    else:
-        raise ValueError(
-            f"{rule} is not one of the supported rules: {rules_map.keys()}"
-        )
-
-
-def create_columns(data_model: pd.DataFrame) -> List[Column]:
-    """Creates the columns of the schema with
-        column type, valid values and enum values filled out
-        where applicable
-
-    Args:
-        data_model (pd.DataFrame): table of the data model
-            to parse for the schema values
+    Creates the columns of the schema.
+    Build Synapse Column objects in the desired order:
+      SAMPLE_ID, PATIENT_ID, then IN_* booleans, then release-name strings.
 
     Returns:
         List[Column]: list of the column schemas in the table
     """
-    # Build list of Columns (with Restrict Values)
-    columns = []
-    for _, row in data_model.iterrows():
-        name = row["Attribute"].strip()
-        col_type = get_synapse_col_type(row.get("Validation Rules", ""))
-        valid_values = row.get("Valid Values")
+    columns: List[Column] = []
 
-        # Parse Restrict Values if available
-        enum_values = None
-        if isinstance(valid_values, str) and "," in valid_values:
-            # Split on commas and strip whitespace
-            enum_values = [v.strip() for v in valid_values.split(",") if v.strip()]
-
-        col = Column(
-            name=name,
-            column_type=col_type,
-            enum_values=enum_values,  # this is the "Restrict Values" list
-            maximum_size=250 if col_type == "STRING" else None,
+    # strings first
+    for name in ["SAMPLE_ID", "PATIENT_ID"]:
+        columns.append(
+            Column(
+                name=name,
+                column_type="STRING",
+                maximum_size=250,
+            )
         )
-        columns.append(col)
+
+    # boolean flags
+    for name in BOOLEAN_COLS:
+        # SAMPLE_ID and PATIENT_ID are already added; skip if present by mistake
+        if name in ("SAMPLE_ID", "PATIENT_ID"):
+            continue
+        columns.append(
+            Column(
+                name=name,
+                column_type="BOOLEAN",
+            )
+        )
+
+    # release-name strings (and any other non-boolean strings)
+    # NOTE: STRING_COLS already includes SAMPLE_ID/PATIENT_ID; skip duplicates
+    for name in STRING_COLS:
+        if name in ("SAMPLE_ID", "PATIENT_ID"):
+            continue
+        columns.append(
+            Column(
+                name=name,
+                column_type="STRING",
+                maximum_size=250,
+            )
+        )
+
     return columns
 
 
-def create_table(data_model_synid: str, project_synid: str, table_name: str) -> None:
+def create_table(project_synid: str, table_name: str) -> None:
     """Create and initializes the empty Synapse Table
         using the table schema generated from the data model
 
@@ -104,9 +104,8 @@ def create_table(data_model_synid: str, project_synid: str, table_name: str) -> 
         project_synid (str): synapse if of the synapse project to create table in
         table_name (str): name of the table to create
     """
-    data_model = get_data_model(synid=data_model_synid)
-    columns = create_columns(data_model)
-    # Create an empty table instance with the schema
+    columns = create_columns()
+
     table = Table(
         name=table_name,
         columns=columns,
@@ -118,12 +117,7 @@ def create_table(data_model_synid: str, project_synid: str, table_name: str) -> 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate a Synapse table schema from a data model TSV."
-    )
-    parser.add_argument(
-        "--data-model-synid",
-        default="syn71411200",
-        help="Synapse ID of the data model TSV (e.g. syn71411200).",
+        description="Generate a Synapse table schema from a data model."
     )
     parser.add_argument(
         "--project-synid",
@@ -137,11 +131,7 @@ def main():
     )
 
     args = parser.parse_args()
-    create_table(
-        data_model_synid=args.data_model_synid,
-        project_synid=args.project_synid,
-        table_name=args.table_name,
-    )
+    create_table(project_synid=args.project_synid, table_name=args.table_name)
 
 
 if __name__ == "__main__":
