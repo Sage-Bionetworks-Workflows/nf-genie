@@ -133,7 +133,7 @@ print(f"This document provides an overview of {params['release']} release\nof Am
 print(f"AACR Project GENIE Data: Version {params['release']}")
 ```
 
-AACR Project GENIE follows a semantic versioning scheme where version numbers are formatted as major.patch-release_type. Major releases contain new sample data, while patch releases address corrections and data retractions (patch releases are deprecated as of the 17 series). The release type indicates whether data is publicly available or restricted to consortium members: public releases use "X.X-public" nomenclature, and consortium-only releases use "X.X-consortium".
+AACR Project GENIE follows a semantic versioning scheme where version numbers are formatted as major.patch-release_type. Major releases contain new sample data, while patch releases address corrections and data retractions (patches for public releases are deprecated as of the 17 series). The release type indicates whether data is publicly available or restricted to consortium members: public releases use "X.X-public" nomenclature, and consortium-only releases use "X.X-consortium".
 
 # Data Access
 
@@ -219,7 +219,7 @@ This section provides essential information to begin working with GENIE data.
 1. Create a Synapse account at [synapse.org](https://synapse.org)
 2. Navigate to the GENIE project: [https://genie.synapse.org/](https://genie.synapse.org/)
 3. Accept Terms of Use
-4. Download files programmatically using Python or R or via web interface
+4. Download files programmatically using Python or R or via web interface: [https://docs.synapse.org/synapse-docs/downloading-data-programmatically](https://docs.synapse.org/synapse-docs/downloading-data-programmatically)
 
 **Key Files for Most Analyses**:
 
@@ -228,99 +228,6 @@ This section provides essential information to begin working with GENIE data.
 - `data_mutations_extended.txt` - Somatic mutations (large file!)
 - `genomic_information.txt` - Panel coverage information
 - `assay_information.txt` - Sequencing panel specifications
-
-## Common Analysis Workflows
-
-### 1. Analyzing Mutation Frequencies by Cancer Type
-
-```python
-import pandas as pd
-
-# Read data
-clinical_sample = pd.read_csv("data_clinical_sample.txt", sep="\t", comment="#")
-mutations = pd.read_csv("data_mutations_extended.txt", sep="\t", comment="#")
-
-# Join sample info with mutations
-mut_with_cancer = mutations.merge(
-    clinical_sample[["SAMPLE_ID", "CANCER_TYPE", "SEQ_ASSAY_ID"]],
-    left_on="Tumor_Sample_Barcode",
-    right_on="SAMPLE_ID"
-)
-
-# Account for panel coverage!
-genomic_info = pd.read_csv("genomic_information.txt", sep="\t")
-# Filter mutations for genes covered in each sample's panel
-# ... (see Panel Coverage section for details)
-```
-
-### 2. Survival Analysis
-
-```python
-import pandas as pd
-import numpy as np
-
-# Read data
-clinical_patient = pd.read_csv("data_clinical_patient.txt", sep="\t", comment="#")
-clinical_sample = pd.read_csv("data_clinical_sample.txt", sep="\t", comment="#")
-
-# Prepare survival data
-def prepare_survival(row):
-    # Use INT_DOD if patient died, otherwise INT_CONTACT
-    surv_time_days = row['INT_DOD'] if row['DEAD'] == "TRUE" else row['INT_CONTACT']
-    return surv_time_days
-
-clinical_patient['surv_time_days'] = clinical_patient.apply(prepare_survival, axis=1)
-clinical_patient['surv_time_years'] = pd.to_numeric(clinical_patient['surv_time_days'], errors='coerce') / 365.25
-clinical_patient['event'] = (clinical_patient['DEAD'] == "TRUE").astype(int)
-
-# Exclude redacted ages
-exclude_values = ["<6570", ">32485", "Not Collected", "Unknown"]
-surv_data = clinical_patient[~clinical_patient['surv_time_days'].isin(exclude_values)]
-
-# Run survival analysis
-from lifelines import KaplanMeierFitter
-kmf = KaplanMeierFitter()
-kmf.fit(surv_data['surv_time_years'], event_observed=surv_data['event'])
-```
-
-### 3. Accounting for Different Sequencing Panels
-
-**Critical**: Different samples were sequenced with different gene panels. You must account for this!
-
-```python
-import pandas as pd
-
-# Read data
-genomic_info = pd.read_csv("genomic_information.txt", sep="\t")
-clinical_sample = pd.read_csv("data_clinical_sample.txt", sep="\t", comment="#")
-
-# Find panels that cover TP53
-tp53_panels = genomic_info[genomic_info['Hugo_Symbol'] == "TP53"]['SEQ_ASSAY_ID'].unique()
-
-# Filter clinical data to only samples sequenced with those panels
-samples_with_tp53 = clinical_sample[clinical_sample['SEQ_ASSAY_ID'].isin(tp53_panels)]
-
-# Now calculate TP53 mutation frequency using this denominator
-total_samples_with_tp53_coverage = len(samples_with_tp53)
-```
-
-## Common Pitfalls to Avoid
-
-1. **❌ Don't calculate mutation frequencies without accounting for panel coverage**
-   - Wrong: "10% of GENIE samples have BRAF mutations"
-   - Right: "10% of samples where BRAF was sequenced have BRAF mutations"
-
-2. **❌ Don't compare across centers without understanding differences**
-   - Panels differ in gene content, coverage depth, and calling strategies
-   - Center populations differ (pediatric vs adult, cancer types, etc.)
-
-3. **❌ Don't use AGE_AT_SEQ_REPORT as age at diagnosis**
-   - This is age when sample was sequenced (may be years after diagnosis)
-   - Particularly problematic for metastatic disease
-
-4. **❌ Don't assume DEAD=FALSE means patient is currently alive**
-   - Means patient was alive at last contact
-   - Follow-up completeness varies by center
 
 ## Need Help?
 
