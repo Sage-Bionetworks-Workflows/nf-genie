@@ -129,7 +129,6 @@ def add_table_wiki(syn : synapseclient.Synapse, table: Table) -> None:
 
     content = """
     # Patient and Sample Tracking Table
-    ${toc}
     ##Overview
     This Patient-Sample tracking table contains ALL of the `SAMPLE_ID`, `PATIENT_ID` across all of the **latest** versions of each project type: BPC, MAIN Genie and SP. There will be just one unique record per patient id-sample-id in this table.
 
@@ -249,8 +248,8 @@ def main():
 
     args = parser.parse_args()
     syn = synapseclient.login()
-    create_table(project_synid=args.project_synid, table_name=args.table_name)
-    add_table_wiki(syn)
+    table = create_table(project_synid=args.project_synid, table_name=args.table_name)
+    add_table_wiki(syn, table)
 
 
 if __name__ == "__main__":
