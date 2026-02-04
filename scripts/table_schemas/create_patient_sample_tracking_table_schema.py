@@ -131,45 +131,41 @@ def add_table_wiki(syn : synapseclient.Synapse, table: Table) -> None:
     # Patient and Sample Tracking Table
     ${toc}
     ##Overview
-    This Patient-Sample tracking table contains ALL of the `SAMPLE_ID`, `PATIENT_ID` across all of the **latest** versions of each project type: BPC, MAIN Genie and SP.
-
-    You can query for available projects:
-    ```sql
-    SELECT
-    DISTINCT RELEASE_PROJECT_TYPE
-    FROM syn71708167;
-    ```
+    This Patient-Sample tracking table contains ALL of the `SAMPLE_ID`, `PATIENT_ID` across all of the **latest** versions of each project type: BPC, MAIN Genie and SP. There will be just one unique record per patient id-sample-id in this table.
 
     Here is the data dictionary for the table and its attributes
-    | ATTRIBUTE                 | DESCRIPTION                                                                                                                                                                                                    | REQUIRED |
-    | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-    | `SAMPLE_ID`               | Sample identifier for the given sample-patient pair.                                                                                                                                                           | YES      |
-    | `PATIENT_ID`              | Patient identifier for the given sample-patient pair.                                                                                                                                                          | YES      |
-    | `IN_LATEST_MAIN_GENIE`    | Whether the sample-patient pair is present in the latest MAIN GENIE release.                                                                                                                                   | YES      |
-    | `IN_AKT1_PROJECT`         | Whether the sample-patient pair exists in the AKT1 sponsored project dataset (regardless of MAIN GENIE membership).                                                                                            | YES      |
-    | `IN_BRCA_DDR_PROJECT`     | Whether the sample-patient pair exists in the BRCA_DDR sponsored project dataset (regardless of MAIN GENIE membership).                                                                                        | YES      |
-    | `IN_ERBB2_PROJECT`        | Whether the sample-patient pair exists in the ERBB2 sponsored project dataset (regardless of MAIN GENIE membership).                                                                                           | YES      |
-    | `IN_FGFE4_PROJECT`        | Whether the sample-patient pair exists in the FGFE4 sponsored project dataset (regardless of MAIN GENIE membership).                                                                                           | YES      |
-    | `IN_KRAS_PROJECT`         | Whether the sample-patient pair exists in the KRAS sponsored project dataset (regardless of MAIN GENIE membership).                                                                                            | YES      |
-    | `IN_NTRK_PROJECT`         | Whether the sample-patient pair exists in the NTRK sponsored project dataset (regardless of MAIN GENIE membership).                                                                                            | YES      |
-    | `IN_BPC_CRC_RELEASE`      | Whether the sample-patient pair exists in the latest CRC BPC cohort release slice used for tracking (latest-per-cohort).                                                                                       | YES      |
-    | `IN_BPC_CRC2_RELEASE`     | Whether the sample-patient pair exists in the latest CRC2 BPC cohort release slice used for tracking (latest-per-cohort).                                                                                      | YES      |
-    | `IN_BPC_PANC_RELEASE`     | Whether the sample-patient pair exists in the latest PANC BPC cohort release slice used for tracking (latest-per-cohort).                                                                                      | YES      |
-    | `IN_BPC_RENAL_RELEASE`    | Whether the sample-patient pair exists in the latest RENAL BPC cohort release slice used for tracking (latest-per-cohort).                                                                                     | YES      |
-    | `IN_BPC_BLADDER_RELEASE`  | Whether the sample-patient pair exists in the latest BLADDER BPC cohort release slice used for tracking (latest-per-cohort).                                                                                   | YES      |
-    | `IN_BPC_BRCA_RELEASE`     | Whether the sample-patient pair exists in the latest BRCA BPC cohort release slice used for tracking (latest-per-cohort).                                                                                      | YES      |
-    | `IN_BPC_NSCLC_RELEASE`    | Whether the sample-patient pair exists in the latest NSCLC BPC cohort release slice used for tracking (latest-per-cohort).                                                                                     | YES      |
-    | `IN_BPC_PROSTATE_RELEASE` | Whether the sample-patient pair exists in the latest PROSTATE BPC cohort release slice used for tracking (latest-per-cohort).                                                                                  | YES      |
-    | `MAIN_GENIE_RELEASE`      | Release identifier for the latest MAIN GENIE release used for tracking (e.g., `NN.N-public`). Populated for pairs where `IN_LATEST_MAIN_GENIE` is true; otherwise may be null/blank.                           | YES      |
-    | `BPC_CRC2_RELEASE`        | Release identifier for the latest CRC2 BPC cohort release used for tracking (e.g., `CRC2_17.0-consortium` or similar). Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank. | YES      |
-    | `BPC_PANC_RELEASE`        | Release identifier for the latest PANC BPC cohort release used for tracking (e.g., `PANC_17.0-consortium` or similar). Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank. | YES      |
-    | `BPC_RENAL_RELEASE`       | Release identifier for the latest RENAL BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                          | YES      |
-    | `BPC_BLADDER_RELEASE`     | Release identifier for the latest BLADDER BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                        | YES      |
-    | `BPC_BRCA_RELEASE`        | Release identifier for the latest BRCA BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                           | YES      |
-    | `BPC_NSCLC_RELEASE`       | Release identifier for the latest NSCLC BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                          | YES      |
-    | `BPC_PROSTATE_RELEASE`    | Release identifier for the latest PROSTATE BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                       | YES      |
+    | ATTRIBUTE                 | DESCRIPTION                                                                                                                                                                                                    | REQUIRED | CAN HAVE MISSING VALUES |
+    | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------ |
+    | `SAMPLE_ID`               | Sample identifier for the given sample-patient pair.                                                                                                                                                           | YES      | NO                       |
+    | `PATIENT_ID`              | Patient identifier for the given sample-patient pair.                                                                                                                                                          | YES      | NO                       |
+    | `IN_LATEST_MAIN_GENIE`    | Whether the sample-patient pair is present in the latest MAIN GENIE release.                                                                                                                                   | YES      | NO                       |
+    | `IN_AKT1_PROJECT`         | Whether the sample-patient pair exists in the AKT1 sponsored project dataset (regardless of MAIN GENIE membership).                                                                                            | YES      | NO                       |
+    | `IN_BRCA_DDR_PROJECT`     | Whether the sample-patient pair exists in the BRCA_DDR sponsored project dataset (regardless of MAIN GENIE membership).                                                                                        | YES      | NO                       |
+    | `IN_ERBB2_PROJECT`        | Whether the sample-patient pair exists in the ERBB2 sponsored project dataset (regardless of MAIN GENIE membership).                                                                                           | YES      | NO                       |
+    | `IN_FGFE4_PROJECT`        | Whether the sample-patient pair exists in the FGFE4 sponsored project dataset (regardless of MAIN GENIE membership).                                                                                           | YES      | NO                       |
+    | `IN_KRAS_PROJECT`         | Whether the sample-patient pair exists in the KRAS sponsored project dataset (regardless of MAIN GENIE membership).                                                                                            | YES      | NO                       |
+    | `IN_NTRK_PROJECT`         | Whether the sample-patient pair exists in the NTRK sponsored project dataset (regardless of MAIN GENIE membership).                                                                                            | YES      | NO                       |
+    | `IN_BPC_CRC_RELEASE`      | Whether the sample-patient pair exists in the latest CRC BPC cohort release slice used for tracking (latest-per-cohort).                                                                                       | YES      | NO                       |
+    | `IN_BPC_CRC2_RELEASE`     | Whether the sample-patient pair exists in the latest CRC2 BPC cohort release slice used for tracking (latest-per-cohort).                                                                                      | YES      | NO                       |
+    | `IN_BPC_PANC_RELEASE`     | Whether the sample-patient pair exists in the latest PANC BPC cohort release slice used for tracking (latest-per-cohort).                                                                                      | YES      | NO                       |
+    | `IN_BPC_RENAL_RELEASE`    | Whether the sample-patient pair exists in the latest RENAL BPC cohort release slice used for tracking (latest-per-cohort).                                                                                     | YES      | NO                       |
+    | `IN_BPC_BLADDER_RELEASE`  | Whether the sample-patient pair exists in the latest BLADDER BPC cohort release slice used for tracking (latest-per-cohort).                                                                                   | YES      | NO                       |
+    | `IN_BPC_BRCA_RELEASE`     | Whether the sample-patient pair exists in the latest BRCA BPC cohort release slice used for tracking (latest-per-cohort).                                                                                      | YES      | NO                       |
+    | `IN_BPC_NSCLC_RELEASE`    | Whether the sample-patient pair exists in the latest NSCLC BPC cohort release slice used for tracking (latest-per-cohort).                                                                                     | YES      | NO                       |
+    | `IN_BPC_PROSTATE_RELEASE` | Whether the sample-patient pair exists in the latest PROSTATE BPC cohort release slice used for tracking (latest-per-cohort).                                                                                  | YES      | NO                       |
+    | `MAIN_GENIE_RELEASE`      | Release identifier for the latest MAIN GENIE release used for tracking (e.g., `NN.N-public`). Populated for pairs where `IN_LATEST_MAIN_GENIE` is true; otherwise may be null/blank.                           | YES      | YES                      |
+    | `BPC_CRC2_RELEASE`        | Release identifier for the latest CRC2 BPC cohort release used for tracking (e.g., `CRC2_17.0-consortium` or similar). Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank. | YES      | YES                      |
+    | `BPC_PANC_RELEASE`        | Release identifier for the latest PANC BPC cohort release used for tracking (e.g., `PANC_17.0-consortium` or similar). Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank. | YES      | YES                      |
+    | `BPC_RENAL_RELEASE`       | Release identifier for the latest RENAL BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                          | YES      | YES                      |
+    | `BPC_BLADDER_RELEASE`     | Release identifier for the latest BLADDER BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                        | YES      | YES                      |
+    | `BPC_BRCA_RELEASE`        | Release identifier for the latest BRCA BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                           | YES      | YES                      |
+    | `BPC_NSCLC_RELEASE`       | Release identifier for the latest NSCLC BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                          | YES      | YES                      |
+    | `BPC_PROSTATE_RELEASE`    | Release identifier for the latest PROSTATE BPC cohort release used for tracking. Populated for pairs present in that cohort’s latest slice; otherwise may be null/blank.                                       | YES      | YES                      |
+
+    **Note**: Fields ending in _RELEASE (excluding IN_* flags) may be null/blank when the sample–patient pair is not present in the corresponding cohort’s latest release.
 
     ##Getting Started
+
 
     ### Query templates
 
@@ -180,6 +176,7 @@ def add_table_wiki(syn : synapseclient.Synapse, table: Table) -> None:
     SAMPLE_ID,
     PATIENT_ID,
     FROM <TABLE_SYNAPSE_ID>
+    WHERE RELEASE_PROJECT_TYPE = <SPONSORED_PROJECT_NAME>
     AND IN_LATEST_MAIN_GENIE = TRUE;
     ```
 
