@@ -21,7 +21,11 @@ docker run -it -e SYNAPSE_AUTH_TOKEN=<insert_synapse_token> <docker_image_name>
 
 ### Updating the Table Schema
 
-When there are new BPC cohort or SP projects that get released, the `STRING_COLS` and `BOOLEAN_COLS` will need to be updated. Please create a PR with the updated values.
+Here are a few scenarios where you might want to update the table:
+
+- When there are new BPC cohort or SP projects that get released, the `STRING_COLS` and `BOOLEAN_COLS` will need to be updated. Please create a PR with the updated values.
+
+- When there are Table Wiki changes - please update directly in the Synapse Table Wiki but also add a PR to include it here so that if the table ever gets spun up, it will have the new changes
 
 ### How to Run
 

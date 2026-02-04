@@ -6,6 +6,7 @@ data model file
 """
 
 import argparse
+import textwrap
 from typing import List
 
 import synapseclient
@@ -119,7 +120,8 @@ def create_table(project_synid: str, table_name: str) -> Table:
 
 
 def add_table_wiki(syn : synapseclient.Synapse, table: Table) -> None:
-    """Adds the wiki with instructions and examples for the table
+    """Adds the wiki with the data dictionary for the table,
+        instructions and examples for the table
         and how to use it
 
     Args:
@@ -127,8 +129,9 @@ def add_table_wiki(syn : synapseclient.Synapse, table: Table) -> None:
         table (Table): synapse table entity
     """
 
-    content = """${toc}
-    ##Overview
+    content = textwrap.dedent("""\
+    ${toc}
+    ## Overview
     This Patient-Sample tracking table contains ALL of the `SAMPLE_ID`, `PATIENT_ID` across all of the **latest** versions of each project type: BPC, MAIN Genie and SP. There will be just one unique record per patient id-sample-id in this table.
 
     Here is the data dictionary for the table and its attributes
@@ -162,7 +165,7 @@ def add_table_wiki(syn : synapseclient.Synapse, table: Table) -> None:
 
     **Note**: Fields ending in _RELEASE (excluding IN_* flags) may be null/blank when the sample–patient pair is not present in the corresponding cohort’s latest release.
 
-    ##Getting Started
+    ## Getting Started
 
 
     ### Query templates
@@ -221,7 +224,7 @@ def add_table_wiki(syn : synapseclient.Synapse, table: Table) -> None:
     | P-0011111-T01 | GENIE-0002222 |
     | P-0033333-T02 | GENIE-0004444 |
 
-    """
+    """)
 
     wiki = Wiki(title='Patient and Sample Tracking Table',
                 owner=table,
