@@ -127,8 +127,7 @@ def add_table_wiki(syn : synapseclient.Synapse, table: Table) -> None:
         table (Table): synapse table entity
     """
 
-    content = """
-    # Patient and Sample Tracking Table
+    content = """${toc}
     ##Overview
     This Patient-Sample tracking table contains ALL of the `SAMPLE_ID`, `PATIENT_ID` across all of the **latest** versions of each project type: BPC, MAIN Genie and SP. There will be just one unique record per patient id-sample-id in this table.
 
