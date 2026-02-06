@@ -52,7 +52,7 @@ release, seq
 */
 def public_map = [
   "TEST": "Jan-2022",
-  "STAGING": "Jul-2025",
+  "STAGING": "Jan-2026",
   "11": "Jan-2022",
   "12": "Jul-2022",
   "13": "Jan-2023",
@@ -97,7 +97,7 @@ if (major_release == "TEST") {
   center_map_synid = "syn11601248"
   is_prod = false
   is_staging = false
-  
+
 } else if (major_release == "STAGING"){
   project_id = "syn22033066"
   center_map_synid = "syn22089188"
