@@ -133,7 +133,7 @@ print(f"This document provides an overview of {params['release']} release\nof Am
 print(f"AACR Project GENIE Data: Version {params['release']}")
 ```
 
-AACR Project GENIE data versions follow a numbering scheme derived from [semantic versioning](https://semver.org/) where the digits in the version correspond to: major.patch-release-type. "Major" releases are public releases of new sample data. "Patch" releases are corrections to major releases, including data retractions. "Releasetype" refers to whether the release is a public AACR Project GENIE release or a private/consortium-only release. Public releases will be denoted with the nomenclature "X.X-public" and consortium-only private releases will be denoted with the nomenclature "X.X-consortium".
+AACR Project GENIE follows a semantic versioning scheme where version numbers are formatted as major.patch-release_type. Major releases contain new sample data, while patch releases address corrections and data retractions (patches for public releases are deprecated as of the 17 series). The release type indicates whether data is publicly available or restricted to consortium members: public releases use "X.X-public" nomenclature, and consortium-only releases use "X.X-consortium".
 
 # Data Access
 
@@ -208,6 +208,34 @@ latex_table = centers_df.to_latex(
 display(Latex(latex_table))
 ```
 
+# Quick Start Guide for GENIE Data Users
+
+This section provides essential information to begin working with GENIE data.
+
+## Downloading the Data
+
+**From Synapse**:
+
+1. Create a Synapse account at [synapse.org](https://synapse.org)
+2. Navigate to the GENIE project: [https://genie.synapse.org/](https://genie.synapse.org/)
+3. Accept Terms of Use
+4. Download files programmatically using Python or R or via web interface: [https://docs.synapse.org/synapse-docs/downloading-data-programmatically](https://docs.synapse.org/synapse-docs/downloading-data-programmatically)
+
+**Key Files for Most Analyses**:
+
+- `data_clinical_patient.txt` - Patient demographics and survival
+- `data_clinical_sample.txt` - Sample information and cancer types
+- `data_mutations_extended.txt` - Somatic mutations (large file!)
+- `genomic_information.txt` - Panel coverage information
+- `assay_information.txt` - Sequencing panel specifications
+
+## Need Help?
+
+- **Data Guide**: This document
+- **cBioPortal Help**: [https://www.cbioportal.org/faq](https://www.cbioportal.org/faq)
+- **Synapse Help**: [https://help.synapse.org/](https://help.synapse.org/)
+- **GENIE Email**: genieinfo@aacr.org
+
 
 # Human Subjects Protection and Privacy
 
@@ -244,32 +272,96 @@ For more information on the filters and review processes, see below.
 
 ## Sample Filters
 
-[Sequence Date]{.underline}
+The GENIE dataset undergoes several filtering steps to ensure data quality, protect patient privacy, and maintain consistency across releases. This section explains which samples are included or excluded, and why.
 
-Samples from every major release and its associated consortium releases are vetted by its `SEQ_DATE`. For instance, samples in the 5.0 consortium and public releases will only contain samples that were sequenced prior to Jan-2018 (not including Jan-2018)
+### Overview of Filtering Process
 
-[No BED file]{.underline}
+Filters are applied during data processing:
 
-Samples that have a `SEQ_ASSAY_ID`, but don't have a bed file associated with them will be removed.
+1. **Quality Filters**: Ensure technical data completeness (e.g. BED files are present, valid oncotree codes)
+2. **Privacy Filters**: Protect patient identities (e.g. age redaction)
+3. **Temporal Filters**: Define release scope (e.g. sequencing date cutoffs)
+4. **Retraction Filters**: Honor site retractions for patient data
 
-[Oncotree]{.underline}
+Below is a detailed explanation of each filter and its impact on the dataset.
 
-Samples with deprecated codes (as defined by the oncotree source version used in the release) will be removed.
+### Quality and Completeness Filters
 
-[Patient and sample retractions]{.underline}
+#### Sequencing Panel Documentation (BED File Requirement)
 
--   Implicit retraction occurs when data removed from new uploads is automatically excluded from future releases.
--   Explicit retraction occurs when centers submit a retraction file containing a patient or sample ID, often due to a patient's decision to withdraw their consent.
+**What it means**: Samples are only included if their associated sequencing panel has a corresponding BED file that specifies the genomic regions that were sequenced.
 
-[Age information redaction]{.underline}
+**Why it matters**: Without a BED file, we cannot determine which variants were within the sequenced regions vs. which regions were simply not covered. This is critical for interpreting the absence of mutations.
 
-When `AGE_AT_SEQ_REPORT`, `INT_CONTACT`, or `INT_DOD` is \>32485 or <6570 days, the fields `BIRTH_YEAR`, `YEAR_CONTACT`, `YEAR_DEATH`, `INT_CONTACT`, `INT_DOD`, and `AGE_AT_SEQ_REPORT` are redacted. If the difference between the `BIRTH_YEAR` and `YEAR_CONTACT` or `BIRTH_YEAR` and `YEAR_DEATH` is greater than 89 years, those values will be redacted.
+**Impact**: Samples that are associated with a panel lacking a submitted BED files are excluded from the release.
 
--   Intervals are redacted with "\>32485" and "<6570"
--   Ages are redacted with "\>89" and "<18"
--   Years are marked as "cannotReleaseHIPAA" for individuals over 89 and as "withheld" for individuals under 18
+**For data users**: All samples in GENIE have documented coverage. When you don't see a mutation in a gene, it could mean either (1) no mutation was present, or (2) that region wasn't sequenced. Check the genomic_information.txt file to determine coverage.
+
+#### OncoTree Code Validation
+
+**What it means**: Cancer type classifications (ONCOTREE_CODE) must use current, non-deprecated codes from the OncoTree ontology.
+
+**Why it matters**: OncoTree is regularly updated as cancer classification evolves. Deprecated codes may represent outdated cancer classifications or codes that have been merged into other categories.
+
+**What happens**: Samples with deprecated codes are removed from the release. Centers are notified to update their cancer type assignments.
+
+**For data users**: You can trust that all ONCOTREE_CODE values are valid for this release's OncoTree version oncotree_2021_11_02.
+
+### Privacy Protection Filters
+
+#### Age Information Redaction (HIPAA Safe Harbor)
+
+**What it means**: To comply with HIPAA Safe Harbor de-identification rules, ages and dates are masked for patients over 89 years old. Pediatric patients under 18 years old may also be masked at individual sites' discretion. Note: Universal masking of patients under 18 was deprecated as of the 19.4-consortium release.
+
+**Why it matters**: Extreme ages combined with rare cancer types could potentially be used to re-identify patients.
+
+**How it works**:
+
+- If age at sequencing is <18 years (~6,570 days) or >89 years (~32,485 days):
+  - Age fields show: "<18" or ">89"
+  - Date intervals show: "<6570" or ">32485"
+  - Year fields show: "withheld" or "cannotReleaseHIPAA"
+  - Affected fields: BIRTH_YEAR, YEAR_CONTACT, YEAR_DEATH, INT_CONTACT, INT_DOD, AGE_AT_SEQ_REPORT
+
+**For data users**:
+
+- When calculating survival curves, be aware that values of ">32485" and "<6570" represent censored ages
+- Consider excluding these samples from age-stratified analyses or treating them as separate categories
+- When the difference between BIRTH_YEAR and YEAR_CONTACT or BIRTH_YEAR and YEAR_DEATH is greater than 89 years, those values will be redacted
+
+### Temporal and Consent Filters
+
+#### Sequencing Date Cutoff
+
+**What it means**: Each release includes samples sequenced up to a specific date.
+
+**Why it matters**: Ensures consistent release schedules and allows centers time for quality control.
+
+**Example**: Release 5.0 includes samples sequenced before January 2018 (not including January 2018).
+
+**For data users**: Check the release version to understand the temporal scope. Newer releases include more recent samples.
+
+#### Patient and Sample Retractions
+
+**What it means**: Samples or patients may be removed from releases in two ways:
+
+1. **Implicit Retraction**: When a center stops uploading data for a patient/sample, it automatically disappears from future releases
+   - Common reasons: Data no longer meets quality standards, discovered technical issues
+
+2. **Explicit Retraction**: Centers submit a retraction file to formally remove specific patients/samples.
+   - Common reasons: Patient withdrew consent, data use agreement expired, re-identification risk
+
+Note: After series 19 sites should submit a reason for the retraction if known.
+
+**For data users**:
+
+- Sample IDs may disappear between releases
+- Always note which release version you're using in publications
+- If your analysis depends on specific samples, verify they're still present in the latest release
 
 ## Variant Data Filters
+
+See the panel-level coverage section in the Quick Start Guide for information on how to account for different sequencing panels when analyzing mutation data. Also see Summary of Sequence Pipeline section for more information on how panels are organized in GENIE.
 
 [Germline Filter]{.underline}
 
@@ -278,7 +370,7 @@ When `AGE_AT_SEQ_REPORT`, `INT_CONTACT`, or `INT_DOD` is \>32485 or <6570 days, 
 -   Genome Nexus reports gnomAD AFs by querying the Genome Aggregation Database to determine common variants. An additional filter named common_variant is also appended if allele count across at least one ExAC subpopulation is \>10 (this default cutoff can be changed when running vcf2maf). If any variant has a max gnomAD AF from any subpopulation that is over 0.0005, the variant will be filtered out. This \>10 allele count (AC) cutoff was selected because it tagged no more than 1% of the somatic calls across all MSK-IMPACT samples with patient-matched controls.
     -   So if you're handling somatic variants, the common_variant tag means this is likely a false-positive. It is less likely to be a legit somatic variant at a site that ExAC classifies as germline or artifact.
 -   While the GENIE data available from Sage contains all mutation data, the following mutation types are automatically altered upon import into the cBioPortal: Silent, Intronic, 3' UTR, 3' Flank, 5' UTR, 5' Flank and Intergenic region (IGR).
--   Seventeen of the nineteen GENIE participating centers performed tumor-only sequencing i.e. without also sequencing a patient-matched control sample like blood, to isolate somatic events. These centers minimized artifacts and germline events using pooled controls from unrelated individuals, or using databases of known artifacts, common germline variants, and recurrent somatic mutations. However, there remains a risk that such centers may inadvertently release germline variants that can theoretically be used for patient re-identication. To minimize this risk, the GENIE consortium developed a stringent germline filtering pipeline, and applied it uniformly to all variants across all centers.
+-   Most of the GENIE participating centers performed tumor-only sequencing i.e. without also sequencing a patient-matched control sample like blood, to isolate somatic events. These centers minimized artifacts and germline events using pooled controls from unrelated individuals, or using databases of known artifacts, common germline variants, and recurrent somatic mutations. However, there remains a risk that such centers may inadvertently release germline variants that can theoretically be used for patient re-identication. To minimize this risk, the GENIE consortium developed a stringent germline filtering pipeline, and applied it uniformly to all variants across all centers.
     -   Hotspots from Chang et al. minus some likely artifacts. (http://dx.doi.org/10.1038/nbt.3391)
     -   Somatic mutations associated with clonal hematopoietic expansion from Xie et al. (http://dx.doi.org/10.1038/nm.3733) 
     -   Somatically mutable germline sites at MSH6:F1088, TP53:R290, TERT:E280, ASXL1:G645_G646.
@@ -293,7 +385,7 @@ Samples that have variants that could be merged together will be filtered out. T
 
 -   ON: Sage filters out all samples with variants flagged
 -   OFF: If a center already does this filter prior to upload, the filter can be turned off
--   FLAG: The samples are not removed, but the variants are annotated in the maf file. (Discussed May 6th, 2019)
+-   FLAG: The samples are not removed, but the variants are annotated in the maf file.
 
 [Genome Nexus Annotation Status]{.underline}
 
@@ -353,6 +445,7 @@ After release, each center performs a manual review of their data based on an au
 -   Confirm clinical attribute distributions/values are valid.
 -   Confirm patients and samples that were marked for retraction.
 -   Review failed annotations flagged by Genome-Nexus.
+
 # Summary of Sequence Pipeline
 
 Traditionally, the SEQ_ASSAY_ID was used as an institution's identifier for their assays when each assay had one associated gene panel. As GENIE grew, we wanted to support an assay having multiple gene panels. SEQ_ASSAY_ID was repurposed to be an identifier for a center's assay OR panel. For those centers that have multiple panels per assay, we introduced SEQ_PIPELINE_ID (pipeline), which encompasses multiple SEQ_ASSAY_ID (panel).
@@ -544,12 +637,12 @@ Description on most of the data files can be found in the [cBioPortal file forma
 
 [data_CNA.txt]{.underline}
 
-* Description: The copy number data file contain values that would be derived from copy-number analysis algorithms like GISTIC or RAE. GISTIC can be installed or run online using the GISTIC 2.0 module on GenePattern.
+* Description: The copy-number data file contains values derived from copy-number analysis algorithms (e.g., GISTIC or RAE). GISTIC can be run locally or via the GISTIC 2.0 module on GenePattern. Note: some sequenced samples may not have CNA data; this file includes only samples with available copy-number profiles and does not represent all sequenced samples.
 * Details: [CNA format](https://docs.cbioportal.org/file-formats/#discrete-copy-number-data)
 
 [data_sv.txt]{.underline}
 
-* Description: The structural variant file contains information on structural variants. This file format replaces the deprecated data_fusions.txt file format.
+* Description: The structural variant file contains information on structural variants. This file format replaces the deprecated data_fusions.txt file format. Note: some sequenced samples may not have SV data; this file includes only samples with available structural variant data and does not represent all sequenced samples.
 * Details: [Structural Variant format](https://docs.cbioportal.org/file-formats/#structural-variant-data)
 
 [genomic_information.txt]{.underline}
@@ -621,27 +714,27 @@ Description on most of the data files can be found in the [cBioPortal file forma
 `SEX`
 
 * Expected Values: Female, Male, Other, Transsexual, Not Collected, Unknown
-* Data Description: The patient's sex code; this data element derives from NAACCR v16, Element #220.
+* Data Description: The patient's sex code; this data element derives from NAACCR v24, Element #220.
 
 `PRIMARY_RACE`
 
 * Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
-* Data Description: The primary race recorded for the patient; this data element derives from NAACCR v16, Element #160. For institutions collecting more than one race category, this race code is the primary race for the patient. Institutions not collecting race have set this field to Not Collected.
+* Data Description: The primary race recorded for the patient; this data element derives from NAACCR v24, Element #160. For institutions collecting more than one race category, this race code is the primary race for the patient. Institutions not collecting race have set this field to Not Collected.
 
 `SECONDARY_RACE` [Not available for public releases]
 
 * Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
-* Data Description: The secondary race recorded for the patient; this data element derives from NAACCR v16, Element #161. Institutions not collecting race have set this field to Not Collected.
+* Data Description: The secondary race recorded for the patient; this data element derives from NAACCR v24, Element #161. Institutions not collecting race have set this field to Not Collected.
 
 `TERTIARY_RACE` [Not available for public releases]
 
 * Expected Values: Asian, Black, Native American, Not Applicable, Not Collected, Other, Unknown, Pacific Islander, White
-* Data Description: The tertiary race recorded for the patient; this data element derives from NAACCR v16, Element #162. Institutions not collecting race have set this field to Not Collected.
+* Data Description: The tertiary race recorded for the patient; this data element derives from NAACCR v24, Element #162. Institutions not collecting race have set this field to Not Collected.
 
 `ETHNICITY`
 
 * Expected Values: Non-Spanish/non-Hispanic, Spanish/Hispanic, Unknown, Not Collected
-* Data Description: Indication of Spanish/Hispanic origin of the patient; this data element derives from NAACCR v16, Element #190. Institutions not collecting Spanish/Hispanic origin have set this column to Not Collected.
+* Data Description: Indication of Spanish/Hispanic origin of the patient; this data element derives from NAACCR v24, Element #190. Institutions not collecting Spanish/Hispanic origin have set this column to Not Collected.
 
 `BIRTH_YEAR` [Not available for public releases]
 
@@ -697,9 +790,8 @@ Description on most of the data files can be found in the [cBioPortal file forma
 
 `ONCOTREE_CODE`
 
-* Expected Values:
-    http://oncotree.mskcc.org/#/home?version=`r strsplit(oncotree_link, "=")[[1]][2]`
-* Data Description: The primary cancer diagnosis, or "main type", classified based on the OncoTree ontology. The version of the OncoTree ontology used for this release is `r strsplit(oncotree_link, "=")[[1]][2]`.
+* Expected Values: See full list of values [here](https://oncotree.mskcc.org/?version=oncotree_2021_11_02&field=NAME).
+* Data Description: The primary cancer diagnosis, or "main type", classified based on the OncoTree ontology. The version of the OncoTree ontology used for this release is oncotree_2021_11_02.
 
 `SAMPLE_TYPE`
 
@@ -718,14 +810,12 @@ Description on most of the data files can be found in the [cBioPortal file forma
 
 `CANCER_TYPE`
 
-* Expected Values: Non-Small Cell Lung Cancer (example)
-    http://oncotree.mskcc.org/#/home?version=`r strsplit(oncotree_link, "=")[[1]][2]`
+* Expected Values: Non-Small Cell Lung Cancer (example). See full list of values [here](https://oncotree.mskcc.org/?version=oncotree_2021_11_02&field=NAME).
 * Data Description: The primary cancer diagnosis label, or "main type", based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to: “Non-Small Cell Lung Cancer”.
 
 `CANCER_TYPE_DETAILED`
 
-* Expected Values: Lung Adenocarcinoma (example)
-    http://oncotree.mskcc.org/#/home?version=`r strsplit(oncotree_link, "=")[[1]][2]`
+* Expected Values: Lung Adenocarcinoma (example). See full list of values [here](https://oncotree.mskcc.org/?version=oncotree_2021_11_02&field=NAME).
 * Data Description: The detailed primary cancer diagnosis label based on the OncoTree ontology. For example, the OncoTree code of LUAD maps to the label: "Lung Adenocarcinoma (LUAD)".
 
 `SAMPLE_CLASS`
@@ -764,7 +854,7 @@ Description on most of the data files can be found in the [cBioPortal file forma
 
 ### Center Strategies for OncoTree Assignment
 
-Cancer types are reported using the OncoTree ontology originally developed at Memorial Sloan Kettering Cancer Center. This release uses the OncoTree version `r strsplit(oncotree_link, "=")[[1]][2]`. The centers participating in GENIE applied the OncoTree cancer types to the tested specimens in a variety of methods depending on center-specific workflows. Here is a brief description of how the cancer type assignment process for each center is specified.
+Cancer types are reported using the OncoTree ontology originally developed at Memorial Sloan Kettering Cancer Center. This release uses the OncoTree version oncotree_2021_11_02. The centers participating in GENIE applied the OncoTree cancer types to the tested specimens in a variety of methods depending on center-specific workflows. Here is a brief description of how the cancer type assignment process for each center is specified.
 
 * CHOP: Diagnosis assigned by Pathologist, and confirmed through genomic diagnostics. Mapped to oncotree by clinical oncologist and medical geneticist.
 * CRUK: Molecular pathologists assigned diagnosis and mapped to OncoTree cancer type.
