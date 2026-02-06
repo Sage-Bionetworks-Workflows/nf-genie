@@ -1,2 +1,1 @@
 synapseclient>=4.9,<5.0
-pandas>=2.0,<3.0
