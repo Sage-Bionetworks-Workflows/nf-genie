@@ -2,9 +2,23 @@
 
 ## Overview
 
-This module contains the scripts that spin up any Synapse Tables in genie
+This module contains the scripts that spin up any Synapse Tables or Snowflake Tables in genie
 
-## Setup
+## Snowflake Table SQL scripts
+
+There are create table sql code for each genie project's ingestion table excluding sponsored projects because those tables don't change and you can always recreate them by just re-ingesting sponsored projects data. This is useful for when you need to spin up the original table again.
+
+See [ingestion scripts](https://github.com/Sage-Bionetworks-Workflows/orca-recipes/tree/main/src/genie) for more info about the data that populate these snowflake tables.
+
+You will need the `GENIE_ADMIN` role to run these SQL scripts.
+
+### Updating the scripts
+
+- When there are new BPC/Main Genie releases that occur and they have an updated schema with new columns, renamed columns etc, these create table sql scripts would need to be **expanded** to reflect that so we can ingest all of the columns.
+
+## Create Patient and Sample Tracking Table Script
+
+### Setup
 
 Build docker image:
 ```
@@ -16,8 +30,6 @@ Run docker image in interactive mode:
 ```
 docker run -it -e SYNAPSE_AUTH_TOKEN=<insert_synapse_token> <docker_image_name>
 ```
-
-## Create Patient and Sample Tracking Table Script
 
 ### Updating the Table Schema
 
