@@ -148,8 +148,6 @@ on the common columns (keys) id and cohort.
 ```bash
 syncompare --syn-id-1 syn1241249.23 \
            --syn-id-2 syn1241249.35 \
-           --version-name1 v1 \
-           --version-name2 v2 \
            --entity-name BPC_compare \
            --compare-type file \
            --join-keys id cohort
