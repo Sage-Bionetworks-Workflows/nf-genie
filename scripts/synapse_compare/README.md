@@ -1,35 +1,80 @@
 # Synapse Compare
 
-## Comparisons between two Synapse entities
+## Table of Contents
 
-### Purpose
+- [Purpose](#purpose)
+- [Data Requirements](#data-requirements)
+  - [Supported Synapse Entities](#supported-synapse-entities)
+  - [Supported File Formats](#supported-file-formats)
+  - [Schema Expectations](#schema-expectations)
+- [Setting up your environment](#setting-up-your-environment)
+  - [Dependencies](#dependencies)
+  - [Configuration](#configuration)
+  - [Installation](#installation)
+- [Usage](#usage)
+  - [Using local imports](#using-local-imports)
+  - [Using the CLI](#using-the-cli)
+- [Outputs](#outputs)
+  - [datacompy compare report](#datacompy-compare-report)
+  - [ydata-profiling report](#ydata-profiling-report)
+
+## Purpose
 
 This helper script does comparisons for any
-two data based synapse entities in Synapse whether it's different versions within the same entity or two different entities. We currently support the following entities:
-
-- Synapse Tables
-- Synapse Files (structured data files that can be read into pandas like csv, txt, tsv)
+two data based synapse entities in Synapse whether it's different versions within the same entity or two different entities.
 
 There will be two reports outputted. One using the `datacompy` package and one using the `y-dataprofiling` package.
 
-### Setting up your environment
+## Data Requirements
 
-#### Dependencies
+`synapse-compare` is designed for **tabular data only**.
 
-- `python` >= 3.10, <=3.11
+### Supported Synapse Entities
 
-- `synapseclient`
-- `pandas`
+- **Synapse Tables**
+- **Synapse Files containing structured tabular data**
+
+### Supported File Formats
+
+For Synapse Files (`--compare-type file`), the file must:
+
+- Be readable by `pandas.read_csv`
+- Be comma-separated (`.csv`) **OR**
+- Be tab-separated (`.tsv`, `.txt`, `\t` delimited)
+
+If your data is not already in the above format, you must convert it to a tabular text format before running the comparison.
+
+### Schema Expectations
+
+- Both datasets must contain at **least one column in common**.
+- Large datasets may result in slower profiling report generation.
+
+## Setting up your environment
+
+### Dependencies
+
+- python >= 3.10, <=3.11
+- pandas>=2.0.0,<3.0.0
+- synapseclient>=4.5.1,<4.10.0
 - [datacompy](https://github.com/capitalone/datacompy)
 - [ydata-profiling](https://github.com/ydataai/ydata-profiling)
-- `.synapseConfig` located in your local home directory
-- READ/DOWNLOAD access to the synapse projects you want to compare entities from
 
-You can use your favorite python environment manager like `pipenv`, `conda`, `uv` or just python virtual environment and install the dependencies from `requirements.txt`
+### Configuration
 
-#### Installation
+Follow the [Synapse client configuration setup](https://docs.synapse.org/synapse-docs/client-configuration) to use Synapse programmatically.
 
-Install the tool using the following command
+You will also need **READ/DOWNLOAD** access to the synapse entities you want to compare. [OPTIONAL] You will need **READ/WRITE** access to the synapse entity you want to save reports to IF you plan to save reports to Synapse.
+
+### Installation
+
+Create a virtual python environment and activate it
+
+```bash
+python3 -m venv <my_venv_name>
+source <my_venv_name>/bin/activate
+```
+
+Install the compare tool using the following command
 
 ```bash
 pip install .
@@ -41,29 +86,31 @@ If you want to run tests:
 pip install -e ".[dev]"
 ```
 
-### How to Run
+## Usage
+
 Use `syncompare --help` for more information on the arguments and what to specify.
 
 You can also import in the `run_compare()` or `generate_comparison_reports()` function for custom code you want to use. The `generate_comparison_reports` function is especially useful if the default method of reading the data doesn't work and you need to use your own custom code to read in the data you want to compare.
 
-**Here are some sample workflow run examples:**
-
-#### Using local imports
+### Using local imports
 
 ```python
 from synapse_compare.compare import run_compare
 
-run_compare(
-    syn_id_1="syn123",
-    syn_id_2="syn456",
-    version1="v1",
-    version2="v2",
-    compare_type="table",
-    main_download_directory="output"
-)
+syn_ids = []
+
+for syn_id in syn_ids:
+    run_compare(
+        syn_id_1=syn_id,
+        syn_id_2="syn456",
+        version1="v1",
+        version2="v2",
+        compare_type="table",
+        main_download_directory="output"
+    )
 ```
 
-#### Using the cli
+### Using the cli
 
 To run a comparison between two different Synapse Tables on their latest versions
 on the common columns (keys) id and cohort
@@ -117,10 +164,16 @@ syncompare --syn_id-1 syn1241249 \
            --output-synid syn218418 \
 ```
 
-### Outputs
+## Outputs
 
-- A file named `<entity_name>_<version1>_vs_<version2>_comparison_report.txt"`
+### datacompy compare report
+
+A file named `<entity_name>_<version1>_vs_<version2>_comparison_report.txt"`
 ![alt text](img/datacompy-example.png) See [datacompy's pandas usage docs](https://capitalone.github.io/datacompy/pandas_usage.html) for more details on the fields provided in this report.
 
-- A file named `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html"`
+---
+
+### ydata-profiling report
+
+`<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html"`
 ![alt text](img/ydata-profiling-example.png) See [ydata-profiling's getting started page](https://docs.profiling.ydata.ai/latest/getting-started/concepts/) for more details on the sections provided in this report.
