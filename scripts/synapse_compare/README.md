@@ -94,20 +94,40 @@ You can also import in the `run_compare()` or `generate_comparison_reports()` fu
 
 ### Using local imports
 
+Basic Synapse Table comparison
+
 ```python
-from synapse_compare.compare import run_compare
+from synapse_compare.compare_between_two_synapse_entities import run_compare
 
-syn_ids = []
+run_compare(
+    syn_id_1=syn_id,
+    syn_id_2="syn456",
+    version1="v1",
+    version2="v2",
+    compare_type="table",
+    main_download_directory="output"
+)
+```
 
-for syn_id in syn_ids:
-    run_compare(
-        syn_id_1=syn_id,
-        syn_id_2="syn456",
-        version1="v1",
-        version2="v2",
-        compare_type="table",
-        main_download_directory="output"
-    )
+Using custom pandas `read_csv` parameters
+
+```python
+from synapse_compare.compare_between_two_synapse_entities import run_compare
+
+run_compare(
+    syn_id_1="syn12345678",
+    syn_id_2="syn87654321",
+    version1="v1",
+    version2="v2",
+    compare_type="file",
+    entity_name="custom_csv_test",
+    main_download_directory="comparison_output_csv",
+    csv_kwargs={
+        "sep": "\t",
+        "dtype": {"sample_id": "string"},
+        "low_memory": False,
+    }
+)
 ```
 
 ### Using the cli
