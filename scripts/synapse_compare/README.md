@@ -20,14 +20,14 @@
 
 ## Purpose
 
-This helper script does comparisons for any
+This tool does comparisons for any
 two data based synapse entities in Synapse whether it's different versions within the same entity or two different entities.
 
 There will be two reports outputted. One using the `datacompy` package and one using the `y-dataprofiling` package.
 
 ## Data Requirements
 
-`synapse-compare` is designed for **tabular data only**.
+This tool is designed for **tabular data only**.
 
 ### Supported Synapse Entities
 
