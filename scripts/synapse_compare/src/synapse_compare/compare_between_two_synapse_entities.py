@@ -397,7 +397,7 @@ def read_args():
     parser.add_argument(
         "--main-download-directory",
         default=os.getcwd(),
-        help="directory to save files in e.g: /home/user/folder",
+        help="Local directory to save files in e.g: /home/user/folder",
     )
     parser.add_argument(
         "--syn-id-1",
