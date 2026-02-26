@@ -39,8 +39,8 @@ This tool is designed for **tabular data only**.
 For Synapse Files (`--compare-type file`), the file must:
 
 - Be readable by `pandas.read_csv`
-- Be comma-separated (`.csv`) **OR**
-- Be tab-separated (`.tsv`, `.txt`, `\t` delimited)
+- Be comma-separated (e.g: `.csv`) **OR**
+- Be tab-separated (e.g: `.tsv`, `.txt`, `\t` delimited)
 
 If your data is not already in the above format, you must convert it to a tabular text format before running the comparison.
 
@@ -54,8 +54,8 @@ If your data is not already in the above format, you must convert it to a tabula
 ### Dependencies
 
 - python >= 3.10, <=3.11
-- pandas>=2.0.0,<3.0.0
-- synapseclient>=4.5.1,<4.10.0
+- pandas >=2.0.0,<3.0.0
+- synapseclient >=4.5.1,<4.10.0
 - [datacompy](https://github.com/capitalone/datacompy)
 - [ydata-profiling](https://github.com/ydataai/ydata-profiling)
 
