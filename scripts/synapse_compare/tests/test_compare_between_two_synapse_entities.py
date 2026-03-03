@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from unittest import mock
 
 import pandas as pd
@@ -295,3 +296,109 @@ def test_save_reports_missing_synid_raises_exception(tmp_path):
             output_dir=str(tmp_path),
             save_to_synapse=True,  # True but no output_synid set
         )
+
+
+def _write(tmp_path, name: str, content: str) -> str:
+    """Write content to a file in the given tmp_path and return the file path as a string."""
+    p = tmp_path / name
+    p.write_text(content, encoding="utf-8")
+    return str(p)
+
+
+def test_respects_user_sep_and_does_not_auto_detect(tmp_path, monkeypatch):
+    path = _write(tmp_path, "data.tsv", "a\tb\n1\t2\n")
+
+    calls: list[Dict[str, Any]] = []
+    real_read_csv = pd.read_csv
+
+    def spy_read_csv(*args, **kwargs):
+        calls.append(kwargs.copy())
+        return real_read_csv(*args, **kwargs)
+
+    monkeypatch.setattr(pd, "read_csv", spy_read_csv)
+
+    csv_kwargs={"sep": "\t"}
+    df = compare.read_csv_with_auto_sep(path, **csv_kwargs)
+    assert df.shape == (1, 2)
+    assert list(df.columns) == ["a", "b"]
+
+    # Exactly one call; should use the provided sep
+    assert len(calls) == 1
+    assert calls[0].get("sep") == "\t"
+
+
+def test_auto_detect_comma_success(tmp_path):
+    path = _write(tmp_path, "data.csv", "a,b\n1,2\n3,4\n")
+
+    df = compare.read_csv_with_auto_sep(path)
+    assert df.shape == (2, 2)
+    assert list(df.columns) == ["a", "b"]
+    assert df["a"].tolist() == [1, 3]
+    assert df["b"].tolist() == [2, 4]
+
+
+def test_auto_detect_falls_back_to_tab_when_comma_results_in_one_column(tmp_path):
+    # If you read this with sep="," you'll get a single column like "a\tb"
+    path = _write(tmp_path, "data.tsv", "a\tb\n1\t2\n3\t4\n")
+
+    df = compare.read_csv_with_auto_sep(path)
+    assert df.shape == (2, 2)
+    assert list(df.columns) == ["a", "b"]
+    assert df["a"].tolist() == [1, 3]
+    assert df["b"].tolist() == [2, 4]
+
+
+def test_raises_value_error_when_neither_comma_nor_tab_produces_table(tmp_path):
+    # Single column no matter what separator you choose
+    path = _write(tmp_path, "onecol.txt", "only_one_column\n1\n2\n")
+
+    with pytest.raises(ValueError, match="Unable to determine delimiter"):
+        compare.read_csv_with_auto_sep(path)
+
+
+def test_does_not_mutate_csv_kwargs(tmp_path):
+    path = _write(tmp_path, "data.csv", "a,b\n1,2\n")
+    csv_kwargs = {"dtype": {"a": "int64"}}
+
+    _ = compare.read_csv_with_auto_sep(path, **csv_kwargs)
+    assert csv_kwargs == {"dtype": {"a": "int64"}}
+
+
+def test_user_sep_parser_error_is_propagated(tmp_path, monkeypatch):
+    """
+    When the user supplies sep, the function should not swallow ParserError
+    (per the docstring).
+    """
+    path = _write(tmp_path, "data.csv", "a,b\n1,2\n")
+
+    def raise_parser_error(*args, **kwargs):
+        raise pd.errors.ParserError("boom")
+
+    monkeypatch.setattr(pd, "read_csv", raise_parser_error)
+
+    with pytest.raises(ValueError, match="boom"):
+        compare.read_csv_with_auto_sep(path, sep=",")
+
+
+def test_auto_detect_handles_parser_error_then_succeeds_on_tab(tmp_path, monkeypatch):
+    """
+    Simulate comma parse raising ParserError, then tab parse succeeding.
+    This makes sure the 'except ParserError: pass' path is covered.
+    """
+    path = _write(tmp_path, "data.tsv", "a\tb\n1\t2\n")
+
+    real_read_csv = pd.read_csv
+    state = {"calls": 0}
+
+    def fake_read_csv(*args, **kwargs):
+        # First attempt (comma) fails; second attempt (tab) delegates to pandas
+        state["calls"] += 1
+        if state["calls"] == 1:
+            raise pd.errors.ParserError("comma parse failed")
+        return real_read_csv(*args, **kwargs)
+
+    monkeypatch.setattr(pd, "read_csv", fake_read_csv)
+
+    df = compare.read_csv_with_auto_sep(path)
+    assert df.shape == (1, 2)
+    assert list(df.columns) == ["a", "b"]

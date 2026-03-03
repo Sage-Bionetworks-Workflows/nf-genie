@@ -8,7 +8,7 @@ import argparse
 import logging
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import datacompy
 import pandas as pd
@@ -119,6 +119,78 @@ def resolve_synapse_id_with_version(syn_id: str, version: str = None) -> str:
     return f"{syn_id}.{version}" if version else syn_id
 
 
+def read_csv_with_auto_sep(
+    filepath: str,
+    **csv_kwargs: Optional[Dict[str, Any]],
+) -> pd.DataFrame:
+    """
+    Reads a CSV/TSV file into a pandas DataFrame with optional automatic
+    delimiter detection. Since csv_kwargs is only available to be specified
+    when calling the function directly in Python, when using the tool via command-line interface,
+    the function will always attempt to automatically detect the separator between comma and tab.
+
+    If csv_kwargs contains a "sep" key, then that separator is passed directly to pandas.read_csv.
+
+    If no separator is provided, the function attempts to infer the delimiter
+    by:
+
+    1. Attempting to read the file using a comma (",") separator.
+    2. If parsing fails or results in a single-column DataFrame,
+    retry with a tab ("\t") separator.
+    3. Raising a ValueError if neither delimiter produces a structured table
+    (i.e., more than one column).
+
+    Args:
+        filepath (str): Path to the input file to be read.
+        csv_kwargs (Optional[Dict[str, Any]], optional): Additional keyword arguments passed to pandas.read_csv.
+            If "sep" is included, automatic delimiter detection is skipped. Defaults to None.
+
+    Returns:
+        pd.DataFrame: The parsed DataFrame.
+
+    Raises:
+        ValueError:
+            - If automatic delimiter detection fails to produce a structured table.
+        pandas.errors.ParserError
+            - If parsing fails when a user-specified separator is provided.
+
+    NOTE:
+    - Automatic detection only attempts comma and tab delimiters.
+    - A "structured table" is defined as a DataFrame with more than one column.
+    - This function is designed for controlled ETL contexts where input files
+      are expected to be either comma- or tab-delimited.
+    """
+    if csv_kwargs is None:
+        csv_kwargs = {}
+
+    # Respect user-provided separator
+    if "sep" in csv_kwargs:
+        return pd.read_csv(filepath, **csv_kwargs)
+
+    read_csv_params = csv_kwargs.copy()
+
+    # Try comma
+    try:
+        df = pd.read_csv(filepath, sep=",", **read_csv_params)
+        if len(df.columns) > 1:
+            return df
+    except pd.errors.ParserError:
+        pass
+
+    # Try tab
+    try:
+        df = pd.read_csv(filepath, sep="\t", **read_csv_params)
+        if len(df.columns) > 1:
+            return df
+    except pd.errors.ParserError:
+        pass
+
+    raise ValueError(
+        "Unable to determine delimiter automatically. "
+        "File does not appear to be comma- or tab-separated."
+    )
+
+
 def get_synapse_file_or_table_as_dataframe(
     syn: synapseclient.Synapse,
     compare_type: str,
@@ -182,7 +254,7 @@ def get_synapse_file_or_table_as_dataframe(
     elif compare_type == "file":
         csv_params = {**csv_params, "sep": "\t"}
         file_path = syn.get(syn_id).path
-        df = pd.read_csv(file_path, **csv_params)
+        df = read_csv_with_auto_sep(file_path, **csv_params)
     else:
         raise ValueError("Compare type not valid. Only 'table' and 'file' supported.")
     return df
