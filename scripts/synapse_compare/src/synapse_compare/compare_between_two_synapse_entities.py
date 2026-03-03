@@ -488,14 +488,18 @@ def read_args():
         "--version-name1",
         default="v1",
         help=(
-            "Name of first version of entity to use in the comparison. This will also be part of the reports' output name (e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt)"
+            "Name of first version of entity to use in the comparison."
+            "This will also be part of the reports' output name "
+            "(e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt). Optional."
         ),
     )
     parser.add_argument(
         "--version-name2",
         default="v2",
         help=(
-            "Name of second version of entity to use in the comparison. This will also be part of the reports' output name (e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt)"
+            "Name of second version of entity to use in the comparison."
+            "This will also be part of the reports' output name "
+            "(e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt). Optional."
         ),
     )
     parser.add_argument(
@@ -514,7 +518,9 @@ def read_args():
         "--entity-name",
         default="",
         help=(
-            "Name for the entity you are comparing. This will be the prefix part of the reports' output name (e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt). Optional."
+            "Name for the entity you are comparing."
+            "This will be the prefix part of the reports' output name "
+            "(e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt). Optional."
         ),
     )
     parser.add_argument(
