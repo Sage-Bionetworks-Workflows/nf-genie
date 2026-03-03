@@ -13,6 +13,7 @@
   - [Installation](#installation)
 - [Usage](#usage)
   - [Using local imports](#using-local-imports)
+    - [Demo](#demo)
   - [Using the CLI](#using-the-cli)
 - [Outputs](#outputs)
   - [datacompy compare report](#datacompy-compare-report)
@@ -67,24 +68,33 @@ You will also need **READ/DOWNLOAD** access to the synapse entities you want to 
 
 ### Installation
 
-Create a virtual python environment and activate it
+1. `git clone` the [nf-genie repo](https://github.com/Sage-Bionetworks-Workflows/nf-genie)
 
-```bash
-python3 -m venv <my_venv_name>
-source <my_venv_name>/bin/activate
-```
+1. Create a virtual python environment and activate it
 
-Install the compare tool using the following command
+    ```bash
+    python3 -m venv <my_venv_name>
+    source <my_venv_name>/bin/activate
+    ```
 
-```bash
-pip install .
-```
+1. Navigate to the synapse compare directory
 
-If you want to run tests:
+    ```bash
+    cd nf-genie/scripts/synapse_compare
+    ```
 
-```bash
-pip install -e ".[dev]"
-```
+1. Install the compare tool using the following command
+
+    ```bash
+    pip install .
+    ```
+
+    [OPTIONAL] If you want to run the tests
+
+    ```bash
+    pip install -e ".[dev]"
+    pytest
+    ```
 
 ## Usage
 
@@ -128,6 +138,16 @@ run_compare(
         "low_memory": False,
     }
 )
+```
+
+#### Demo
+
+There is a demo notebook that uses local imports of the functions in the synapse compare tool that you can work from (will have to supply your own synapse ids) [available here](/scripts/synapse_compare/synapse_compare_demo.ipynb)
+
+You will need to install `juypter notebook` in your environment and then you can launch the demo like:
+
+```bash
+jupyter notebook synapse_compare_demo.ipynb
 ```
 
 ### Using the cli
@@ -184,14 +204,21 @@ syncompare --syn_id-1 syn1241249 \
 
 ## Outputs
 
+You will get two reports outputted IF there are differences between your two datasets:
+
+- `<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
+- `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
+
 ### datacompy compare report
 
-A file named `<entity_name>_<version1>_vs_<version2>_comparison_report.txt"`
+`<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
+
 ![alt text](img/datacompy-example.png) See [datacompy's pandas usage docs](https://capitalone.github.io/datacompy/pandas_usage.html) for more details on the fields provided in this report.
 
 ---
 
 ### ydata-profiling report
 
-`<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html"`
+`<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
+
 ![alt text](img/ydata-profiling-example.png) See [ydata-profiling's getting started page](https://docs.profiling.ydata.ai/latest/getting-started/concepts/) for more details on the sections provided in this report.
