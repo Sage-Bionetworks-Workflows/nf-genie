@@ -376,10 +376,9 @@ def run_compare(
     join_keys: list = None,
     na_values: list = DEFAULT_NA_VALUES,
     keep_default_na: bool = False,
-    csv_kwargs : Dict[str, Any] = None,
+    csv_kwargs: Dict[str, Any] = None,
     output_synid: str = None,
     save_to_synapse: bool = False,
-
 ) -> None:
     """Runs the main comparison function
 
@@ -459,9 +458,9 @@ def run_compare(
             join_keys=join_keys,
         )
         save_reports(
-            syn = syn,
-            reports = reports,
-            report_name_prefix = f"{entity_name}_{version1}_vs_{version2}",
+            syn=syn,
+            reports=reports,
+            report_name_prefix=f"{entity_name}_{version1}_vs_{version2}",
             output_dir=main_download_directory,
             output_synid=output_synid,
             save_to_synapse=save_to_synapse,
@@ -488,12 +487,16 @@ def read_args():
     parser.add_argument(
         "--version-name1",
         default="v1",
-        help=("Name of first version of entity to use in the comparison. This will also be part of the reports' output name (e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt)"),
+        help=(
+            "Name of first version of entity to use in the comparison. This will also be part of the reports' output name (e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt)"
+        ),
     )
     parser.add_argument(
         "--version-name2",
         default="v2",
-        help=("Name of second version of entity to use in the comparison. This will also be part of the reports' output name (e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt)"),
+        help=(
+            "Name of second version of entity to use in the comparison. This will also be part of the reports' output name (e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt)"
+        ),
     )
     parser.add_argument(
         "--compare-type",
@@ -572,7 +575,6 @@ def main():
         output_synid=args.output_synid,
         save_to_synapse=args.save_to_synapse,
     )
-
 
 
 if __name__ == "__main__":

@@ -228,7 +228,7 @@ def test_save_reports_saves_local_only(tmp_path):
 
     reports = {
         "comparison_report": mock_simple_report,
-        "comparison_report_detailed": mock_detailed_report
+        "comparison_report_detailed": mock_detailed_report,
     }
 
     compare.save_reports(
@@ -236,7 +236,7 @@ def test_save_reports_saves_local_only(tmp_path):
         reports=reports,
         report_name_prefix="test",
         output_dir=str(tmp_path),
-        save_to_synapse=False
+        save_to_synapse=False,
     )
 
     # Assert files created
@@ -264,7 +264,7 @@ def test_save_reports_saves_to_synapse(tmp_path):
 
     reports = {
         "comparison_report": mock_simple_report,
-        "comparison_report_detailed": mock_detailed_report
+        "comparison_report_detailed": mock_detailed_report,
     }
 
     compare.save_reports(
@@ -273,7 +273,7 @@ def test_save_reports_saves_to_synapse(tmp_path):
         report_name_prefix="test",
         output_dir=str(tmp_path),
         output_synid="syn123",
-        save_to_synapse=True
+        save_to_synapse=True,
     )
 
     # Assert Synapse store called twice (txt + html)
@@ -285,7 +285,7 @@ def test_save_reports_missing_synid_raises_exception(tmp_path):
 
     reports = {
         "comparison_report": mock.Mock(),
-        "comparison_report_detailed": mock.Mock()
+        "comparison_report_detailed": mock.Mock(),
     }
 
     with pytest.raises(Exception, match="Missing output_synid"):
@@ -317,7 +317,7 @@ def test_respects_user_sep_and_does_not_auto_detect(tmp_path, monkeypatch):
 
     monkeypatch.setattr(pd, "read_csv", spy_read_csv)
 
-    csv_kwargs={"sep": "\t"}
+    csv_kwargs = {"sep": "\t"}
     df = compare.read_csv_with_auto_sep(path, **csv_kwargs)
     assert df.shape == (1, 2)
     assert list(df.columns) == ["a", "b"]
