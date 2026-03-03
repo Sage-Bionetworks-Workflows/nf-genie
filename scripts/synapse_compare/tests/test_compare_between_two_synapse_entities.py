@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import synapseclient
 
-import compare_between_two_synapse_entities as compare
+import synapse_compare.compare_between_two_synapse_entities as compare
 
 
 @pytest.fixture
@@ -142,7 +142,7 @@ def test_resolve_synapse_id_with_version_returns_expected_format(
     assert expected_result == result
 
 
-def test_get_synapse_file_or_table_as_dataframe_defaults_to_comma(mock_syn):
+def test_get_synapse_file_or_table_as_dataframe_defaults_to_tab(mock_syn):
     output_df = pd.DataFrame(dict(col1=[1], col2=[2]))
     mock_entity = mock.Mock()
     mock_entity.path = "test_path"
@@ -163,7 +163,7 @@ def test_get_synapse_file_or_table_as_dataframe_defaults_to_comma(mock_syn):
             keep_default_na=False,
             low_memory=False,
             engine="c",
-            sep=",",
+            sep="\t",
         )
 
 
@@ -195,28 +195,25 @@ def test_get_synapse_file_or_table_as_dataframe_respects_csv_kwargs(mock_syn):
 
 
 def test_get_synapse_file_or_table_as_dataframe_table_query(mock_syn):
-    # Mock Synapse TableQuery result
-    mock_query_result = mock.Mock()
-    mock_df = pd.DataFrame({"col1": [1], "col2": [2]})
-    mock_query_result.asDataFrame.return_value = mock_df
 
-    # make syn.tableQuery return our mock
-    mock_syn.tableQuery.return_value = mock_query_result
+    with mock.patch.object(compare, "query") as mock_query:
+        # setup the mock behavior
+        # We chain .return_value because 'query()' returns an object,
+        # then we call '.convert_dtypes()' on that object.
+        mock_df_final = pd.DataFrame({"col1": [1], "col2": [2]})
+        mock_query.return_value.convert_dtypes.return_value = mock_df_final
 
-    df = compare.get_synapse_file_or_table_as_dataframe(
-        syn=mock_syn,
-        compare_type="table",
-        syn_id="syn99999",
-        na_values=compare.DEFAULT_NA_VALUES,
-        keep_default_na=True,
-    )
+        # call the function
+        df = compare.get_synapse_file_or_table_as_dataframe(
+            syn=mock_syn,
+            compare_type="table",
+            syn_id="syn99999",
+        )
 
-    # assert query was called correctly
-    mock_syn.tableQuery.assert_called_once_with("SELECT * FROM syn99999")
-
-    # Assert the DataFrame returned is the mocked DataFrame
-    assert isinstance(df, pd.DataFrame)
-    pd.testing.assert_frame_equal(df, mock_df)
+        # assertions
+        mock_query.assert_called_once()
+        assert "SELECT * FROM syn99999" in mock_query.call_args[0][0]
+        pd.testing.assert_frame_equal(df, mock_df_final)
 
 
 def test_save_reports_saves_local_only(tmp_path):
