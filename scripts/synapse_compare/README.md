@@ -98,11 +98,11 @@ You will also need **READ/DOWNLOAD** access to the synapse entities you want to 
 
 ## Usage
 
-Use `syncompare --help` for more information on the arguments and what to specify.
-
-You can also import in the `run_compare()` or `generate_comparison_reports()` function for custom code you want to use. The `generate_comparison_reports` function is especially useful if the default method of reading the data doesn't work and you need to use your own custom code to read in the data you want to compare.
+You can locally import in the functions or use the command line interface (cli)
 
 ### Using local imports
+
+For local imports, you can import in the `run_compare()` or `generate_comparison_reports()` functions for custom code you want to use. The `generate_comparison_reports` function is especially useful if the method of reading the data doesn't work and you need to use your own custom code to read in the data you want to compare or you've already transformed/read in your data in your workflow.
 
 Basic Synapse Table comparison
 
@@ -119,7 +119,7 @@ run_compare(
 )
 ```
 
-Using custom pandas `read_csv` parameters
+Using custom pandas `read_csv` parameters. This is only available when you import the functions locally and not via the cli.
 
 ```python
 from synapse_compare.compare_between_two_synapse_entities import run_compare
@@ -151,6 +151,8 @@ jupyter notebook synapse_compare_demo.ipynb
 ```
 
 ### Using the cli
+
+Use `syncompare --help` for more information on the arguments and what to specify.
 
 To run a comparison between two different Synapse Tables on their latest versions
 on the common columns (keys) id and cohort
@@ -222,3 +224,6 @@ You will get two reports outputted IF there are differences between your two dat
 `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
 
 ![alt text](img/ydata-profiling-example.png) See [ydata-profiling's getting started page](https://docs.profiling.ydata.ai/latest/getting-started/concepts/) for more details on the sections provided in this report.
+
+## Troubleshooting
+WIP
