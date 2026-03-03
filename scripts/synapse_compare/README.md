@@ -54,7 +54,7 @@ If your data is not already in the above format, you must convert it to a tabula
 
 ### Dependencies
 
-- python >= 3.10, <=3.11
+- python >=3.10,<=3.11
 - pandas >=2.0.0,<3.0.0
 - synapseclient >=4.5.1,<4.10.0
 - [datacompy](https://github.com/capitalone/datacompy)
@@ -110,7 +110,7 @@ Basic Synapse Table comparison
 from synapse_compare.compare_between_two_synapse_entities import run_compare
 
 run_compare(
-    syn_id_1=syn_id,
+    syn_id_1="syn123",
     syn_id_2="syn456",
     version1="v1",
     version2="v2",
@@ -177,13 +177,13 @@ syncompare --syn-id-1 syn1241249.23 \
 
 You can use the version arguments to filter on the version comments within a Synapse entity
 by specifying `version_name1`, `version_name2` and `--filter-on-version`
-Here we filter on "v1" vs "v2" in the version comment of the same table for the comparison.
+Here we filter on "v1" vs "v2" in the version comment of the same table for the comparison. It is best to enclose the value in "" in case you have spaces / other characters.
 
 ```bash
 syncompare --syn_id-1 syn1241249 \
            --syn_id-2 syn1241249 \
-           --version-name1 v1 \
-           --version-name2 v2 \
+           --version-name1 "v1" \
+           --version-name2 "v2" \
            --filter-on-version \
            --compare-type table \
            --join-keys id cohort \
@@ -226,4 +226,25 @@ You will get two reports outputted IF there are differences between your two dat
 ![alt text](img/ydata-profiling-example.png) See [ydata-profiling's getting started page](https://docs.profiling.ydata.ai/latest/getting-started/concepts/) for more details on the sections provided in this report.
 
 ## Troubleshooting
-WIP
+
+This section is always in development
+
+### Data types differences
+
+The second tool `ydata-profiling` that is used to generate the second more detailed report `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html` tends to be more sensitive to data type differences between columns that are used as the `join-keys` / columns in common. You would need to do additional tweaking of the data to have the second report be generated at times.
+
+Some common error messages:
+
+```
+ValueError: Types for variant_classification are not compatible: {'Unsupported', 'Text'}
+```
+
+```
+ValueError: You are trying to merge on object and float64 columns for key 'variant_classification'. If you wish to proceed you should use pd.concat
+```
+
+### Generating report freezes
+
+Since the second report also also shows summary details per column, often times when a dataset has tens of thousands of rows / lots of unique values per column, the second report will just freeze at the summarize dataset step. Would try to see if you can break your data into partitions (e.g: by cohort or cancer) to do the comparison until more optimization is done for the second report tool.
+
+![alt text](/scripts/synapse_compare/img/loading_times.png)

@@ -447,7 +447,7 @@ def read_args():
         default=None,
         nargs="+",
         help=(
-            "List of column names to join on for comparison. Optional. Default: Uses the columns in common."
+            "List of column names to join on for comparison. Optional. Default: Uses all of the columns in common."
         ),
     )
     parser.add_argument(
