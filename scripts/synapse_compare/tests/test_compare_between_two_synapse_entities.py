@@ -143,14 +143,16 @@ def test_resolve_synapse_id_with_version_returns_expected_format(
     assert expected_result == result
 
 
-def test_get_synapse_file_or_table_as_dataframe_defaults_to_tab(mock_syn):
+def test_get_synapse_file_or_table_as_dataframe_has_no_sep_defaults(mock_syn):
     output_df = pd.DataFrame(dict(col1=[1], col2=[2]))
     mock_entity = mock.Mock()
     mock_entity.path = "test_path"
 
     with mock.patch.object(
         mock_syn, "get", return_value=mock_entity
-    ), mock.patch.object(pd, "read_csv", return_value=output_df) as mock_read_csv:
+    ), mock.patch.object(
+        compare, "read_csv_with_auto_sep", return_value=output_df
+    ) as mock_read_csv:
         compare.get_synapse_file_or_table_as_dataframe(
             syn=mock_syn,
             compare_type="file",
@@ -164,7 +166,6 @@ def test_get_synapse_file_or_table_as_dataframe_defaults_to_tab(mock_syn):
             keep_default_na=False,
             low_memory=False,
             engine="c",
-            sep="\t",
         )
 
 

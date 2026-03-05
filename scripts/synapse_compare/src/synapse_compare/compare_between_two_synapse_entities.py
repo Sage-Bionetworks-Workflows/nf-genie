@@ -168,7 +168,6 @@ def read_csv_with_auto_sep(
         return pd.read_csv(filepath, **csv_kwargs)
 
     read_csv_params = csv_kwargs.copy()
-
     # Try comma
     try:
         df = pd.read_csv(filepath, sep=",", **read_csv_params)
@@ -252,7 +251,6 @@ def get_synapse_file_or_table_as_dataframe(
         csv_params = {**csv_params, "sep": ","}
         df = query(f"SELECT * FROM {syn_id}", **csv_params).convert_dtypes()
     elif compare_type == "file":
-        csv_params = {**csv_params, "sep": "\t"}
         file_path = syn.get(syn_id).path
         df = read_csv_with_auto_sep(file_path, **csv_params)
     else:
