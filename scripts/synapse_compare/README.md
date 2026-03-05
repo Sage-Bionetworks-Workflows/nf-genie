@@ -119,6 +119,8 @@ run_compare(
 )
 ```
 
+--
+
 Using custom pandas `read_csv` parameters. This is only available when you import the functions locally and not via the cli.
 
 ```python
@@ -140,6 +142,40 @@ run_compare(
 )
 ```
 
+**NOTE** that the `csv_kwargs` applies to both datasets. If you have datasets that need different `csv_kwargs` for pandas to read in, it may be better to use the `generate_comparison_reports()` function once you've read in each of the files individually.
+
+--
+
+Example of using `generate_comparison_reports()` directly after reading in the data in your own custom code.
+
+```python
+import synapseclient
+
+from synapse_compare.compare_between_two_synapse_entities import generate_comparison_reports, save_reports
+
+syn = synapseclient.login()
+
+reports = generate_comparison_reports(
+    df1=df1,
+    df2=df2,
+    df1_name="df1_v1",
+    df2_name="df2_v2",
+    join_keys=["patient_id"]
+)
+save_reports(
+    syn=syn,
+    reports=reports,
+    report_name_prefix="some_report_name",
+    output_dir="some_dir",
+    output_synid=None,
+    save_to_synapse=False,
+)
+```
+
+**NOTE** You will need to create your output directory first before running this code
+
+--
+
 #### Demo
 
 There is a demo notebook that uses local imports of the functions in the synapse compare tool that you can work from (will have to supply your own synapse ids) [available here](/scripts/synapse_compare/synapse_compare_demo.ipynb)
@@ -149,6 +185,8 @@ You will need to install `juypter notebook` in your environment and then you can
 ```bash
 jupyter notebook synapse_compare_demo.ipynb
 ```
+
+---
 
 ### Using the cli
 
@@ -164,6 +202,8 @@ syncompare --syn-id-1 syn1241249 \
            --join-keys id cohort
 ```
 
+--
+
 To run a comparison between two different versions within a Synapse File
 on the common columns (keys) id and cohort.
 
@@ -174,6 +214,8 @@ syncompare --syn-id-1 syn1241249.23 \
            --compare-type file \
            --join-keys id cohort
 ```
+
+--
 
 You can use the version arguments to filter on the version comments within a Synapse entity
 by specifying `version_name1`, `version_name2` and `--filter-on-version`
@@ -188,6 +230,8 @@ syncompare --syn_id-1 syn1241249 \
            --compare-type table \
            --join-keys id cohort \
 ```
+
+--
 
 Save your output reports to a synapse entity by specifying
 `--save-to-synapse` and a synapse entity synapse id for `--output-synid`
