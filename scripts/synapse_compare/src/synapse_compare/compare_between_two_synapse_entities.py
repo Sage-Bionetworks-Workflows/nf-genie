@@ -383,16 +383,19 @@ def run_compare(
     Args:
         syn_id_1 (str): Synapse id of first entity to compare
         syn_id_2 (str): Synapse id of second entity to compare
-        version1 (str): Name of first version of entity to use in the comparison. This will also be part of the reports' output name.
+        version1 (str): Name of first version of entity to use in the comparison.
+            This will also be part of the reports' output name.
             - `<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
             - `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
-        version2 (str): Name of second version of entity to use in the comparison. This will also be part of the reports' output name.
+        version2 (str): Name of second version of entity to use in the comparison.
+            This will also be part of the reports' output name.
             - `<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
             - `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
         compare_type (str): Comparison type
         filter_on_version (bool): Whether to filter using version comment on the version arguments or not.
             Defaults to False.
-        entity_name (str): Name of the entity used in comparison. This will be the prefix of the reports' output name. Optional. Defaults to "".
+        entity_name (str): Name of the entity used in comparison.
+            This will be the prefix of the reports' output name. Optional. Defaults to "".
             - `<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
             - `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
         main_download_directory (str): Directory to download the reports. Defaults to None.
