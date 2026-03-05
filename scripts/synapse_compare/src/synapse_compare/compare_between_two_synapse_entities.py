@@ -8,7 +8,7 @@ import argparse
 import logging
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import datacompy
 import pandas as pd
@@ -119,6 +119,77 @@ def resolve_synapse_id_with_version(syn_id: str, version: str = None) -> str:
     return f"{syn_id}.{version}" if version else syn_id
 
 
+def read_csv_with_auto_sep(
+    filepath: str,
+    **csv_kwargs: Optional[Dict[str, Any]],
+) -> pd.DataFrame:
+    """
+    Reads a CSV/TSV file into a pandas DataFrame with optional automatic
+    delimiter detection. Since csv_kwargs is only available to be specified
+    when calling the function directly in Python, when using the tool via command-line interface,
+    the function will always attempt to automatically detect the separator between comma and tab.
+
+    If csv_kwargs contains a "sep" key, then that separator is passed directly to pandas.read_csv.
+
+    If no separator is provided, the function attempts to infer the delimiter
+    by:
+
+    1. Attempting to read the file using a comma (",") separator.
+    2. If parsing fails or results in a single-column DataFrame,
+    retry with a tab ("\t") separator.
+    3. Raising a ValueError if neither delimiter produces a structured table
+    (i.e., more than one column).
+
+    Args:
+        filepath (str): Path to the input file to be read.
+        csv_kwargs (Optional[Dict[str, Any]], optional): Additional keyword arguments passed to pandas.read_csv.
+            If "sep" is included, automatic delimiter detection is skipped. Defaults to None.
+
+    Returns:
+        pd.DataFrame: The parsed DataFrame.
+
+    Raises:
+        ValueError:
+            - If automatic delimiter detection fails to produce a structured table.
+        pandas.errors.ParserError
+            - If parsing fails when a user-specified separator is provided.
+
+    NOTE:
+    - Automatic detection only attempts comma and tab delimiters.
+    - A "structured table" is defined as a DataFrame with more than one column.
+    - This function is designed for controlled ETL contexts where input files
+      are expected to be either comma- or tab-delimited.
+    """
+    if csv_kwargs is None:
+        csv_kwargs = {}
+
+    # Respect user-provided separator
+    if "sep" in csv_kwargs:
+        return pd.read_csv(filepath, **csv_kwargs)
+
+    read_csv_params = csv_kwargs.copy()
+    # Try comma
+    try:
+        df = pd.read_csv(filepath, sep=",", **read_csv_params)
+        if len(df.columns) > 1:
+            return df
+    except pd.errors.ParserError:
+        pass
+
+    # Try tab
+    try:
+        df = pd.read_csv(filepath, sep="\t", **read_csv_params)
+        if len(df.columns) > 1:
+            return df
+    except pd.errors.ParserError:
+        pass
+
+    raise ValueError(
+        "Unable to determine delimiter automatically. "
+        "File does not appear to be comma- or tab-separated."
+    )
+
+
 def get_synapse_file_or_table_as_dataframe(
     syn: synapseclient.Synapse,
     compare_type: str,
@@ -180,9 +251,8 @@ def get_synapse_file_or_table_as_dataframe(
         csv_params = {**csv_params, "sep": ","}
         df = query(f"SELECT * FROM {syn_id}", **csv_params).convert_dtypes()
     elif compare_type == "file":
-        csv_params = {**csv_params, "sep": "\t"}
         file_path = syn.get(syn_id).path
-        df = pd.read_csv(file_path, **csv_params)
+        df = read_csv_with_auto_sep(file_path, **csv_params)
     else:
         raise ValueError("Compare type not valid. Only 'table' and 'file' supported.")
     return df
@@ -304,22 +374,30 @@ def run_compare(
     join_keys: list = None,
     na_values: list = DEFAULT_NA_VALUES,
     keep_default_na: bool = False,
-    csv_kwargs : Dict[str, Any] = None,
+    csv_kwargs: Dict[str, Any] = None,
     output_synid: str = None,
     save_to_synapse: bool = False,
-
 ) -> None:
     """Runs the main comparison function
 
     Args:
         syn_id_1 (str): Synapse id of first entity to compare
         syn_id_2 (str): Synapse id of second entity to compare
-        version1 (str): Name of first version of entity to use in the comparison.. This will also be part of the reports' output name.
-        version2 (str): Name of second version of entity to use in the comparison.. This will also be part of the reports' output name.
+        version1 (str): Name of first version of entity to use in the comparison.
+            This will also be part of the reports' output name.
+            - `<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
+            - `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
+        version2 (str): Name of second version of entity to use in the comparison.
+            This will also be part of the reports' output name.
+            - `<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
+            - `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
         compare_type (str): Comparison type
         filter_on_version (bool): Whether to filter using version comment on the version arguments or not.
             Defaults to False.
-        entity_name (str): Name of the entity used in comparison. This will be part of the reports' output name. Optional. Defaults to "".
+        entity_name (str): Name of the entity used in comparison.
+            This will be the prefix of the reports' output name. Optional. Defaults to "".
+            - `<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
+            - `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
         main_download_directory (str): Directory to download the reports. Defaults to None.
         join_keys (list): List of the keys you want to merge the data on in the comparison. Defaults to None.
         na_values (list): List of na values to convert from str to na when reading in the data to pandas.
@@ -381,9 +459,9 @@ def run_compare(
             join_keys=join_keys,
         )
         save_reports(
-            syn = syn,
-            reports = reports,
-            report_name_prefix = f"{entity_name}_{version1}_vs_{version2}",
+            syn=syn,
+            reports=reports,
+            report_name_prefix=f"{entity_name}_{version1}_vs_{version2}",
             output_dir=main_download_directory,
             output_synid=output_synid,
             save_to_synapse=save_to_synapse,
@@ -410,12 +488,20 @@ def read_args():
     parser.add_argument(
         "--version-name1",
         default="v1",
-        help=("Name of first version of entity to use in the comparison."),
+        help=(
+            "Name of first version of entity to use in the comparison."
+            "This will also be part of the reports' output name "
+            "(e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt). Optional."
+        ),
     )
     parser.add_argument(
         "--version-name2",
         default="v2",
-        help=("Name of second version of entity to use in the comparison."),
+        help=(
+            "Name of second version of entity to use in the comparison."
+            "This will also be part of the reports' output name "
+            "(e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt). Optional."
+        ),
     )
     parser.add_argument(
         "--compare-type",
@@ -433,7 +519,9 @@ def read_args():
         "--entity-name",
         default="",
         help=(
-            "Name for the entity you are comparing. This will be the report' output name. Optional."
+            "Name for the entity you are comparing."
+            "This will be the prefix part of the reports' output name "
+            "(e.g: <entity_name>_<version1>_vs_<version2>_comparison_report.txt). Optional."
         ),
     )
     parser.add_argument(
@@ -441,7 +529,7 @@ def read_args():
         default=None,
         nargs="+",
         help=(
-            "List of column names to join on for comparison. Optional. Default: Uses the columns in common."
+            "List of column names to join on for comparison. Optional. Default: Uses all of the columns in common."
         ),
     )
     parser.add_argument(
@@ -494,7 +582,6 @@ def main():
         output_synid=args.output_synid,
         save_to_synapse=args.save_to_synapse,
     )
-
 
 
 if __name__ == "__main__":

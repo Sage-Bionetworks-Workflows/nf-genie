@@ -13,6 +13,7 @@
   - [Installation](#installation)
 - [Usage](#usage)
   - [Using local imports](#using-local-imports)
+    - [Demo](#demo)
   - [Using the CLI](#using-the-cli)
 - [Outputs](#outputs)
   - [datacompy compare report](#datacompy-compare-report)
@@ -53,7 +54,7 @@ If your data is not already in the above format, you must convert it to a tabula
 
 ### Dependencies
 
-- python >= 3.10, <=3.11
+- python >=3.10,<=3.11
 - pandas >=2.0.0,<3.0.0
 - synapseclient >=4.5.1,<4.10.0
 - [datacompy](https://github.com/capitalone/datacompy)
@@ -67,32 +68,41 @@ You will also need **READ/DOWNLOAD** access to the synapse entities you want to 
 
 ### Installation
 
-Create a virtual python environment and activate it
+1. `git clone` the [nf-genie repo](https://github.com/Sage-Bionetworks-Workflows/nf-genie)
 
-```bash
-python3 -m venv <my_venv_name>
-source <my_venv_name>/bin/activate
-```
+1. Create a virtual python environment and activate it
 
-Install the compare tool using the following command
+    ```bash
+    python3 -m venv <my_venv_name>
+    source <my_venv_name>/bin/activate
+    ```
 
-```bash
-pip install .
-```
+1. Navigate to the synapse compare directory
 
-If you want to run tests:
+    ```bash
+    cd nf-genie/scripts/synapse_compare
+    ```
 
-```bash
-pip install -e ".[dev]"
-```
+1. Install the compare tool using the following command
+
+    ```bash
+    pip install .
+    ```
+
+    [OPTIONAL] If you want to run the tests
+
+    ```bash
+    pip install -e ".[dev]"
+    pytest
+    ```
 
 ## Usage
 
-Use `syncompare --help` for more information on the arguments and what to specify.
-
-You can also import in the `run_compare()` or `generate_comparison_reports()` function for custom code you want to use. The `generate_comparison_reports` function is especially useful if the default method of reading the data doesn't work and you need to use your own custom code to read in the data you want to compare.
+You can locally import in the functions or use the command line interface (cli)
 
 ### Using local imports
+
+For local imports, you can import in the `run_compare()` or `generate_comparison_reports()` functions for custom code you want to use. The `generate_comparison_reports` function is especially useful if the method of reading the data doesn't work and you need to use your own custom code to read in the data you want to compare or you've already transformed/read in your data in your workflow.
 
 Basic Synapse Table comparison
 
@@ -100,7 +110,7 @@ Basic Synapse Table comparison
 from synapse_compare.compare_between_two_synapse_entities import run_compare
 
 run_compare(
-    syn_id_1=syn_id,
+    syn_id_1="syn123",
     syn_id_2="syn456",
     version1="v1",
     version2="v2",
@@ -109,7 +119,7 @@ run_compare(
 )
 ```
 
-Using custom pandas `read_csv` parameters
+Using custom pandas `read_csv` parameters. This is only available when you import the functions locally and not via the cli.
 
 ```python
 from synapse_compare.compare_between_two_synapse_entities import run_compare
@@ -130,7 +140,19 @@ run_compare(
 )
 ```
 
+#### Demo
+
+There is a demo notebook that uses local imports of the functions in the synapse compare tool that you can work from (will have to supply your own synapse ids) [available here](/scripts/synapse_compare/synapse_compare_demo.ipynb)
+
+You will need to install `juypter notebook` in your environment and then you can launch the demo like:
+
+```bash
+jupyter notebook synapse_compare_demo.ipynb
+```
+
 ### Using the cli
+
+Use `syncompare --help` for more information on the arguments and what to specify.
 
 To run a comparison between two different Synapse Tables on their latest versions
 on the common columns (keys) id and cohort
@@ -155,13 +177,13 @@ syncompare --syn-id-1 syn1241249.23 \
 
 You can use the version arguments to filter on the version comments within a Synapse entity
 by specifying `version_name1`, `version_name2` and `--filter-on-version`
-Here we filter on "v1" vs "v2" in the version comment of the same table for the comparison.
+Here we filter on "v1" vs "v2" in the version comment of the same table for the comparison. It is best to enclose the value in "" in case you have spaces / other characters.
 
 ```bash
 syncompare --syn_id-1 syn1241249 \
            --syn_id-2 syn1241249 \
-           --version-name1 v1 \
-           --version-name2 v2 \
+           --version-name1 "v1" \
+           --version-name2 "v2" \
            --filter-on-version \
            --compare-type table \
            --join-keys id cohort \
@@ -184,14 +206,45 @@ syncompare --syn_id-1 syn1241249 \
 
 ## Outputs
 
+You will get two reports outputted IF there are differences between your two datasets:
+
+- `<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
+- `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
+
 ### datacompy compare report
 
-A file named `<entity_name>_<version1>_vs_<version2>_comparison_report.txt"`
+`<entity_name>_<version1>_vs_<version2>_comparison_report.txt`
+
 ![alt text](img/datacompy-example.png) See [datacompy's pandas usage docs](https://capitalone.github.io/datacompy/pandas_usage.html) for more details on the fields provided in this report.
 
 ---
 
 ### ydata-profiling report
 
-`<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html"`
+`<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html`
+
 ![alt text](img/ydata-profiling-example.png) See [ydata-profiling's getting started page](https://docs.profiling.ydata.ai/latest/getting-started/concepts/) for more details on the sections provided in this report.
+
+## Troubleshooting
+
+This section is always in development
+
+### Data types differences
+
+The second tool `ydata-profiling` that is used to generate the second more detailed report `<entity_name>_<version1>_vs_<version2>_comparison_report_detailed.html` tends to be more sensitive to data type differences between columns that are used as the `join-keys` / columns in common. You would need to do additional tweaking of the data to have the second report be generated at times.
+
+Some common error messages:
+
+```
+ValueError: Types for variant_classification are not compatible: {'Unsupported', 'Text'}
+```
+
+```
+ValueError: You are trying to merge on object and float64 columns for key 'variant_classification'. If you wish to proceed you should use pd.concat
+```
+
+### Generating report freezes
+
+Since the second report also also shows summary details per column, often times when a dataset has tens of thousands of rows / lots of unique values per column, the second report will just freeze at the summarize dataset step. Would try to see if you can break your data into partitions (e.g: by cohort or cancer) to do the comparison until more optimization is done for the second report tool.
+
+![alt text](/scripts/synapse_compare/img/loading_times.png)
