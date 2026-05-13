@@ -2,8 +2,8 @@
 
 Add or update your information for your site into the dedicated field and then submit a pull request.
 
-
 ## Running via Service Catalog
+
 Sometimes the nextflow step for the `create_data_guide.nf` will fail due to an issue with the docker image. Here are a list of [known issues and resolutions](https://sagebionetworks.jira.com/wiki/spaces/APGD/pages/2856943651/GENIE+Pipeline+Troubleshooting) (only accessible by Sage employees).  Since troubleshooting for the docker image can easily take over a few days to resolve, try the manual approach to generate the data guide:
 
 [Follow instructions here](https://sagebionetworks.jira.com/wiki/spaces/APGD/pages/2590244872/Service+Catalog+Instance+Setup#Starting-EC2-instance-from-the-Service-Catalog) for using the Service catalog
@@ -37,7 +37,7 @@ Sometimes the nextflow step for the `create_data_guide.nf` will fail due to an i
     python generate_data_guide.py <consortium_release> <project_id>
     ```
 
-8. [Optional] Sometimes depending on the rendering, you may have the front page genie banner be cut off/too big like the below example ![alt text](/img/cut_off_genie_banner.png) To resolve, you will need to adjust [this width in the data_guide.qmd file](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/df3796dce8431fc2a86e297a7350058241c1321c/scripts/data_guide/data_guide.qmd#L11) (e.g: used `15cm` instead of `20cm` for the example below)
+7. [Optional] Sometimes depending on the rendering, you may have the front page genie banner be cut off/too big like the below example ![alt text](/img/cut_off_genie_banner.png) To resolve, you will need to adjust [this width in the data_guide.qmd file](https://github.com/Sage-Bionetworks-Workflows/nf-genie/blob/df3796dce8431fc2a86e297a7350058241c1321c/scripts/data_guide/data_guide.qmd#L11) (e.g: used `15cm` instead of `20cm` for the example below)
 
 ### Example command
 
