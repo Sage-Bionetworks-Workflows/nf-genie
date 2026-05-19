@@ -36,8 +36,11 @@ jobs:
     - name: Check for Changes in scripts/${{ matrix.module }}
       id: check_changes
       run: |
+        # catches failed commands (-e), undefined variables (-u)
+        # and failures hidden inside pipes (pipefail)
         set -euo pipefail
 
+        # Determine the appropriate diff base for change detection
         if [ "${{ github.ref_name }}" = "main" ]; then
           if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
             DIFF_BASE="HEAD^"
@@ -47,8 +50,10 @@ jobs:
             exit 0
           fi
         else
+          # For non-main branches, try to use origin/main as the diff base if it's available
           if git rev-parse --verify origin/main >/dev/null 2>&1 && git merge-base --is-ancestor origin/main HEAD; then
             DIFF_BASE="origin/main"
+          # if origin/main is not available, use HEAD^ as a fallback to check for changes in the last commit in the feature branch
           elif git rev-parse --verify HEAD^ >/dev/null 2>&1; then
             DIFF_BASE="HEAD^"
           else
@@ -59,7 +64,7 @@ jobs:
         fi
 
         echo "Using DIFF_BASE=$DIFF_BASE"
-
+        # Check if there are changes in the specified module directory compared to the determined diff base
         if git diff --name-only "$DIFF_BASE" HEAD -- "scripts/${{ matrix.module }}" | grep -q .; then
           echo "CHANGED=true" >> "$GITHUB_ENV"
         else
