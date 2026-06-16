@@ -3,7 +3,7 @@ nbformat==5.10.4
 matplotlib==3.10.1
 synapseclient[pandas]==4.7.0
 pyyaml==6.0.2
-notebook==7.4.0
-jupyterlab==4.4.0
+notebook==7.5.6
+jupyterlab==4.5.7
 seaborn==0.13.2
 jinja2==3.1.6
